@@ -38,6 +38,51 @@ use std::collections::VecDeque;
 
 use crate::interval_chirho::{IntervalChirho, NumericInfoChirho};
 
+// ============================================================================
+// HELPER MACROS - Eliminate boilerplate for adding propagators
+// ============================================================================
+
+/// Macro for generating add_*_chirho methods for ternary (3-cell) propagators.
+macro_rules! impl_add_ternary_chirho {
+    ($method_name_chirho:ident, $prop_type_chirho:expr) => {
+        /// Adds a ternary propagator (bidirectional).
+        pub fn $method_name_chirho(
+            &mut self,
+            a_chirho: CellIdChirho,
+            b_chirho: CellIdChirho,
+            c_chirho: CellIdChirho,
+        ) {
+            let idx_chirho = self.propagators_chirho.len();
+            self.propagators_chirho.push(PropagatorEntryChirho {
+                type_chirho: $prop_type_chirho,
+                cells_chirho: vec![a_chirho, b_chirho, c_chirho],
+            });
+
+            // Register with all cells (bidirectional)
+            self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
+            self.cell_to_propagators_chirho[b_chirho.0].push(idx_chirho);
+            self.cell_to_propagators_chirho[c_chirho.0].push(idx_chirho);
+        }
+    };
+}
+
+/// Macro for generating add_*_chirho methods for binary (2-cell) propagators.
+macro_rules! impl_add_binary_chirho {
+    ($method_name_chirho:ident, $prop_type_chirho:expr) => {
+        /// Adds a binary propagator (bidirectional).
+        pub fn $method_name_chirho(&mut self, a_chirho: CellIdChirho, b_chirho: CellIdChirho) {
+            let idx_chirho = self.propagators_chirho.len();
+            self.propagators_chirho.push(PropagatorEntryChirho {
+                type_chirho: $prop_type_chirho,
+                cells_chirho: vec![a_chirho, b_chirho],
+            });
+
+            self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
+            self.cell_to_propagators_chirho[b_chirho.0].push(idx_chirho);
+        }
+    };
+}
+
 /// Index handle to a cell in the arena.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct CellIdChirho(pub usize);
@@ -61,12 +106,20 @@ impl CellIdChirho {
 pub enum PropagatorTypeChirho {
     /// a + b = c
     AdderChirho,
+    /// a - b = c
+    SubtractorChirho,
     /// a * b = c
     MultiplierChirho,
+    /// a / b = c
+    DividerChirho,
     /// a² = b
     SquarerChirho,
     /// √a = b
     SqrterChirho,
+    /// |a| = b
+    AbsoluterChirho,
+    /// -a = b
+    NegaterChirho,
 }
 
 /// A propagator connecting cells.
@@ -177,54 +230,23 @@ impl ArenaNetworkChirho {
         }
     }
 
-    /// Adds an adder propagator: a + b = c (bidirectional).
-    pub fn add_adder_chirho(
-        &mut self,
-        a_chirho: CellIdChirho,
-        b_chirho: CellIdChirho,
-        c_chirho: CellIdChirho,
-    ) {
-        let idx_chirho = self.propagators_chirho.len();
-        self.propagators_chirho.push(PropagatorEntryChirho {
-            type_chirho: PropagatorTypeChirho::AdderChirho,
-            cells_chirho: vec![a_chirho, b_chirho, c_chirho],
-        });
+    // ========================================================================
+    // TERNARY PROPAGATORS (a, b, c)
+    // ========================================================================
 
-        // Register with all cells (bidirectional)
-        self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
-        self.cell_to_propagators_chirho[b_chirho.0].push(idx_chirho);
-        self.cell_to_propagators_chirho[c_chirho.0].push(idx_chirho);
-    }
+    impl_add_ternary_chirho!(add_adder_chirho, PropagatorTypeChirho::AdderChirho);
+    impl_add_ternary_chirho!(add_subtractor_chirho, PropagatorTypeChirho::SubtractorChirho);
+    impl_add_ternary_chirho!(add_multiplier_chirho, PropagatorTypeChirho::MultiplierChirho);
+    impl_add_ternary_chirho!(add_divider_chirho, PropagatorTypeChirho::DividerChirho);
 
-    /// Adds a multiplier propagator: a * b = c (bidirectional).
-    pub fn add_multiplier_chirho(
-        &mut self,
-        a_chirho: CellIdChirho,
-        b_chirho: CellIdChirho,
-        c_chirho: CellIdChirho,
-    ) {
-        let idx_chirho = self.propagators_chirho.len();
-        self.propagators_chirho.push(PropagatorEntryChirho {
-            type_chirho: PropagatorTypeChirho::MultiplierChirho,
-            cells_chirho: vec![a_chirho, b_chirho, c_chirho],
-        });
+    // ========================================================================
+    // BINARY PROPAGATORS (a, b)
+    // ========================================================================
 
-        self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
-        self.cell_to_propagators_chirho[b_chirho.0].push(idx_chirho);
-        self.cell_to_propagators_chirho[c_chirho.0].push(idx_chirho);
-    }
-
-    /// Adds a squarer propagator: a² = b (bidirectional).
-    pub fn add_squarer_chirho(&mut self, a_chirho: CellIdChirho, b_chirho: CellIdChirho) {
-        let idx_chirho = self.propagators_chirho.len();
-        self.propagators_chirho.push(PropagatorEntryChirho {
-            type_chirho: PropagatorTypeChirho::SquarerChirho,
-            cells_chirho: vec![a_chirho, b_chirho],
-        });
-
-        self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
-        self.cell_to_propagators_chirho[b_chirho.0].push(idx_chirho);
-    }
+    impl_add_binary_chirho!(add_squarer_chirho, PropagatorTypeChirho::SquarerChirho);
+    impl_add_binary_chirho!(add_sqrter_chirho, PropagatorTypeChirho::SqrterChirho);
+    impl_add_binary_chirho!(add_absoluter_chirho, PropagatorTypeChirho::AbsoluterChirho);
+    impl_add_binary_chirho!(add_negater_chirho, PropagatorTypeChirho::NegaterChirho);
 
     /// Runs propagation to fixpoint.
     pub fn propagate_chirho(&mut self) {
@@ -248,7 +270,6 @@ impl ArenaNetworkChirho {
         true
     }
 
-    #[allow(clippy::too_many_lines)] // Match arms for each propagator type, clearer as one function
     fn run_propagator_chirho(&mut self, prop_idx_chirho: usize) {
         // Copy propagator data to avoid borrow conflicts
         let type_chirho = self.propagators_chirho[prop_idx_chirho].type_chirho;
@@ -257,136 +278,237 @@ impl ArenaNetworkChirho {
             .clone();
 
         match type_chirho {
+            // Ternary propagators (a, b, c)
             PropagatorTypeChirho::AdderChirho => {
-                let a_chirho = self.cells_chirho[cells_chirho[0].0];
-                let b_chirho = self.cells_chirho[cells_chirho[1].0];
-                let c_chirho = self.cells_chirho[cells_chirho[2].0];
-
-                // Forward: c = a + b
-                if let (Some(a_iv_chirho), Some(b_iv_chirho)) =
-                    (a_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
-                {
-                    let result_chirho = a_iv_chirho.add_chirho(b_iv_chirho);
-                    self.add_info_chirho(
-                        cells_chirho[2],
-                        NumericInfoChirho::IntervalChirho(result_chirho),
-                    );
-                }
-
-                // Backward: a = c - b
-                if let (Some(c_iv_chirho), Some(b_iv_chirho)) =
-                    (c_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
-                {
-                    let result_chirho = c_iv_chirho.sub_chirho(b_iv_chirho);
-                    self.add_info_chirho(
-                        cells_chirho[0],
-                        NumericInfoChirho::IntervalChirho(result_chirho),
-                    );
-                }
-
-                // Backward: b = c - a
-                if let (Some(c_iv_chirho), Some(a_iv_chirho)) =
-                    (c_chirho.as_interval_chirho(), a_chirho.as_interval_chirho())
-                {
-                    let result_chirho = c_iv_chirho.sub_chirho(a_iv_chirho);
-                    self.add_info_chirho(
-                        cells_chirho[1],
-                        NumericInfoChirho::IntervalChirho(result_chirho),
-                    );
-                }
+                self.run_ternary_chirho(
+                    &cells_chirho,
+                    IntervalChirho::add_chirho,
+                    IntervalChirho::sub_chirho,
+                    IntervalChirho::sub_chirho,
+                );
             }
-
+            PropagatorTypeChirho::SubtractorChirho => {
+                self.run_ternary_chirho(
+                    &cells_chirho,
+                    IntervalChirho::sub_chirho,
+                    IntervalChirho::add_chirho,
+                    |c_chirho, a_chirho| a_chirho.sub_chirho(c_chirho),
+                );
+            }
             PropagatorTypeChirho::MultiplierChirho => {
-                let a_chirho = self.cells_chirho[cells_chirho[0].0];
-                let b_chirho = self.cells_chirho[cells_chirho[1].0];
-                let c_chirho = self.cells_chirho[cells_chirho[2].0];
-
-                // Forward: c = a * b
-                if let (Some(a_iv_chirho), Some(b_iv_chirho)) =
-                    (a_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
-                {
-                    let result_chirho = a_iv_chirho.mul_chirho(b_iv_chirho);
-                    self.add_info_chirho(
-                        cells_chirho[2],
-                        NumericInfoChirho::IntervalChirho(result_chirho),
-                    );
-                }
-
-                // Backward: a = c / b (div returns interval, may be empty if zero in divisor)
-                if let (Some(c_iv_chirho), Some(b_iv_chirho)) =
-                    (c_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
-                {
-                    let result_chirho = c_iv_chirho.div_chirho(b_iv_chirho);
-                    if !result_chirho.is_empty_chirho() {
-                        self.add_info_chirho(
-                            cells_chirho[0],
-                            NumericInfoChirho::IntervalChirho(result_chirho),
-                        );
-                    }
-                }
-
-                // Backward: b = c / a (div returns interval, may be empty if zero in divisor)
-                if let (Some(c_iv_chirho), Some(a_iv_chirho)) =
-                    (c_chirho.as_interval_chirho(), a_chirho.as_interval_chirho())
-                {
-                    let result_chirho = c_iv_chirho.div_chirho(a_iv_chirho);
-                    if !result_chirho.is_empty_chirho() {
-                        self.add_info_chirho(
-                            cells_chirho[1],
-                            NumericInfoChirho::IntervalChirho(result_chirho),
-                        );
-                    }
-                }
+                self.run_ternary_with_guard_chirho(
+                    &cells_chirho,
+                    IntervalChirho::mul_chirho,
+                    IntervalChirho::div_chirho,
+                    IntervalChirho::div_chirho,
+                );
+            }
+            PropagatorTypeChirho::DividerChirho => {
+                self.run_ternary_with_guard_chirho(
+                    &cells_chirho,
+                    IntervalChirho::div_chirho,
+                    IntervalChirho::mul_chirho,
+                    |c_chirho, a_chirho| a_chirho.div_chirho(c_chirho),
+                );
             }
 
+            // Binary propagators (a, b)
             PropagatorTypeChirho::SquarerChirho => {
-                let a_chirho = self.cells_chirho[cells_chirho[0].0];
-                let b_chirho = self.cells_chirho[cells_chirho[1].0];
-
-                // Forward: b = a²
-                if let Some(a_iv_chirho) = a_chirho.as_interval_chirho() {
-                    let result_chirho = a_iv_chirho.square_chirho();
-                    self.add_info_chirho(
-                        cells_chirho[1],
-                        NumericInfoChirho::IntervalChirho(result_chirho),
-                    );
-                }
-
-                // Backward: a = √b (sqrt returns interval, may be empty if negative)
-                if let Some(b_iv_chirho) = b_chirho.as_interval_chirho() {
-                    let result_chirho = b_iv_chirho.sqrt_chirho();
-                    if !result_chirho.is_empty_chirho() {
-                        self.add_info_chirho(
-                            cells_chirho[0],
-                            NumericInfoChirho::IntervalChirho(result_chirho),
-                        );
-                    }
-                }
+                self.run_binary_with_guard_chirho(
+                    &cells_chirho,
+                    IntervalChirho::square_chirho,
+                    IntervalChirho::sqrt_chirho,
+                );
             }
-
             PropagatorTypeChirho::SqrterChirho => {
-                let a_chirho = self.cells_chirho[cells_chirho[0].0];
-                let b_chirho = self.cells_chirho[cells_chirho[1].0];
+                self.run_binary_with_guard_chirho(
+                    &cells_chirho,
+                    IntervalChirho::sqrt_chirho,
+                    IntervalChirho::square_chirho,
+                );
+            }
+            PropagatorTypeChirho::AbsoluterChirho => {
+                self.run_binary_absoluter_chirho(&cells_chirho);
+            }
+            PropagatorTypeChirho::NegaterChirho => {
+                self.run_binary_chirho(
+                    &cells_chirho,
+                    IntervalChirho::neg_chirho,
+                    IntervalChirho::neg_chirho,
+                );
+            }
+        }
+    }
 
-                // Forward: b = √a (sqrt returns interval, may be empty if negative)
-                if let Some(a_iv_chirho) = a_chirho.as_interval_chirho() {
-                    let result_chirho = a_iv_chirho.sqrt_chirho();
-                    if !result_chirho.is_empty_chirho() {
-                        self.add_info_chirho(
-                            cells_chirho[1],
-                            NumericInfoChirho::IntervalChirho(result_chirho),
-                        );
-                    }
-                }
+    // ========================================================================
+    // HELPER METHODS FOR RUNNING PROPAGATORS
+    // ========================================================================
 
-                // Backward: a = b²
-                if let Some(b_iv_chirho) = b_chirho.as_interval_chirho() {
-                    let result_chirho = b_iv_chirho.square_chirho();
-                    self.add_info_chirho(
-                        cells_chirho[0],
-                        NumericInfoChirho::IntervalChirho(result_chirho),
-                    );
-                }
+    /// Runs a ternary propagator: op(a, b) = c (bidirectional).
+    fn run_ternary_chirho<F, G, H>(
+        &mut self,
+        cells_chirho: &[CellIdChirho],
+        forward_chirho: F,
+        backward_a_chirho: G,
+        backward_b_chirho: H,
+    ) where
+        F: Fn(&IntervalChirho, &IntervalChirho) -> IntervalChirho,
+        G: Fn(&IntervalChirho, &IntervalChirho) -> IntervalChirho,
+        H: Fn(&IntervalChirho, &IntervalChirho) -> IntervalChirho,
+    {
+        let a_chirho = self.cells_chirho[cells_chirho[0].0];
+        let b_chirho = self.cells_chirho[cells_chirho[1].0];
+        let c_chirho = self.cells_chirho[cells_chirho[2].0];
+
+        // Forward: c = op(a, b)
+        if let (Some(a_iv_chirho), Some(b_iv_chirho)) =
+            (a_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
+        {
+            let result_chirho = forward_chirho(a_iv_chirho, b_iv_chirho);
+            self.add_info_chirho(cells_chirho[2], NumericInfoChirho::IntervalChirho(result_chirho));
+        }
+
+        // Backward: a = inv_op(c, b)
+        if let (Some(c_iv_chirho), Some(b_iv_chirho)) =
+            (c_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
+        {
+            let result_chirho = backward_a_chirho(c_iv_chirho, b_iv_chirho);
+            self.add_info_chirho(cells_chirho[0], NumericInfoChirho::IntervalChirho(result_chirho));
+        }
+
+        // Backward: b = inv_op(c, a)
+        if let (Some(c_iv_chirho), Some(a_iv_chirho)) =
+            (c_chirho.as_interval_chirho(), a_chirho.as_interval_chirho())
+        {
+            let result_chirho = backward_b_chirho(c_iv_chirho, a_iv_chirho);
+            self.add_info_chirho(cells_chirho[1], NumericInfoChirho::IntervalChirho(result_chirho));
+        }
+    }
+
+    /// Runs a ternary propagator with empty-interval guards for division-like ops.
+    fn run_ternary_with_guard_chirho<F, G, H>(
+        &mut self,
+        cells_chirho: &[CellIdChirho],
+        forward_chirho: F,
+        backward_a_chirho: G,
+        backward_b_chirho: H,
+    ) where
+        F: Fn(&IntervalChirho, &IntervalChirho) -> IntervalChirho,
+        G: Fn(&IntervalChirho, &IntervalChirho) -> IntervalChirho,
+        H: Fn(&IntervalChirho, &IntervalChirho) -> IntervalChirho,
+    {
+        let a_chirho = self.cells_chirho[cells_chirho[0].0];
+        let b_chirho = self.cells_chirho[cells_chirho[1].0];
+        let c_chirho = self.cells_chirho[cells_chirho[2].0];
+
+        // Forward: c = op(a, b)
+        if let (Some(a_iv_chirho), Some(b_iv_chirho)) =
+            (a_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
+        {
+            let result_chirho = forward_chirho(a_iv_chirho, b_iv_chirho);
+            if !result_chirho.is_empty_chirho() {
+                self.add_info_chirho(cells_chirho[2], NumericInfoChirho::IntervalChirho(result_chirho));
+            }
+        }
+
+        // Backward: a = inv_op(c, b)
+        if let (Some(c_iv_chirho), Some(b_iv_chirho)) =
+            (c_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
+        {
+            let result_chirho = backward_a_chirho(c_iv_chirho, b_iv_chirho);
+            if !result_chirho.is_empty_chirho() {
+                self.add_info_chirho(cells_chirho[0], NumericInfoChirho::IntervalChirho(result_chirho));
+            }
+        }
+
+        // Backward: b = inv_op(c, a)
+        if let (Some(c_iv_chirho), Some(a_iv_chirho)) =
+            (c_chirho.as_interval_chirho(), a_chirho.as_interval_chirho())
+        {
+            let result_chirho = backward_b_chirho(c_iv_chirho, a_iv_chirho);
+            if !result_chirho.is_empty_chirho() {
+                self.add_info_chirho(cells_chirho[1], NumericInfoChirho::IntervalChirho(result_chirho));
+            }
+        }
+    }
+
+    /// Runs a binary propagator: op(a) = b (bidirectional).
+    fn run_binary_chirho<F, G>(
+        &mut self,
+        cells_chirho: &[CellIdChirho],
+        forward_chirho: F,
+        backward_chirho: G,
+    ) where
+        F: Fn(&IntervalChirho) -> IntervalChirho,
+        G: Fn(&IntervalChirho) -> IntervalChirho,
+    {
+        let a_chirho = self.cells_chirho[cells_chirho[0].0];
+        let b_chirho = self.cells_chirho[cells_chirho[1].0];
+
+        // Forward: b = op(a)
+        if let Some(a_iv_chirho) = a_chirho.as_interval_chirho() {
+            let result_chirho = forward_chirho(a_iv_chirho);
+            self.add_info_chirho(cells_chirho[1], NumericInfoChirho::IntervalChirho(result_chirho));
+        }
+
+        // Backward: a = inv_op(b)
+        if let Some(b_iv_chirho) = b_chirho.as_interval_chirho() {
+            let result_chirho = backward_chirho(b_iv_chirho);
+            self.add_info_chirho(cells_chirho[0], NumericInfoChirho::IntervalChirho(result_chirho));
+        }
+    }
+
+    /// Runs a binary propagator with empty-interval guard.
+    fn run_binary_with_guard_chirho<F, G>(
+        &mut self,
+        cells_chirho: &[CellIdChirho],
+        forward_chirho: F,
+        backward_chirho: G,
+    ) where
+        F: Fn(&IntervalChirho) -> IntervalChirho,
+        G: Fn(&IntervalChirho) -> IntervalChirho,
+    {
+        let a_chirho = self.cells_chirho[cells_chirho[0].0];
+        let b_chirho = self.cells_chirho[cells_chirho[1].0];
+
+        // Forward: b = op(a)
+        if let Some(a_iv_chirho) = a_chirho.as_interval_chirho() {
+            let result_chirho = forward_chirho(a_iv_chirho);
+            if !result_chirho.is_empty_chirho() {
+                self.add_info_chirho(cells_chirho[1], NumericInfoChirho::IntervalChirho(result_chirho));
+            }
+        }
+
+        // Backward: a = inv_op(b)
+        if let Some(b_iv_chirho) = b_chirho.as_interval_chirho() {
+            let result_chirho = backward_chirho(b_iv_chirho);
+            if !result_chirho.is_empty_chirho() {
+                self.add_info_chirho(cells_chirho[0], NumericInfoChirho::IntervalChirho(result_chirho));
+            }
+        }
+    }
+
+    /// Special handler for absolute value (non-invertible).
+    fn run_binary_absoluter_chirho(&mut self, cells_chirho: &[CellIdChirho]) {
+        let a_chirho = self.cells_chirho[cells_chirho[0].0];
+        let b_chirho = self.cells_chirho[cells_chirho[1].0];
+
+        // Forward: b = |a|
+        if let Some(a_iv_chirho) = a_chirho.as_interval_chirho() {
+            let result_chirho = a_iv_chirho.abs_chirho();
+            self.add_info_chirho(cells_chirho[1], NumericInfoChirho::IntervalChirho(result_chirho));
+        }
+
+        // Backward: a could be in [-b, -b_lo] or [b_lo, b] - constrain only
+        if let (Some(a_iv_chirho), Some(b_iv_chirho)) =
+            (a_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
+        {
+            // If |a| = b, then a is in [-b_hi, b_hi] intersected with current a
+            let bound_chirho = b_iv_chirho.hi_chirho.max(b_iv_chirho.lo_chirho.abs());
+            let constrained_chirho = IntervalChirho::new_chirho(-bound_chirho, bound_chirho);
+            let result_chirho = a_iv_chirho.intersect_chirho(&constrained_chirho);
+            if !result_chirho.is_empty_chirho() {
+                self.add_info_chirho(cells_chirho[0], NumericInfoChirho::IntervalChirho(result_chirho));
             }
         }
     }
