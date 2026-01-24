@@ -48,6 +48,8 @@ path = "examples/electrical_chirho.rs"
 [dependencies]
 # Optional: Arena allocation for high-performance mode
 typed-arena = { version = "2.0", optional = true }
+# Optional: Parallel propagation
+rayon = { version = "1.10", optional = true }
 
 [dev-dependencies]
 criterion = "0.5"
@@ -59,6 +61,8 @@ default = []
 kani = []
 # High-performance arena-based cells (reduces Rc overhead)
 arena = ["typed-arena"]
+# Parallel propagation using rayon
+parallel = ["rayon"]
 
 [[bench]]
 name = "propagator_bench_chirho"

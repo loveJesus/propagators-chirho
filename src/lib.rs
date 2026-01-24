@@ -148,6 +148,7 @@
 pub mod amb_chirho;
 pub mod cell_chirho;
 pub mod constraint_system_chirho;
+pub mod finite_domain_chirho;
 pub mod interval_chirho;
 pub mod lattice_chirho;
 pub mod propagator_chirho;
@@ -178,6 +179,9 @@ pub use worldview_chirho::WorldviewChirho;
 pub use lattice_chirho::{
     LatticeChirho, BoundedLatticeChirho, PropagatorFnChirho, PropagatorComposeChirho,
     SupportedValueChirho, AddPropagatorChirho, MulPropagatorChirho, SquarePropagatorChirho,
+};
+pub use finite_domain_chirho::{
+    FiniteDomainChirho, AllDifferentChirho, LessThanChirho, EqualsChirho, NotEqualsChirho,
 };
 
 /// Prelude module for convenient imports.
