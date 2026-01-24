@@ -85,6 +85,197 @@ pub trait PropagatorChirho {
 }
 
 // ============================================================================
+// PROPAGATOR MACROS - Eliminate boilerplate for common patterns
+// ============================================================================
+
+/// Macro for generating ternary (3-cell) propagators with full bidirectional support.
+///
+/// This eliminates the boilerplate for propagators of the form `op(a, b) = c`
+/// that support forward and both backward directions.
+///
+/// # Arguments
+///
+/// * `$name_chirho` - The struct name (e.g., `IntervalAdderChirho`)
+/// * `$name_str_chirho` - The name string for debugging (e.g., `"interval_adder"`)
+/// * `$doc_chirho` - Documentation string
+/// * `forward_body_chirho` - Code block for forward propagation (a, b -> c)
+/// * `backward_a_body_chirho` - Code block for backward propagation (c, b -> a)
+/// * `backward_b_body_chirho` - Code block for backward propagation (c, a -> b)
+macro_rules! ternary_propagator_chirho {
+    (
+        $(#[$attr_chirho:meta])*
+        $name_chirho:ident,
+        $name_str_chirho:expr,
+        forward: |$a_fwd_chirho:ident, $b_fwd_chirho:ident| $forward_body_chirho:expr,
+        backward_a: |$c_ba_chirho:ident, $b_ba_chirho:ident| $backward_a_body_chirho:expr,
+        backward_b: |$c_bb_chirho:ident, $a_bb_chirho:ident| $backward_b_body_chirho:expr
+    ) => {
+        $(#[$attr_chirho])*
+        pub struct $name_chirho {
+            id_chirho: usize,
+            a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+            b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+            c_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        }
+
+        impl $name_chirho {
+            /// Creates and installs this propagator, connecting it to the given cells.
+            pub fn install_chirho(
+                a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+                b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+                c_chirho: Rc<CellChirho<NumericInfoChirho>>,
+                scheduler_chirho: &SchedulerChirho,
+            ) -> Rc<Self> {
+                let propagator_chirho = Rc::new(Self {
+                    id_chirho: next_id_chirho(),
+                    a_chirho: a_chirho.clone(),
+                    b_chirho: b_chirho.clone(),
+                    c_chirho: c_chirho.clone(),
+                });
+
+                a_chirho.add_neighbor_chirho(propagator_chirho.clone());
+                b_chirho.add_neighbor_chirho(propagator_chirho.clone());
+                c_chirho.add_neighbor_chirho(propagator_chirho.clone());
+
+                scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
+
+                propagator_chirho
+            }
+        }
+
+        impl PropagatorChirho for $name_chirho {
+            fn id_chirho(&self) -> usize {
+                self.id_chirho
+            }
+
+            fn name_chirho(&self) -> &str {
+                $name_str_chirho
+            }
+
+            fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
+                let a_content_chirho = self.a_chirho.content_chirho();
+                let b_content_chirho = self.b_chirho.content_chirho();
+                let c_content_chirho = self.c_chirho.content_chirho();
+
+                // Forward: c = op(a, b)
+                if let (
+                    NumericInfoChirho::IntervalChirho($a_fwd_chirho),
+                    NumericInfoChirho::IntervalChirho($b_fwd_chirho),
+                ) = (&a_content_chirho, &b_content_chirho)
+                {
+                    let c_new_chirho = $forward_body_chirho;
+                    self.c_chirho.add_content_chirho(
+                        NumericInfoChirho::IntervalChirho(c_new_chirho),
+                        scheduler_chirho,
+                    );
+                }
+
+                // Backward: a = inverse_op(c, b)
+                if let (
+                    NumericInfoChirho::IntervalChirho($c_ba_chirho),
+                    NumericInfoChirho::IntervalChirho($b_ba_chirho),
+                ) = (&c_content_chirho, &b_content_chirho)
+                {
+                    let a_new_chirho = $backward_a_body_chirho;
+                    self.a_chirho.add_content_chirho(
+                        NumericInfoChirho::IntervalChirho(a_new_chirho),
+                        scheduler_chirho,
+                    );
+                }
+
+                // Backward: b = inverse_op(c, a)
+                if let (
+                    NumericInfoChirho::IntervalChirho($c_bb_chirho),
+                    NumericInfoChirho::IntervalChirho($a_bb_chirho),
+                ) = (&c_content_chirho, &a_content_chirho)
+                {
+                    let b_new_chirho = $backward_b_body_chirho;
+                    self.b_chirho.add_content_chirho(
+                        NumericInfoChirho::IntervalChirho(b_new_chirho),
+                        scheduler_chirho,
+                    );
+                }
+            }
+        }
+    };
+}
+
+/// Macro for generating binary (2-cell) propagators with bidirectional support.
+///
+/// This eliminates the boilerplate for propagators of the form `op(a) = b`.
+macro_rules! binary_propagator_chirho {
+    (
+        $(#[$attr_chirho:meta])*
+        $name_chirho:ident,
+        $name_str_chirho:expr,
+        forward: |$a_fwd_chirho:ident| $forward_body_chirho:expr,
+        backward: |$b_bwd_chirho:ident| $backward_body_chirho:expr
+    ) => {
+        $(#[$attr_chirho])*
+        pub struct $name_chirho {
+            id_chirho: usize,
+            a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+            b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        }
+
+        impl $name_chirho {
+            /// Creates and installs this propagator, connecting it to the given cells.
+            pub fn install_chirho(
+                a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+                b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+                scheduler_chirho: &SchedulerChirho,
+            ) -> Rc<Self> {
+                let propagator_chirho = Rc::new(Self {
+                    id_chirho: next_id_chirho(),
+                    a_chirho: a_chirho.clone(),
+                    b_chirho: b_chirho.clone(),
+                });
+
+                a_chirho.add_neighbor_chirho(propagator_chirho.clone());
+                b_chirho.add_neighbor_chirho(propagator_chirho.clone());
+
+                scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
+
+                propagator_chirho
+            }
+        }
+
+        impl PropagatorChirho for $name_chirho {
+            fn id_chirho(&self) -> usize {
+                self.id_chirho
+            }
+
+            fn name_chirho(&self) -> &str {
+                $name_str_chirho
+            }
+
+            fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
+                let a_content_chirho = self.a_chirho.content_chirho();
+                let b_content_chirho = self.b_chirho.content_chirho();
+
+                // Forward: b = op(a)
+                if let NumericInfoChirho::IntervalChirho($a_fwd_chirho) = &a_content_chirho {
+                    let b_new_chirho = $forward_body_chirho;
+                    self.b_chirho.add_content_chirho(
+                        NumericInfoChirho::IntervalChirho(b_new_chirho),
+                        scheduler_chirho,
+                    );
+                }
+
+                // Backward: a = inverse_op(b)
+                if let NumericInfoChirho::IntervalChirho($b_bwd_chirho) = &b_content_chirho {
+                    let a_new_chirho = $backward_body_chirho;
+                    self.a_chirho.add_content_chirho(
+                        NumericInfoChirho::IntervalChirho(a_new_chirho),
+                        scheduler_chirho,
+                    );
+                }
+            }
+        }
+    };
+}
+
+// ============================================================================
 // CONSTANT PROPAGATOR
 // ============================================================================
 
@@ -149,485 +340,113 @@ impl PropagatorChirho for ConstantChirho {
 // INTERVAL ADDER: a + b = c
 // ============================================================================
 
-/// A bidirectional propagator for addition: `a + b = c`.
-///
-/// This propagator works in all three directions:
-/// - Given `a` and `b`, computes `c = a + b`
-/// - Given `a` and `c`, computes `b = c - a`
-/// - Given `b` and `c`, computes `a = c - b`
-///
-/// # Interval Arithmetic
-///
-/// For intervals:
-/// - `[a_lo, a_hi] + [b_lo, b_hi] = [a_lo + b_lo, a_hi + b_hi]`
-/// - `[c_lo, c_hi] - [a_lo, a_hi] = [c_lo - a_hi, c_hi - a_lo]`
-///
-/// # Example
-///
-/// ```
-/// use propagators_chirho::{
-///     IntervalAdderChirho, CellChirho, NumericInfoChirho, SchedulerChirho
-/// };
-///
-/// let scheduler_chirho = SchedulerChirho::new_chirho();
-/// let a_chirho = CellChirho::new_chirho("a");
-/// let b_chirho = CellChirho::new_chirho("b");
-/// let c_chirho = CellChirho::new_chirho("c");
-///
-/// // Set up a + b = c
-/// IntervalAdderChirho::install_chirho(
-///     a_chirho.clone(),
-///     b_chirho.clone(),
-///     c_chirho.clone(),
-///     &scheduler_chirho
-/// );
-///
-/// // Given a=3 and b=4, compute c
-/// a_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(3.0), &scheduler_chirho);
-/// b_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(4.0), &scheduler_chirho);
-/// scheduler_chirho.run_chirho();
-///
-/// let c_content_chirho = c_chirho.content_chirho();
-/// let c_interval_chirho = c_content_chirho.as_interval_chirho().unwrap();
-/// assert!((c_interval_chirho.lo_chirho - 7.0).abs() < 1e-10);
-/// ```
-pub struct IntervalAdderChirho {
-    id_chirho: usize,
-    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-}
-
-impl IntervalAdderChirho {
-    /// Creates and installs an adder propagator.
+ternary_propagator_chirho! {
+    /// A bidirectional propagator for addition: `a + b = c`.
     ///
-    /// This registers the propagator with all three cells and alerts
-    /// it via the scheduler.
-    pub fn install_chirho(
-        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        scheduler_chirho: &SchedulerChirho,
-    ) -> Rc<Self> {
-        let propagator_chirho = Rc::new(Self {
-            id_chirho: next_id_chirho(),
-            a_chirho: a_chirho.clone(),
-            b_chirho: b_chirho.clone(),
-            c_chirho: c_chirho.clone(),
-        });
-
-        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        c_chirho.add_neighbor_chirho(propagator_chirho.clone());
-
-        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
-
-        propagator_chirho
-    }
-}
-
-impl PropagatorChirho for IntervalAdderChirho {
-    fn id_chirho(&self) -> usize {
-        self.id_chirho
-    }
-
-    fn name_chirho(&self) -> &str {
-        "interval_adder"
-    }
-
-    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
-        let a_chirho = self.a_chirho.content_chirho();
-        let b_chirho = self.b_chirho.content_chirho();
-        let c_chirho = self.c_chirho.content_chirho();
-
-        // Forward: c = a + b
-        if let (
-            NumericInfoChirho::IntervalChirho(a_int_chirho),
-            NumericInfoChirho::IntervalChirho(b_int_chirho),
-        ) = (&a_chirho, &b_chirho)
-        {
-            let c_new_chirho = a_int_chirho.add_chirho(b_int_chirho);
-            self.c_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(c_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: a = c - b
-        if let (
-            NumericInfoChirho::IntervalChirho(c_int_chirho),
-            NumericInfoChirho::IntervalChirho(b_int_chirho),
-        ) = (&c_chirho, &b_chirho)
-        {
-            let a_new_chirho = c_int_chirho.sub_chirho(b_int_chirho);
-            self.a_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(a_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: b = c - a
-        if let (
-            NumericInfoChirho::IntervalChirho(c_int_chirho),
-            NumericInfoChirho::IntervalChirho(a_int_chirho),
-        ) = (&c_chirho, &a_chirho)
-        {
-            let b_new_chirho = c_int_chirho.sub_chirho(a_int_chirho);
-            self.b_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(b_new_chirho),
-                scheduler_chirho,
-            );
-        }
-    }
+    /// This propagator works in all three directions:
+    /// - Given `a` and `b`, computes `c = a + b`
+    /// - Given `a` and `c`, computes `b = c - a`
+    /// - Given `b` and `c`, computes `a = c - b`
+    ///
+    /// # Interval Arithmetic
+    ///
+    /// For intervals:
+    /// - `[a_lo, a_hi] + [b_lo, b_hi] = [a_lo + b_lo, a_hi + b_hi]`
+    /// - `[c_lo, c_hi] - [a_lo, a_hi] = [c_lo - a_hi, c_hi - a_lo]`
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// use propagators_chirho::{
+    ///     IntervalAdderChirho, CellChirho, NumericInfoChirho, SchedulerChirho
+    /// };
+    ///
+    /// let scheduler_chirho = SchedulerChirho::new_chirho();
+    /// let a_chirho = CellChirho::new_chirho("a");
+    /// let b_chirho = CellChirho::new_chirho("b");
+    /// let c_chirho = CellChirho::new_chirho("c");
+    ///
+    /// // Set up a + b = c
+    /// IntervalAdderChirho::install_chirho(
+    ///     a_chirho.clone(),
+    ///     b_chirho.clone(),
+    ///     c_chirho.clone(),
+    ///     &scheduler_chirho
+    /// );
+    ///
+    /// // Given a=3 and b=4, compute c
+    /// a_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(3.0), &scheduler_chirho);
+    /// b_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(4.0), &scheduler_chirho);
+    /// scheduler_chirho.run_chirho();
+    ///
+    /// let c_content_chirho = c_chirho.content_chirho();
+    /// let c_interval_chirho = c_content_chirho.as_interval_chirho().unwrap();
+    /// assert!((c_interval_chirho.lo_chirho - 7.0).abs() < 1e-10);
+    /// ```
+    IntervalAdderChirho,
+    "interval_adder",
+    forward: |a_chirho, b_chirho| a_chirho.add_chirho(b_chirho),
+    backward_a: |c_chirho, b_chirho| c_chirho.sub_chirho(b_chirho),
+    backward_b: |c_chirho, a_chirho| c_chirho.sub_chirho(a_chirho)
 }
 
 // ============================================================================
 // INTERVAL SUBTRACTOR: a - b = c
 // ============================================================================
 
-/// A bidirectional propagator for subtraction: `a - b = c`.
-pub struct IntervalSubtractorChirho {
-    id_chirho: usize,
-    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-}
-
-impl IntervalSubtractorChirho {
-    /// Creates and installs a subtractor propagator.
-    pub fn install_chirho(
-        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        scheduler_chirho: &SchedulerChirho,
-    ) -> Rc<Self> {
-        let propagator_chirho = Rc::new(Self {
-            id_chirho: next_id_chirho(),
-            a_chirho: a_chirho.clone(),
-            b_chirho: b_chirho.clone(),
-            c_chirho: c_chirho.clone(),
-        });
-
-        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        c_chirho.add_neighbor_chirho(propagator_chirho.clone());
-
-        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
-
-        propagator_chirho
-    }
-}
-
-impl PropagatorChirho for IntervalSubtractorChirho {
-    fn id_chirho(&self) -> usize {
-        self.id_chirho
-    }
-
-    fn name_chirho(&self) -> &str {
-        "interval_subtractor"
-    }
-
-    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
-        let a_chirho = self.a_chirho.content_chirho();
-        let b_chirho = self.b_chirho.content_chirho();
-        let c_chirho = self.c_chirho.content_chirho();
-
-        // Forward: c = a - b
-        if let (
-            NumericInfoChirho::IntervalChirho(a_int_chirho),
-            NumericInfoChirho::IntervalChirho(b_int_chirho),
-        ) = (&a_chirho, &b_chirho)
-        {
-            let c_new_chirho = a_int_chirho.sub_chirho(b_int_chirho);
-            self.c_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(c_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: a = c + b
-        if let (
-            NumericInfoChirho::IntervalChirho(c_int_chirho),
-            NumericInfoChirho::IntervalChirho(b_int_chirho),
-        ) = (&c_chirho, &b_chirho)
-        {
-            let a_new_chirho = c_int_chirho.add_chirho(b_int_chirho);
-            self.a_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(a_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: b = a - c
-        if let (
-            NumericInfoChirho::IntervalChirho(a_int_chirho),
-            NumericInfoChirho::IntervalChirho(c_int_chirho),
-        ) = (&a_chirho, &c_chirho)
-        {
-            let b_new_chirho = a_int_chirho.sub_chirho(c_int_chirho);
-            self.b_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(b_new_chirho),
-                scheduler_chirho,
-            );
-        }
-    }
+ternary_propagator_chirho! {
+    /// A bidirectional propagator for subtraction: `a - b = c`.
+    IntervalSubtractorChirho,
+    "interval_subtractor",
+    forward: |a_chirho, b_chirho| a_chirho.sub_chirho(b_chirho),
+    backward_a: |c_chirho, b_chirho| c_chirho.add_chirho(b_chirho),
+    backward_b: |a_chirho, c_chirho| a_chirho.sub_chirho(c_chirho)
 }
 
 // ============================================================================
 // INTERVAL MULTIPLIER: a * b = c
 // ============================================================================
 
-/// A bidirectional propagator for multiplication: `a * b = c`.
-///
-/// Works in all three directions using interval arithmetic.
-pub struct IntervalMultiplierChirho {
-    id_chirho: usize,
-    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-}
-
-impl IntervalMultiplierChirho {
-    /// Creates and installs a multiplier propagator.
-    pub fn install_chirho(
-        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        scheduler_chirho: &SchedulerChirho,
-    ) -> Rc<Self> {
-        let propagator_chirho = Rc::new(Self {
-            id_chirho: next_id_chirho(),
-            a_chirho: a_chirho.clone(),
-            b_chirho: b_chirho.clone(),
-            c_chirho: c_chirho.clone(),
-        });
-
-        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        c_chirho.add_neighbor_chirho(propagator_chirho.clone());
-
-        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
-
-        propagator_chirho
-    }
-}
-
-impl PropagatorChirho for IntervalMultiplierChirho {
-    fn id_chirho(&self) -> usize {
-        self.id_chirho
-    }
-
-    fn name_chirho(&self) -> &str {
-        "interval_multiplier"
-    }
-
-    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
-        let a_chirho = self.a_chirho.content_chirho();
-        let b_chirho = self.b_chirho.content_chirho();
-        let c_chirho = self.c_chirho.content_chirho();
-
-        // Forward: c = a * b
-        if let (
-            NumericInfoChirho::IntervalChirho(a_int_chirho),
-            NumericInfoChirho::IntervalChirho(b_int_chirho),
-        ) = (&a_chirho, &b_chirho)
-        {
-            let c_new_chirho = a_int_chirho.mul_chirho(b_int_chirho);
-            self.c_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(c_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: a = c / b
-        if let (
-            NumericInfoChirho::IntervalChirho(c_int_chirho),
-            NumericInfoChirho::IntervalChirho(b_int_chirho),
-        ) = (&c_chirho, &b_chirho)
-        {
-            let a_new_chirho = c_int_chirho.div_chirho(b_int_chirho);
-            self.a_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(a_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: b = c / a
-        if let (
-            NumericInfoChirho::IntervalChirho(c_int_chirho),
-            NumericInfoChirho::IntervalChirho(a_int_chirho),
-        ) = (&c_chirho, &a_chirho)
-        {
-            let b_new_chirho = c_int_chirho.div_chirho(a_int_chirho);
-            self.b_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(b_new_chirho),
-                scheduler_chirho,
-            );
-        }
-    }
+ternary_propagator_chirho! {
+    /// A bidirectional propagator for multiplication: `a * b = c`.
+    ///
+    /// Works in all three directions using interval arithmetic.
+    IntervalMultiplierChirho,
+    "interval_multiplier",
+    forward: |a_chirho, b_chirho| a_chirho.mul_chirho(b_chirho),
+    backward_a: |c_chirho, b_chirho| c_chirho.div_chirho(b_chirho),
+    backward_b: |c_chirho, a_chirho| c_chirho.div_chirho(a_chirho)
 }
 
 // ============================================================================
 // INTERVAL DIVIDER: a / b = c
 // ============================================================================
 
-/// A bidirectional propagator for division: `a / b = c`.
-pub struct IntervalDividerChirho {
-    id_chirho: usize,
-    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-}
-
-impl IntervalDividerChirho {
-    /// Creates and installs a divider propagator.
-    pub fn install_chirho(
-        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        scheduler_chirho: &SchedulerChirho,
-    ) -> Rc<Self> {
-        let propagator_chirho = Rc::new(Self {
-            id_chirho: next_id_chirho(),
-            a_chirho: a_chirho.clone(),
-            b_chirho: b_chirho.clone(),
-            c_chirho: c_chirho.clone(),
-        });
-
-        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        c_chirho.add_neighbor_chirho(propagator_chirho.clone());
-
-        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
-
-        propagator_chirho
-    }
-}
-
-impl PropagatorChirho for IntervalDividerChirho {
-    fn id_chirho(&self) -> usize {
-        self.id_chirho
-    }
-
-    fn name_chirho(&self) -> &str {
-        "interval_divider"
-    }
-
-    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
-        let a_chirho = self.a_chirho.content_chirho();
-        let b_chirho = self.b_chirho.content_chirho();
-        let c_chirho = self.c_chirho.content_chirho();
-
-        // Forward: c = a / b
-        if let (
-            NumericInfoChirho::IntervalChirho(a_int_chirho),
-            NumericInfoChirho::IntervalChirho(b_int_chirho),
-        ) = (&a_chirho, &b_chirho)
-        {
-            let c_new_chirho = a_int_chirho.div_chirho(b_int_chirho);
-            self.c_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(c_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: a = c * b
-        if let (
-            NumericInfoChirho::IntervalChirho(c_int_chirho),
-            NumericInfoChirho::IntervalChirho(b_int_chirho),
-        ) = (&c_chirho, &b_chirho)
-        {
-            let a_new_chirho = c_int_chirho.mul_chirho(b_int_chirho);
-            self.a_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(a_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: b = a / c
-        if let (
-            NumericInfoChirho::IntervalChirho(a_int_chirho),
-            NumericInfoChirho::IntervalChirho(c_int_chirho),
-        ) = (&a_chirho, &c_chirho)
-        {
-            let b_new_chirho = a_int_chirho.div_chirho(c_int_chirho);
-            self.b_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(b_new_chirho),
-                scheduler_chirho,
-            );
-        }
-    }
+ternary_propagator_chirho! {
+    /// A bidirectional propagator for division: `a / b = c`.
+    IntervalDividerChirho,
+    "interval_divider",
+    forward: |a_chirho, b_chirho| a_chirho.div_chirho(b_chirho),
+    backward_a: |c_chirho, b_chirho| c_chirho.mul_chirho(b_chirho),
+    backward_b: |a_chirho, c_chirho| a_chirho.div_chirho(c_chirho)
 }
 
 // ============================================================================
 // SQUARER: a² = b
 // ============================================================================
 
-/// A bidirectional propagator for squaring: `a² = b`.
-///
-/// - Forward: `b = a²`
-/// - Backward: `a = ±√b` (intersected with current `a`)
-pub struct SquarerChirho {
-    id_chirho: usize,
-    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-}
-
-impl SquarerChirho {
-    /// Creates and installs a squarer propagator.
-    pub fn install_chirho(
-        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        scheduler_chirho: &SchedulerChirho,
-    ) -> Rc<Self> {
-        let propagator_chirho = Rc::new(Self {
-            id_chirho: next_id_chirho(),
-            a_chirho: a_chirho.clone(),
-            b_chirho: b_chirho.clone(),
-        });
-
-        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
-
-        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
-
-        propagator_chirho
-    }
-}
-
-impl PropagatorChirho for SquarerChirho {
-    fn id_chirho(&self) -> usize {
-        self.id_chirho
-    }
-
-    fn name_chirho(&self) -> &str {
-        "squarer"
-    }
-
-    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
-        let a_chirho = self.a_chirho.content_chirho();
-        let b_chirho = self.b_chirho.content_chirho();
-
-        // Forward: b = a²
-        if let NumericInfoChirho::IntervalChirho(a_int_chirho) = &a_chirho {
-            let b_new_chirho = a_int_chirho.square_chirho();
-            self.b_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(b_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: a = ±√b
-        if let NumericInfoChirho::IntervalChirho(b_int_chirho) = &b_chirho {
-            let sqrt_chirho = b_int_chirho.sqrt_chirho();
-            // a could be positive or negative
-            let a_possible_chirho =
-                IntervalChirho::new_chirho(-sqrt_chirho.hi_chirho, sqrt_chirho.hi_chirho);
-            self.a_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(a_possible_chirho),
-                scheduler_chirho,
-            );
-        }
+binary_propagator_chirho! {
+    /// A bidirectional propagator for squaring: `a² = b`.
+    ///
+    /// - Forward: `b = a²`
+    /// - Backward: `a = ±√b` (intersected with current `a`)
+    SquarerChirho,
+    "squarer",
+    forward: |a_chirho| a_chirho.square_chirho(),
+    backward: |b_chirho| {
+        let sqrt_chirho = b_chirho.sqrt_chirho();
+        // a could be positive or negative
+        IntervalChirho::new_chirho(-sqrt_chirho.hi_chirho, sqrt_chirho.hi_chirho)
     }
 }
 
@@ -635,145 +454,35 @@ impl PropagatorChirho for SquarerChirho {
 // SQRTER: √a = b (square root)
 // ============================================================================
 
-/// A bidirectional propagator for square root: `√a = b`.
-pub struct SqrterChirho {
-    id_chirho: usize,
-    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-}
-
-impl SqrterChirho {
-    /// Creates and installs a square root propagator.
-    pub fn install_chirho(
-        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        scheduler_chirho: &SchedulerChirho,
-    ) -> Rc<Self> {
-        let propagator_chirho = Rc::new(Self {
-            id_chirho: next_id_chirho(),
-            a_chirho: a_chirho.clone(),
-            b_chirho: b_chirho.clone(),
-        });
-
-        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
-
-        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
-
-        propagator_chirho
-    }
-}
-
-impl PropagatorChirho for SqrterChirho {
-    fn id_chirho(&self) -> usize {
-        self.id_chirho
-    }
-
-    fn name_chirho(&self) -> &str {
-        "sqrter"
-    }
-
-    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
-        let a_chirho = self.a_chirho.content_chirho();
-        let b_chirho = self.b_chirho.content_chirho();
-
-        // Forward: b = √a
-        if let NumericInfoChirho::IntervalChirho(a_int_chirho) = &a_chirho {
-            let b_new_chirho = a_int_chirho.sqrt_chirho();
-            self.b_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(b_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: a = b²
-        if let NumericInfoChirho::IntervalChirho(b_int_chirho) = &b_chirho {
-            let a_new_chirho = b_int_chirho.square_chirho();
-            self.a_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(a_new_chirho),
-                scheduler_chirho,
-            );
-        }
-    }
+binary_propagator_chirho! {
+    /// A bidirectional propagator for square root: `√a = b`.
+    SqrterChirho,
+    "sqrter",
+    forward: |a_chirho| a_chirho.sqrt_chirho(),
+    backward: |b_chirho| b_chirho.square_chirho()
 }
 
 // ============================================================================
 // ABSOLUTER: |a| = b
 // ============================================================================
 
-/// A bidirectional propagator for absolute value: `|a| = b`.
-pub struct AbsoluterChirho {
-    id_chirho: usize,
-    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-}
-
-impl AbsoluterChirho {
-    /// Creates and installs an absolute value propagator.
-    pub fn install_chirho(
-        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        scheduler_chirho: &SchedulerChirho,
-    ) -> Rc<Self> {
-        let propagator_chirho = Rc::new(Self {
-            id_chirho: next_id_chirho(),
-            a_chirho: a_chirho.clone(),
-            b_chirho: b_chirho.clone(),
-        });
-
-        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
-
-        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
-
-        propagator_chirho
-    }
-}
-
-impl PropagatorChirho for AbsoluterChirho {
-    fn id_chirho(&self) -> usize {
-        self.id_chirho
-    }
-
-    fn name_chirho(&self) -> &str {
-        "absoluter"
-    }
-
-    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
-        let a_chirho = self.a_chirho.content_chirho();
-        let b_chirho = self.b_chirho.content_chirho();
-
-        // Forward: b = |a|
-        if let NumericInfoChirho::IntervalChirho(a_int_chirho) = &a_chirho {
-            let b_new_chirho = a_int_chirho.abs_chirho();
-            self.b_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(b_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: a ∈ [-b, b]
-        if let NumericInfoChirho::IntervalChirho(b_int_chirho) = &b_chirho {
-            // b must be non-negative
-            let b_positive_chirho =
-                b_int_chirho.intersect_chirho(&IntervalChirho::non_negative_chirho());
-            if !b_positive_chirho.is_empty_chirho() {
-                let a_new_chirho = IntervalChirho::new_chirho(
-                    -b_positive_chirho.hi_chirho,
-                    b_positive_chirho.hi_chirho,
-                );
-                self.a_chirho.add_content_chirho(
-                    NumericInfoChirho::IntervalChirho(a_new_chirho),
-                    scheduler_chirho,
-                );
-            }
-        }
+binary_propagator_chirho! {
+    /// A bidirectional propagator for absolute value: `|a| = b`.
+    AbsoluterChirho,
+    "absoluter",
+    forward: |a_chirho| a_chirho.abs_chirho(),
+    backward: |b_chirho| {
+        // |a| = b means a could be in [-b.hi, -b.lo] or [b.lo, b.hi]
+        IntervalChirho::new_chirho(-b_chirho.hi_chirho, b_chirho.hi_chirho)
     }
 }
 
 // ============================================================================
 // MAX: max(a, b) = c
 // ============================================================================
+
+// Max and Min have special backward propagation that doesn't fit the standard
+// ternary macro (they bound both a and b from c), so we keep manual implementations.
 
 /// A propagator for maximum: `max(a, b) = c`.
 pub struct MaxChirho {
