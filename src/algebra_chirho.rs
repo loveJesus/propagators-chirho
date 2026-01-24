@@ -532,6 +532,7 @@ mod tests_chirho {
     }
 
     #[test]
+    #[cfg(not(feature = "no-std"))]
     fn test_error_display_chirho() {
         let err_chirho = PropagatorErrorChirho::InvalidIntervalChirho {
             lo_chirho: 10.0,
