@@ -522,4 +522,140 @@ mod tests_chirho {
         // c could be ±5, but typically we'd constrain to positive
         assert!(!c_value_chirho.is_nothing_chirho());
     }
+
+    #[test]
+    fn test_linear_chirho() {
+        let mut system_chirho = ConstraintSystemChirho::new_chirho();
+
+        let x_chirho = system_chirho.make_cell_chirho("x");
+        let y_chirho = system_chirho.make_cell_chirho("y");
+
+        // y = 2*x + 3
+        system_chirho.add_linear_chirho(2.0, &x_chirho, 3.0, &y_chirho);
+
+        system_chirho.set_exact_chirho(&x_chirho, 5.0);
+        system_chirho.run_chirho();
+
+        let y_value_chirho = system_chirho.get_chirho(&y_chirho);
+        let y_interval_chirho = y_value_chirho.as_interval_chirho().unwrap();
+        assert!((y_interval_chirho.lo_chirho - 13.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_negater_chirho() {
+        let mut system_chirho = ConstraintSystemChirho::new_chirho();
+
+        let a_chirho = system_chirho.make_cell_chirho("a");
+        let b_chirho = system_chirho.make_cell_chirho("b");
+
+        system_chirho.add_negater_chirho(&a_chirho, &b_chirho);
+
+        system_chirho.set_exact_chirho(&a_chirho, 5.0);
+        system_chirho.run_chirho();
+
+        let b_value_chirho = system_chirho.get_chirho(&b_chirho);
+        let b_interval_chirho = b_value_chirho.as_interval_chirho().unwrap();
+        assert!((b_interval_chirho.lo_chirho - (-5.0)).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_exp_ln_chirho() {
+        let mut system_chirho = ConstraintSystemChirho::new_chirho();
+
+        let a_chirho = system_chirho.make_cell_chirho("a");
+        let b_chirho = system_chirho.make_cell_chirho("b");
+
+        // e^a = b
+        system_chirho.add_exp_chirho(&a_chirho, &b_chirho);
+
+        system_chirho.set_exact_chirho(&a_chirho, 0.0);
+        system_chirho.run_chirho();
+
+        // e^0 = 1
+        let b_value_chirho = system_chirho.get_chirho(&b_chirho);
+        let b_interval_chirho = b_value_chirho.as_interval_chirho().unwrap();
+        assert!((b_interval_chirho.lo_chirho - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_ln_chirho() {
+        let mut system_chirho = ConstraintSystemChirho::new_chirho();
+
+        let a_chirho = system_chirho.make_cell_chirho("a");
+        let b_chirho = system_chirho.make_cell_chirho("b");
+
+        // ln(a) = b
+        system_chirho.add_ln_chirho(&a_chirho, &b_chirho);
+
+        system_chirho.set_exact_chirho(&a_chirho, std::f64::consts::E);
+        system_chirho.run_chirho();
+
+        // ln(e) = 1
+        let b_value_chirho = system_chirho.get_chirho(&b_chirho);
+        let b_interval_chirho = b_value_chirho.as_interval_chirho().unwrap();
+        assert!((b_interval_chirho.lo_chirho - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_power_chirho() {
+        let mut system_chirho = ConstraintSystemChirho::new_chirho();
+
+        let a_chirho = system_chirho.make_cell_chirho("a");
+        let b_chirho = system_chirho.make_cell_chirho("b");
+
+        // a^3 = b
+        system_chirho.add_power_chirho(3, &a_chirho, &b_chirho);
+
+        system_chirho.set_exact_chirho(&a_chirho, 2.0);
+        system_chirho.run_chirho();
+
+        // 2^3 = 8
+        let b_value_chirho = system_chirho.get_chirho(&b_chirho);
+        let b_interval_chirho = b_value_chirho.as_interval_chirho().unwrap();
+        assert!((b_interval_chirho.lo_chirho - 8.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_clamp_chirho() {
+        let mut system_chirho = ConstraintSystemChirho::new_chirho();
+
+        let a_chirho = system_chirho.make_cell_chirho("a");
+        let b_chirho = system_chirho.make_cell_chirho("b");
+
+        // clamp(a, 0, 10) = b
+        system_chirho.add_clamp_chirho(&a_chirho, 0.0, 10.0, &b_chirho);
+
+        system_chirho.set_exact_chirho(&a_chirho, 15.0);
+        system_chirho.run_chirho();
+
+        // 15 clamped to [0, 10] = 10
+        let b_value_chirho = system_chirho.get_chirho(&b_chirho);
+        let b_interval_chirho = b_value_chirho.as_interval_chirho().unwrap();
+        assert!(b_interval_chirho.hi_chirho <= 10.0);
+    }
+
+    #[test]
+    fn test_max_min_chirho() {
+        let mut system_chirho = ConstraintSystemChirho::new_chirho();
+
+        let a_chirho = system_chirho.make_cell_chirho("a");
+        let b_chirho = system_chirho.make_cell_chirho("b");
+        let max_chirho = system_chirho.make_cell_chirho("max");
+        let min_chirho = system_chirho.make_cell_chirho("min");
+
+        system_chirho.add_max_chirho(&a_chirho, &b_chirho, &max_chirho);
+        system_chirho.add_min_chirho(&a_chirho, &b_chirho, &min_chirho);
+
+        system_chirho.set_exact_chirho(&a_chirho, 3.0);
+        system_chirho.set_exact_chirho(&b_chirho, 7.0);
+        system_chirho.run_chirho();
+
+        let max_value_chirho = system_chirho.get_chirho(&max_chirho);
+        let max_interval_chirho = max_value_chirho.as_interval_chirho().unwrap();
+        assert!((max_interval_chirho.lo_chirho - 7.0).abs() < 1e-10);
+
+        let min_value_chirho = system_chirho.get_chirho(&min_chirho);
+        let min_interval_chirho = min_value_chirho.as_interval_chirho().unwrap();
+        assert!((min_interval_chirho.lo_chirho - 3.0).abs() < 1e-10);
+    }
 }
