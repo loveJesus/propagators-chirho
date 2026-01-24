@@ -423,16 +423,16 @@ network_chirho.propagate_chirho();
 await init();
 
 const networkChirho = new WasmNetworkChirho();
-const aChirho = networkChirho.makeCell();
-const bChirho = networkChirho.makeCell();
-const cChirho = networkChirho.makeCell();
+const aChirho = networkChirho.makeCellChirho();
+const bChirho = networkChirho.makeCellChirho();
+const cChirho = networkChirho.makeCellChirho();
 
-networkChirho.addAdder(aChirho, bChirho, cChirho);
-networkChirho.setExact(aChirho, 3.0);
-networkChirho.setExact(bChirho, 4.0);
-networkChirho.propagate();
+networkChirho.addAdderChirho(aChirho, bChirho, cChirho);
+networkChirho.setExactChirho(aChirho, 3.0);
+networkChirho.setExactChirho(bChirho, 4.0);
+networkChirho.propagateChirho();
 
-console.log(networkChirho.getExact(cChirho)); // 7.0</code></pre>
+console.log(networkChirho.getExactChirho(cChirho)); // 7.0</code></pre>
         </section>
 
         <section>
@@ -477,35 +477,35 @@ propagators-chirho = "0.1"</code></pre>
             const cInputChirho = document.getElementById('pyth-c-chirho').value;
 
             const networkChirho = new WasmNetworkChirho();
-            const aChirho = networkChirho.makeCell();
-            const bChirho = networkChirho.makeCell();
-            const cChirho = networkChirho.makeCell();
-            const a2Chirho = networkChirho.makeCell();
-            const b2Chirho = networkChirho.makeCell();
-            const c2Chirho = networkChirho.makeCell();
+            const aChirho = networkChirho.makeCellChirho();
+            const bChirho = networkChirho.makeCellChirho();
+            const cChirho = networkChirho.makeCellChirho();
+            const a2Chirho = networkChirho.makeCellChirho();
+            const b2Chirho = networkChirho.makeCellChirho();
+            const c2Chirho = networkChirho.makeCellChirho();
 
-            networkChirho.addSquarer(aChirho, a2Chirho);
-            networkChirho.addSquarer(bChirho, b2Chirho);
-            networkChirho.addSquarer(cChirho, c2Chirho);
-            networkChirho.addAdder(a2Chirho, b2Chirho, c2Chirho);
+            networkChirho.addSquarerChirho(aChirho, a2Chirho);
+            networkChirho.addSquarerChirho(bChirho, b2Chirho);
+            networkChirho.addSquarerChirho(cChirho, c2Chirho);
+            networkChirho.addAdderChirho(a2Chirho, b2Chirho, c2Chirho);
 
-            if (aInputChirho) networkChirho.setExact(aChirho, parseFloat(aInputChirho));
-            if (bInputChirho) networkChirho.setExact(bChirho, parseFloat(bInputChirho));
-            if (cInputChirho) networkChirho.setExact(cChirho, parseFloat(cInputChirho));
+            if (aInputChirho) networkChirho.setExactChirho(aChirho, parseFloat(aInputChirho));
+            if (bInputChirho) networkChirho.setExactChirho(bChirho, parseFloat(bInputChirho));
+            if (cInputChirho) networkChirho.setExactChirho(cChirho, parseFloat(cInputChirho));
 
-            networkChirho.propagate();
+            networkChirho.propagateChirho();
 
             const resultDivChirho = document.getElementById('pyth-result-chirho');
             const resultValueChirho = document.getElementById('pyth-result-value-chirho');
             resultDivChirho.style.display = 'block';
 
-            if (networkChirho.hasContradiction()) {
+            if (networkChirho.hasContradictionChirho()) {
                 resultValueChirho.textContent = 'Contradiction! Values are inconsistent.';
                 resultValueChirho.style.color = 'var(--accent-red-chirho)';
             } else {
-                const aValChirho = networkChirho.getExact(aChirho);
-                const bValChirho = networkChirho.getExact(bChirho);
-                const cValChirho = networkChirho.getExact(cChirho);
+                const aValChirho = networkChirho.getExactChirho(aChirho);
+                const bValChirho = networkChirho.getExactChirho(bChirho);
+                const cValChirho = networkChirho.getExactChirho(cChirho);
 
                 let resultsChirho = [];
                 if (aValChirho !== undefined) resultsChirho.push('a = ' + aValChirho.toFixed(4));
@@ -531,28 +531,28 @@ propagators-chirho = "0.1"</code></pre>
             const fInputChirho = document.getElementById('temp-f-chirho').value;
 
             const networkChirho = new WasmNetworkChirho();
-            const celsiusChirho = networkChirho.makeCell();
-            const fahrenheitChirho = networkChirho.makeCell();
-            const ratioChirho = networkChirho.makeCell();
-            const scaledChirho = networkChirho.makeCell();
-            const thirtyTwoChirho = networkChirho.makeCell();
+            const celsiusChirho = networkChirho.makeCellChirho();
+            const fahrenheitChirho = networkChirho.makeCellChirho();
+            const ratioChirho = networkChirho.makeCellChirho();
+            const scaledChirho = networkChirho.makeCellChirho();
+            const thirtyTwoChirho = networkChirho.makeCellChirho();
 
-            networkChirho.setExact(ratioChirho, 1.8);
-            networkChirho.setExact(thirtyTwoChirho, 32.0);
-            networkChirho.addMultiplier(celsiusChirho, ratioChirho, scaledChirho);
-            networkChirho.addAdder(scaledChirho, thirtyTwoChirho, fahrenheitChirho);
+            networkChirho.setExactChirho(ratioChirho, 1.8);
+            networkChirho.setExactChirho(thirtyTwoChirho, 32.0);
+            networkChirho.addMultiplierChirho(celsiusChirho, ratioChirho, scaledChirho);
+            networkChirho.addAdderChirho(scaledChirho, thirtyTwoChirho, fahrenheitChirho);
 
-            if (cInputChirho) networkChirho.setExact(celsiusChirho, parseFloat(cInputChirho));
-            if (fInputChirho) networkChirho.setExact(fahrenheitChirho, parseFloat(fInputChirho));
+            if (cInputChirho) networkChirho.setExactChirho(celsiusChirho, parseFloat(cInputChirho));
+            if (fInputChirho) networkChirho.setExactChirho(fahrenheitChirho, parseFloat(fInputChirho));
 
-            networkChirho.propagate();
+            networkChirho.propagateChirho();
 
             const resultDivChirho = document.getElementById('temp-result-chirho');
             const resultValueChirho = document.getElementById('temp-result-value-chirho');
             resultDivChirho.style.display = 'block';
 
-            const cValChirho = networkChirho.getExact(celsiusChirho);
-            const fValChirho = networkChirho.getExact(fahrenheitChirho);
+            const cValChirho = networkChirho.getExactChirho(celsiusChirho);
+            const fValChirho = networkChirho.getExactChirho(fahrenheitChirho);
 
             if (cValChirho !== undefined && fValChirho !== undefined) {
                 resultValueChirho.textContent = cValChirho.toFixed(2) + '°C = ' + fValChirho.toFixed(2) + '°F';
@@ -578,12 +578,12 @@ propagators-chirho = "0.1"</code></pre>
             const aChirho = new WasmIntervalChirho(aLoChirho, aHiChirho);
             const bChirho = new WasmIntervalChirho(bLoChirho, bHiChirho);
 
-            const sumChirho = aChirho.add(bChirho);
-            const diffChirho = aChirho.sub(bChirho);
-            const prodChirho = aChirho.mul(bChirho);
-            const interChirho = aChirho.intersect(bChirho);
+            const sumChirho = aChirho.addChirho(bChirho);
+            const diffChirho = aChirho.subChirho(bChirho);
+            const prodChirho = aChirho.mulChirho(bChirho);
+            const interChirho = aChirho.intersectChirho(bChirho);
 
-            const fmtChirho = (ivChirho) => '[' + ivChirho.lo.toFixed(2) + ', ' + ivChirho.hi.toFixed(2) + ']';
+            const fmtChirho = (ivChirho) => '[' + ivChirho.lo_chirho.toFixed(2) + ', ' + ivChirho.hi_chirho.toFixed(2) + ']';
 
             document.getElementById('interval-results-chirho').textContent =
                 'A = [' + aLoChirho + ', ' + aHiChirho + ']\n' +
@@ -591,7 +591,7 @@ propagators-chirho = "0.1"</code></pre>
                 'A + B = ' + fmtChirho(sumChirho) + '\n' +
                 'A - B = ' + fmtChirho(diffChirho) + '\n' +
                 'A × B = ' + fmtChirho(prodChirho) + '\n' +
-                'A ∩ B = ' + (interChirho.isEmpty() ? '∅ (empty)' : fmtChirho(interChirho));
+                'A ∩ B = ' + (interChirho.isEmptyChirho() ? '∅ (empty)' : fmtChirho(interChirho));
         };
 
         initWasmChirho();

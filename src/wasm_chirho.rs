@@ -30,16 +30,16 @@
 //! await init();
 //!
 //! const networkChirho = new WasmNetworkChirho();
-//! const aChirho = networkChirho.makeCell();
-//! const bChirho = networkChirho.makeCell();
-//! const cChirho = networkChirho.makeCell();
+//! const aChirho = networkChirho.makeCellChirho();
+//! const bChirho = networkChirho.makeCellChirho();
+//! const cChirho = networkChirho.makeCellChirho();
 //!
-//! networkChirho.addAdder(aChirho, bChirho, cChirho);
-//! networkChirho.setExact(aChirho, 3.0);
-//! networkChirho.setExact(bChirho, 4.0);
-//! networkChirho.propagate();
+//! networkChirho.addAdderChirho(aChirho, bChirho, cChirho);
+//! networkChirho.setExactChirho(aChirho, 3.0);
+//! networkChirho.setExactChirho(bChirho, 4.0);
+//! networkChirho.propagateChirho();
 //!
-//! console.log(networkChirho.getExact(cChirho)); // 7.0
+//! console.log(networkChirho.getExactChirho(cChirho)); // 7.0
 //! ```
 
 use wasm_bindgen::prelude::*;
@@ -66,13 +66,13 @@ impl WasmNetworkChirho {
     }
 
     /// Creates a new cell and returns its ID.
-    #[wasm_bindgen(js_name = "makeCell")]
+    #[wasm_bindgen(js_name = "makeCellChirho")]
     pub fn make_cell_chirho(&mut self) -> usize {
         self.network_chirho.make_cell_chirho().index_chirho()
     }
 
     /// Sets a cell to an exact value.
-    #[wasm_bindgen(js_name = "setExact")]
+    #[wasm_bindgen(js_name = "setExactChirho")]
     pub fn set_exact_chirho(&mut self, cell_id_chirho: usize, value_chirho: f64) {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
         self.network_chirho
@@ -80,7 +80,7 @@ impl WasmNetworkChirho {
     }
 
     /// Sets a cell to an interval.
-    #[wasm_bindgen(js_name = "setInterval")]
+    #[wasm_bindgen(js_name = "setIntervalChirho")]
     pub fn set_interval_chirho(&mut self, cell_id_chirho: usize, lo_chirho: f64, hi_chirho: f64) {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
         self.network_chirho
@@ -88,7 +88,7 @@ impl WasmNetworkChirho {
     }
 
     /// Adds an addition constraint: a + b = c
-    #[wasm_bindgen(js_name = "addAdder")]
+    #[wasm_bindgen(js_name = "addAdderChirho")]
     pub fn add_adder_chirho(&mut self, a_chirho: usize, b_chirho: usize, c_chirho: usize) {
         let a_cell_chirho = CellIdChirho::from_index_chirho(a_chirho);
         let b_cell_chirho = CellIdChirho::from_index_chirho(b_chirho);
@@ -98,7 +98,7 @@ impl WasmNetworkChirho {
     }
 
     /// Adds a multiplication constraint: a * b = c
-    #[wasm_bindgen(js_name = "addMultiplier")]
+    #[wasm_bindgen(js_name = "addMultiplierChirho")]
     pub fn add_multiplier_chirho(&mut self, a_chirho: usize, b_chirho: usize, c_chirho: usize) {
         let a_cell_chirho = CellIdChirho::from_index_chirho(a_chirho);
         let b_cell_chirho = CellIdChirho::from_index_chirho(b_chirho);
@@ -108,7 +108,7 @@ impl WasmNetworkChirho {
     }
 
     /// Adds a square constraint: a² = b
-    #[wasm_bindgen(js_name = "addSquarer")]
+    #[wasm_bindgen(js_name = "addSquarerChirho")]
     pub fn add_squarer_chirho(&mut self, a_chirho: usize, b_chirho: usize) {
         let a_cell_chirho = CellIdChirho::from_index_chirho(a_chirho);
         let b_cell_chirho = CellIdChirho::from_index_chirho(b_chirho);
@@ -117,13 +117,13 @@ impl WasmNetworkChirho {
     }
 
     /// Runs propagation until fixpoint.
-    #[wasm_bindgen(js_name = "propagate")]
+    #[wasm_bindgen(js_name = "propagateChirho")]
     pub fn propagate_chirho(&mut self) {
         self.network_chirho.propagate_chirho();
     }
 
     /// Gets the low bound of a cell's interval.
-    #[wasm_bindgen(js_name = "getLo")]
+    #[wasm_bindgen(js_name = "getLoChirho")]
     pub fn get_lo_chirho(&self, cell_id_chirho: usize) -> Option<f64> {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
         match self.network_chirho.get_content_chirho(cell_chirho) {
@@ -133,7 +133,7 @@ impl WasmNetworkChirho {
     }
 
     /// Gets the high bound of a cell's interval.
-    #[wasm_bindgen(js_name = "getHi")]
+    #[wasm_bindgen(js_name = "getHiChirho")]
     pub fn get_hi_chirho(&self, cell_id_chirho: usize) -> Option<f64> {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
         match self.network_chirho.get_content_chirho(cell_chirho) {
@@ -143,14 +143,14 @@ impl WasmNetworkChirho {
     }
 
     /// Gets the exact value if the cell is exact (lo == hi).
-    #[wasm_bindgen(js_name = "getExact")]
+    #[wasm_bindgen(js_name = "getExactChirho")]
     pub fn get_exact_chirho(&self, cell_id_chirho: usize) -> Option<f64> {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
         self.network_chirho.get_exact_chirho(cell_chirho)
     }
 
     /// Returns true if the cell is in contradiction.
-    #[wasm_bindgen(js_name = "isContradiction")]
+    #[wasm_bindgen(js_name = "isContradictionChirho")]
     pub fn is_contradiction_chirho(&self, cell_id_chirho: usize) -> bool {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
         matches!(
@@ -160,25 +160,25 @@ impl WasmNetworkChirho {
     }
 
     /// Returns true if any cell has a contradiction.
-    #[wasm_bindgen(js_name = "hasContradiction")]
+    #[wasm_bindgen(js_name = "hasContradictionChirho")]
     pub fn has_contradiction_chirho(&self) -> bool {
         self.network_chirho.has_contradiction_chirho()
     }
 
     /// Returns the number of cells.
-    #[wasm_bindgen(js_name = "cellCount")]
+    #[wasm_bindgen(js_name = "cellCountChirho")]
     pub fn cell_count_chirho(&self) -> usize {
         self.network_chirho.cell_count_chirho()
     }
 
     /// Returns the number of propagators.
-    #[wasm_bindgen(js_name = "propagatorCount")]
+    #[wasm_bindgen(js_name = "propagatorCountChirho")]
     pub fn propagator_count_chirho(&self) -> usize {
         self.network_chirho.propagator_count_chirho()
     }
 
     /// Returns the number of propagation steps.
-    #[wasm_bindgen(js_name = "propagationCount")]
+    #[wasm_bindgen(js_name = "propagationCountChirho")]
     pub fn propagation_count_chirho(&self) -> usize {
         self.network_chirho.propagation_count_chirho()
     }
@@ -203,7 +203,7 @@ impl WasmIntervalChirho {
     }
 
     /// Creates an exact value interval.
-    #[wasm_bindgen(js_name = "exact")]
+    #[wasm_bindgen(js_name = "exactChirho")]
     pub fn exact_chirho(value_chirho: f64) -> Self {
         Self {
             lo_chirho: value_chirho,
@@ -224,19 +224,19 @@ impl WasmIntervalChirho {
     }
 
     /// Returns the width (hi - lo).
-    #[wasm_bindgen(js_name = "width")]
+    #[wasm_bindgen(js_name = "widthChirho")]
     pub fn width_chirho(&self) -> f64 {
         self.hi_chirho - self.lo_chirho
     }
 
     /// Returns true if this is an exact value.
-    #[wasm_bindgen(js_name = "isExact")]
+    #[wasm_bindgen(js_name = "isExactChirho")]
     pub fn is_exact_chirho(&self) -> bool {
         (self.hi_chirho - self.lo_chirho).abs() < 1e-10
     }
 
     /// Adds two intervals.
-    #[wasm_bindgen(js_name = "add")]
+    #[wasm_bindgen(js_name = "addChirho")]
     pub fn add_chirho(&self, other_chirho: &WasmIntervalChirho) -> WasmIntervalChirho {
         WasmIntervalChirho {
             lo_chirho: self.lo_chirho + other_chirho.lo_chirho,
@@ -245,7 +245,7 @@ impl WasmIntervalChirho {
     }
 
     /// Subtracts two intervals.
-    #[wasm_bindgen(js_name = "sub")]
+    #[wasm_bindgen(js_name = "subChirho")]
     pub fn sub_chirho(&self, other_chirho: &WasmIntervalChirho) -> WasmIntervalChirho {
         WasmIntervalChirho {
             lo_chirho: self.lo_chirho - other_chirho.hi_chirho,
@@ -254,7 +254,7 @@ impl WasmIntervalChirho {
     }
 
     /// Multiplies two intervals.
-    #[wasm_bindgen(js_name = "mul")]
+    #[wasm_bindgen(js_name = "mulChirho")]
     pub fn mul_chirho(&self, other_chirho: &WasmIntervalChirho) -> WasmIntervalChirho {
         let products_chirho = [
             self.lo_chirho * other_chirho.lo_chirho,
@@ -279,7 +279,7 @@ impl WasmIntervalChirho {
     }
 
     /// Intersects two intervals.
-    #[wasm_bindgen(js_name = "intersect")]
+    #[wasm_bindgen(js_name = "intersectChirho")]
     pub fn intersect_chirho(&self, other_chirho: &WasmIntervalChirho) -> WasmIntervalChirho {
         WasmIntervalChirho {
             lo_chirho: self.lo_chirho.max(other_chirho.lo_chirho),
@@ -288,13 +288,13 @@ impl WasmIntervalChirho {
     }
 
     /// Returns true if the interval is empty (contradiction).
-    #[wasm_bindgen(js_name = "isEmpty")]
+    #[wasm_bindgen(js_name = "isEmptyChirho")]
     pub fn is_empty_chirho(&self) -> bool {
         self.lo_chirho > self.hi_chirho
     }
 
     /// Returns true if the interval contains a value.
-    #[wasm_bindgen(js_name = "contains")]
+    #[wasm_bindgen(js_name = "containsChirho")]
     pub fn contains_chirho(&self, value_chirho: f64) -> bool {
         self.lo_chirho <= value_chirho && value_chirho <= self.hi_chirho
     }
