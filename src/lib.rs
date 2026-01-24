@@ -178,6 +178,13 @@ pub mod parallel_chirho;
 #[cfg_attr(docsrs, doc(cfg(all(feature = "wasm", feature = "arena"))))]
 pub mod wasm_chirho;
 
+/// Python bindings via PyO3.
+///
+/// Enable with the `python` feature. Build with maturin.
+#[cfg(feature = "python")]
+#[cfg_attr(docsrs, doc(cfg(feature = "python")))]
+pub mod python_chirho;
+
 // Re-exports for convenience
 pub use amb_chirho::{AmbChirho, BacktrackingSearchChirho, SearchResultChirho};
 pub use cell_chirho::{CellChirho, MergeableChirho};

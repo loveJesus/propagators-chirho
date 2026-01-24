@@ -45,6 +45,10 @@ path = "examples/sudoku_chirho.rs"
 name = "electrical_chirho"
 path = "examples/electrical_chirho.rs"
 
+[[example]]
+name = "scheduling_chirho"
+path = "examples/scheduling_chirho.rs"
+
 [dependencies]
 # Optional: Arena allocation for high-performance mode
 typed-arena = { version = "2.0", optional = true }
@@ -56,6 +60,8 @@ serde_json = { version = "1.0", optional = true }
 # Optional: WebAssembly bindings
 wasm-bindgen = { version = "0.2", optional = true }
 js-sys = { version = "0.3", optional = true }
+# Optional: Python bindings via PyO3
+pyo3 = { version = "0.23", features = ["extension-module", "abi3-py38"], optional = true }
 
 [dev-dependencies]
 criterion = "0.5"
@@ -73,6 +79,8 @@ parallel = ["rayon"]
 serde = ["dep:serde", "dep:serde_json"]
 # WebAssembly support
 wasm = ["dep:wasm-bindgen", "dep:js-sys"]
+# Python bindings via PyO3
+python = ["dep:pyo3", "arena"]
 
 [[bench]]
 name = "propagator_bench_chirho"

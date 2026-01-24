@@ -1,0 +1,45 @@
+# For God so loved the world that he gave his only begotten Son,
+#     that whoever believes in him should not perish but have eternal life.
+#     John 3:16
+
+[build-system]
+requires = ["maturin>=1.4,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "propagators-chirho"
+version = "0.1.0"
+description = "A Rust-powered propagator network library for constraint propagation and bidirectional computation"
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [
+    { name = "loveJesus", email = "loveJesus@loveJesus.software" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Rust",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries",
+]
+keywords = ["propagators", "constraints", "interval-arithmetic", "constraint-programming"]
+requires-python = ">=3.8"
+
+[project.urls]
+Homepage = "https://github.com/loveJesus/propagators-chirho"
+Repository = "https://github.com/loveJesus/propagators-chirho"
+Documentation = "https://docs.rs/propagators-chirho"
+
+[tool.maturin]
+features = ["python"]
+python-source = "python"
+module-name = "propagators_chirho"
