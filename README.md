@@ -236,7 +236,32 @@ let a_chirho = net_chirho.make_cell_chirho();
 | square | **0.43 ns** | 22.2 ns | **51x** |
 | sqrt | **0.43 ns** | 0.68 ns | 1.6x |
 
-*Note: inari provides IEEE 754-2019 compliance with rounding mode guarantees. Our implementation prioritizes speed over strict IEEE compliance.*
+### IEEE 754-2019 Compliance: When Does It Matter?
+
+**inari** provides IEEE 754-2019 compliant interval arithmetic. We don't. Here's when that matters:
+
+| Use Case | Need IEEE? | Recommendation |
+|----------|------------|----------------|
+| Constraint solving / SAT | No | Use propagators-chirho |
+| Bidirectional computation | No | Use propagators-chirho |
+| Verified numerical proofs | **Yes** | Use inari |
+| Safety-critical systems | **Yes** | Use inari |
+| Financial calculations | **Yes** | Use inari |
+| Game physics / graphics | No | Use propagators-chirho |
+| Optimization / search | No | Use propagators-chirho |
+
+**What IEEE compliance guarantees:**
+- The true mathematical result is *always* within the computed interval
+- Proper directed rounding (round toward ±∞)
+- Correct handling of NaN, infinities, subnormals
+- Reproducible results across platforms
+
+**What we sacrifice for speed:**
+- Use default round-to-nearest (may miss true value by ULP in edge cases)
+- Simpler NaN/infinity handling
+- Potentially tighter intervals that could theoretically exclude the true value
+
+**Bottom line:** For constraint propagation and bidirectional computation (our primary use case), IEEE compliance is unnecessary overhead. If you need verified numerical computation, use inari and accept the 28-51x slowdown.
 
 #### Network Propagation
 
