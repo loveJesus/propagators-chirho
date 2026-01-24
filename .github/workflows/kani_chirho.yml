@@ -1,0 +1,29 @@
+# For God so loved the world that he gave his only begotten Son,
+#     that whoever believes in him should not perish but have eternal life.
+#     John 3:16
+
+name: Kani Verification
+
+on:
+  push:
+    branches: [main_chirho]
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+  pull_request:
+    branches: [main_chirho]
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+
+jobs:
+  kani_chirho:
+    name: Kani Proofs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Kani verification
+        uses: model-checking/kani-github-action@v1
+        with:
+          args: --features kani

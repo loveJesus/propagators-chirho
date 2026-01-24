@@ -1,0 +1,43 @@
+# For God so loved the world that he gave his only begotten Son,
+#     that whoever believes in him should not perish but have eternal life.
+#     John 3:16
+
+name: WASM Build
+
+on:
+  push:
+    branches: [main_chirho]
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'docs/**'
+  pull_request:
+    branches: [main_chirho]
+    paths:
+      - 'src/**'
+      - 'Cargo.toml'
+      - 'docs/**'
+
+jobs:
+  wasm_chirho:
+    name: Build WASM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: Build WASM package
+        run: wasm-pack build --target web --features wasm,arena
+
+      - name: Verify WASM output
+        run: |
+          ls -la pkg/
+          test -f pkg/propagators_chirho_bg.wasm
+          test -f pkg/propagators_chirho.js

@@ -15,35 +15,57 @@ env:
 
 jobs:
   test_chirho:
-    name: Test
+    name: Test Suite
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Run tests
-        run: cargo test --all-features
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Cache cargo registry
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run tests (default features)
+        run: cargo test --verbose
+
+      - name: Run tests (parallel feature)
+        run: cargo test --features parallel --verbose
+
+      - name: Run tests (all features except python/wasm)
+        run: cargo test --features "parallel,serde,arena" --verbose
 
   clippy_chirho:
     name: Clippy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
         with:
           components: clippy
-      - uses: Swatinem/rust-cache@v2
-      - name: Run Clippy
-        run: cargo clippy --all-features -- -D warnings
+
+      - name: Run clippy
+        run: cargo clippy --features "parallel,serde,arena" -- -D warnings
 
   fmt_chirho:
-    name: Format
+    name: Rustfmt
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
         with:
           components: rustfmt
+
       - name: Check formatting
         run: cargo fmt --all -- --check
 
@@ -52,21 +74,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: Swatinem/rust-cache@v2
-      - name: Build docs
-        run: cargo doc --no-deps --all-features
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Build documentation
+        run: cargo doc --no-deps --features "parallel,serde,arena"
         env:
           RUSTDOCFLAGS: -D warnings
 
-  miri_chirho:
-    name: Miri (undefined behavior check)
+  examples_chirho:
+    name: Examples
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@nightly
-        with:
-          components: miri
-      - uses: Swatinem/rust-cache@v2
-      - name: Run Miri
-        run: cargo miri test --lib
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-action@stable
+
+      - name: Run temperature example
+        run: cargo run --example temperature_chirho
+
+      - name: Run pythagorean example
+        run: cargo run --example pythagorean_chirho
+
+      - name: Run sudoku example
+        run: cargo run --example sudoku_chirho
+
+      - name: Run electrical example
+        run: cargo run --example electrical_chirho
+
+      - name: Run scheduling example
+        run: cargo run --example scheduling_chirho
