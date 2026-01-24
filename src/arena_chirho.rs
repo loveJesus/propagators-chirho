@@ -646,4 +646,130 @@ mod tests_chirho {
 
         assert_eq!(net_chirho.get_exact_chirho(fahrenheit_chirho), Some(212.0));
     }
+
+    #[test]
+    fn test_arena_subtractor_chirho() {
+        let mut net_chirho = ArenaNetworkChirho::new_chirho();
+
+        let a_chirho = net_chirho.make_cell_chirho();
+        let b_chirho = net_chirho.make_cell_chirho();
+        let c_chirho = net_chirho.make_cell_chirho();
+
+        net_chirho.add_subtractor_chirho(a_chirho, b_chirho, c_chirho);
+
+        net_chirho.set_exact_chirho(a_chirho, 10.0);
+        net_chirho.set_exact_chirho(b_chirho, 3.0);
+        net_chirho.propagate_chirho();
+
+        assert_eq!(net_chirho.get_exact_chirho(c_chirho), Some(7.0));
+    }
+
+    #[test]
+    fn test_arena_subtractor_backward_chirho() {
+        let mut net_chirho = ArenaNetworkChirho::new_chirho();
+
+        let a_chirho = net_chirho.make_cell_chirho();
+        let b_chirho = net_chirho.make_cell_chirho();
+        let c_chirho = net_chirho.make_cell_chirho();
+
+        net_chirho.add_subtractor_chirho(a_chirho, b_chirho, c_chirho);
+
+        net_chirho.set_exact_chirho(a_chirho, 10.0);
+        net_chirho.set_exact_chirho(c_chirho, 7.0);
+        net_chirho.propagate_chirho();
+
+        assert_eq!(net_chirho.get_exact_chirho(b_chirho), Some(3.0));
+    }
+
+    #[test]
+    fn test_arena_divider_chirho() {
+        let mut net_chirho = ArenaNetworkChirho::new_chirho();
+
+        let a_chirho = net_chirho.make_cell_chirho();
+        let b_chirho = net_chirho.make_cell_chirho();
+        let c_chirho = net_chirho.make_cell_chirho();
+
+        net_chirho.add_divider_chirho(a_chirho, b_chirho, c_chirho);
+
+        net_chirho.set_exact_chirho(a_chirho, 12.0);
+        net_chirho.set_exact_chirho(b_chirho, 4.0);
+        net_chirho.propagate_chirho();
+
+        assert_eq!(net_chirho.get_exact_chirho(c_chirho), Some(3.0));
+    }
+
+    #[test]
+    fn test_arena_sqrter_chirho() {
+        let mut net_chirho = ArenaNetworkChirho::new_chirho();
+
+        let a_chirho = net_chirho.make_cell_chirho();
+        let b_chirho = net_chirho.make_cell_chirho();
+
+        net_chirho.add_sqrter_chirho(a_chirho, b_chirho);
+
+        net_chirho.set_exact_chirho(a_chirho, 25.0);
+        net_chirho.propagate_chirho();
+
+        assert_eq!(net_chirho.get_exact_chirho(b_chirho), Some(5.0));
+    }
+
+    #[test]
+    fn test_arena_sqrter_backward_chirho() {
+        let mut net_chirho = ArenaNetworkChirho::new_chirho();
+
+        let a_chirho = net_chirho.make_cell_chirho();
+        let b_chirho = net_chirho.make_cell_chirho();
+
+        net_chirho.add_sqrter_chirho(a_chirho, b_chirho);
+
+        net_chirho.set_exact_chirho(b_chirho, 5.0);
+        net_chirho.propagate_chirho();
+
+        assert_eq!(net_chirho.get_exact_chirho(a_chirho), Some(25.0));
+    }
+
+    #[test]
+    fn test_arena_negater_chirho() {
+        let mut net_chirho = ArenaNetworkChirho::new_chirho();
+
+        let a_chirho = net_chirho.make_cell_chirho();
+        let b_chirho = net_chirho.make_cell_chirho();
+
+        net_chirho.add_negater_chirho(a_chirho, b_chirho);
+
+        net_chirho.set_exact_chirho(a_chirho, 5.0);
+        net_chirho.propagate_chirho();
+
+        assert_eq!(net_chirho.get_exact_chirho(b_chirho), Some(-5.0));
+    }
+
+    #[test]
+    fn test_arena_negater_backward_chirho() {
+        let mut net_chirho = ArenaNetworkChirho::new_chirho();
+
+        let a_chirho = net_chirho.make_cell_chirho();
+        let b_chirho = net_chirho.make_cell_chirho();
+
+        net_chirho.add_negater_chirho(a_chirho, b_chirho);
+
+        net_chirho.set_exact_chirho(b_chirho, -5.0);
+        net_chirho.propagate_chirho();
+
+        assert_eq!(net_chirho.get_exact_chirho(a_chirho), Some(5.0));
+    }
+
+    #[test]
+    fn test_arena_absoluter_chirho() {
+        let mut net_chirho = ArenaNetworkChirho::new_chirho();
+
+        let a_chirho = net_chirho.make_cell_chirho();
+        let b_chirho = net_chirho.make_cell_chirho();
+
+        net_chirho.add_absoluter_chirho(a_chirho, b_chirho);
+
+        net_chirho.set_exact_chirho(a_chirho, -5.0);
+        net_chirho.propagate_chirho();
+
+        assert_eq!(net_chirho.get_exact_chirho(b_chirho), Some(5.0));
+    }
 }
