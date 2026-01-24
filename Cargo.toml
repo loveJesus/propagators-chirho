@@ -1,0 +1,68 @@
+# For God so loved the world that he gave his only begotten Son,
+#     that whoever believes in him should not perish but have eternal life.
+#     John 3:16
+
+[package]
+name = "propagators-chirho"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+authors = ["loveJesus <loveJesus@loveJesus.software>"]
+description = "A Rust implementation of propagator networks for constraint propagation and bidirectional computation"
+documentation = "https://docs.rs/propagators-chirho"
+readme = "README.md"
+homepage = "https://github.com/loveJesus/propagators-chirho"
+repository = "https://github.com/loveJesus/propagators-chirho"
+license = "MIT"
+keywords = ["propagators", "constraints", "interval-arithmetic", "constraint-programming", "bidirectional"]
+categories = ["algorithms", "mathematics", "science"]
+include = [
+    "src/**/*",
+    "examples/**/*",
+    "Cargo.toml",
+    "LICENSE",
+    "README.md",
+    "CHANGELOG.md",
+]
+
+[lib]
+name = "propagators_chirho"
+path = "src/lib.rs"
+
+[[example]]
+name = "temperature_chirho"
+path = "examples/temperature_chirho.rs"
+
+[[example]]
+name = "pythagorean_chirho"
+path = "examples/pythagorean_chirho.rs"
+
+[[example]]
+name = "sudoku_chirho"
+path = "examples/sudoku_chirho.rs"
+
+[[example]]
+name = "electrical_chirho"
+path = "examples/electrical_chirho.rs"
+
+[dependencies]
+
+[dev-dependencies]
+criterion = "0.5"
+proptest = "1.4"
+
+[features]
+default = []
+# Enable Kani verification proofs
+kani = []
+
+[[bench]]
+name = "propagator_bench_chirho"
+harness = false
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
+
+[badges]
+maintenance = { status = "actively-developed" }
