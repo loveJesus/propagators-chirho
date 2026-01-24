@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2025-01-24
+
 ### Added
 
 - **Distributed Network Module** (`network` feature)
@@ -21,6 +23,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `NetworkMessageChirho` - Sync, Update, Heartbeat, Subscribe messages
   - CRDT-like conflict-free merging (monotonic lattice joins)
   - Gossip-based synchronization protocol
+
+- **Test Script** (`scripts_chirho/test_all_chirho.sh`)
+  - Comprehensive feature combination testing
+  - Tests 28 configurations: individual features, combinations, no-std, examples, docs, clippy
+
+### Fixed
+
+- `no-std` mode now correctly imports `alloc::vec` in test modules
 
 ## [0.1.2] - 2025-01-24
 

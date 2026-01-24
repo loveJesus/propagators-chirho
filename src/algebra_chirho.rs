@@ -422,6 +422,9 @@ pub type PropagatorResultChirho<T> = Result<T, PropagatorErrorChirho>;
 mod tests_chirho {
     use super::*;
 
+    #[cfg(feature = "no-std")]
+    use alloc::vec;
+
     #[test]
     fn test_semigroup_associativity_chirho() {
         let a_chirho = NumericInfoChirho::interval_chirho(0.0, 10.0);

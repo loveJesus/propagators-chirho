@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json.schemastore.org/claude-settings.json",
+  "project": {
+    "name": "propagators-chirho",
+    "description": "Rust implementation of propagator networks for constraint propagation and bidirectional computation"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(cargo *)",
+      "Bash(rustup *)",
+      "Bash(git *)",
+      "Bash(./scripts_chirho/*)"
+    ]
+  }
+}
