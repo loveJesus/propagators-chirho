@@ -26,9 +26,9 @@ export class WasmIntervalChirho {
      * @param {WasmIntervalChirho} other_chirho
      * @returns {WasmIntervalChirho}
      */
-    add_chirho(other_chirho) {
+    add(other_chirho) {
         _assertClass(other_chirho, WasmIntervalChirho);
-        const ret = wasm.wasmintervalchirho_add_chirho(this.__wbg_ptr, other_chirho.__wbg_ptr);
+        const ret = wasm.wasmintervalchirho_add(this.__wbg_ptr, other_chirho.__wbg_ptr);
         return WasmIntervalChirho.__wrap(ret);
     }
     /**
@@ -36,8 +36,8 @@ export class WasmIntervalChirho {
      * @param {number} value_chirho
      * @returns {boolean}
      */
-    contains_chirho(value_chirho) {
-        const ret = wasm.wasmintervalchirho_contains_chirho(this.__wbg_ptr, value_chirho);
+    contains(value_chirho) {
+        const ret = wasm.wasmintervalchirho_contains(this.__wbg_ptr, value_chirho);
         return ret !== 0;
     }
     /**
@@ -62,9 +62,9 @@ export class WasmIntervalChirho {
      * @param {WasmIntervalChirho} other_chirho
      * @returns {WasmIntervalChirho}
      */
-    intersect_chirho(other_chirho) {
+    intersect(other_chirho) {
         _assertClass(other_chirho, WasmIntervalChirho);
-        const ret = wasm.wasmintervalchirho_intersect_chirho(this.__wbg_ptr, other_chirho.__wbg_ptr);
+        const ret = wasm.wasmintervalchirho_intersect(this.__wbg_ptr, other_chirho.__wbg_ptr);
         return WasmIntervalChirho.__wrap(ret);
     }
     /**
@@ -96,9 +96,9 @@ export class WasmIntervalChirho {
      * @param {WasmIntervalChirho} other_chirho
      * @returns {WasmIntervalChirho}
      */
-    mul_chirho(other_chirho) {
+    mul(other_chirho) {
         _assertClass(other_chirho, WasmIntervalChirho);
-        const ret = wasm.wasmintervalchirho_mul_chirho(this.__wbg_ptr, other_chirho.__wbg_ptr);
+        const ret = wasm.wasmintervalchirho_mul(this.__wbg_ptr, other_chirho.__wbg_ptr);
         return WasmIntervalChirho.__wrap(ret);
     }
     /**
@@ -117,17 +117,17 @@ export class WasmIntervalChirho {
      * @param {WasmIntervalChirho} other_chirho
      * @returns {WasmIntervalChirho}
      */
-    sub_chirho(other_chirho) {
+    sub(other_chirho) {
         _assertClass(other_chirho, WasmIntervalChirho);
-        const ret = wasm.wasmintervalchirho_sub_chirho(this.__wbg_ptr, other_chirho.__wbg_ptr);
+        const ret = wasm.wasmintervalchirho_sub(this.__wbg_ptr, other_chirho.__wbg_ptr);
         return WasmIntervalChirho.__wrap(ret);
     }
     /**
      * Returns the width (hi - lo).
      * @returns {number}
      */
-    width_chirho() {
-        const ret = wasm.wasmintervalchirho_width_chirho(this.__wbg_ptr);
+    width() {
+        const ret = wasm.wasmintervalchirho_width(this.__wbg_ptr);
         return ret;
     }
 }
@@ -247,8 +247,8 @@ export class WasmNetworkChirho {
     /**
      * Runs propagation until fixpoint.
      */
-    propagate_chirho() {
-        wasm.wasmnetworkchirho_propagate_chirho(this.__wbg_ptr);
+    propagate() {
+        wasm.wasmnetworkchirho_propagate(this.__wbg_ptr);
     }
     /**
      * Returns the number of propagation steps.
