@@ -164,6 +164,13 @@ pub mod worldview_chirho;
 #[cfg_attr(docsrs, doc(cfg(feature = "arena")))]
 pub mod arena_chirho;
 
+/// Parallel propagation using rayon.
+///
+/// Enable with the `parallel` feature for concurrent propagation.
+#[cfg(feature = "parallel")]
+#[cfg_attr(docsrs, doc(cfg(feature = "parallel")))]
+pub mod parallel_chirho;
+
 // Re-exports for convenience
 pub use amb_chirho::{AmbChirho, BacktrackingSearchChirho, SearchResultChirho};
 pub use cell_chirho::{CellChirho, MergeableChirho};
