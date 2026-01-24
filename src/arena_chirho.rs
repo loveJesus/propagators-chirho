@@ -16,9 +16,12 @@
 //!
 //! # Example
 //!
-//! ```ignore
-//! use propagators_chirho::arena_chirho::*;
+//! ```
+//! # #[cfg(feature = "arena")]
+//! use propagators_chirho::arena_chirho::ArenaNetworkChirho;
 //!
+//! # #[cfg(feature = "arena")]
+//! # fn main() {
 //! let mut network_chirho = ArenaNetworkChirho::new_chirho();
 //!
 //! let a_chirho = network_chirho.make_cell_chirho();
@@ -27,12 +30,21 @@
 //!
 //! network_chirho.add_adder_chirho(a_chirho, b_chirho, c_chirho);
 //!
-//! network_chirho.set_chirho(a_chirho, 3.0);
-//! network_chirho.set_chirho(b_chirho, 4.0);
+//! network_chirho.set_exact_chirho(a_chirho, 3.0);
+//! network_chirho.set_exact_chirho(b_chirho, 4.0);
 //! network_chirho.propagate_chirho();
 //!
-//! assert_eq!(network_chirho.get_chirho(c_chirho), Some(7.0));
+//! assert_eq!(network_chirho.get_exact_chirho(c_chirho), Some(7.0));
+//! # }
+//! # #[cfg(not(feature = "arena"))]
+//! # fn main() {}
 //! ```
+//!
+//! # Performance
+//!
+//! For small networks (< 100 cells), the standard `ConstraintSystemChirho` may
+//! be faster due to lower overhead. Arena allocation shines with thousands of
+//! cells and complex constraint networks.
 
 use std::collections::VecDeque;
 
