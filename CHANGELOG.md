@@ -9,6 +9,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Arena Module DRY Improvements**
+  - Added `impl_add_ternary_chirho!` and `impl_add_binary_chirho!` macros for add_* methods
+  - Extracted `run_ternary_chirho`, `run_ternary_with_guard_chirho`, `run_binary_chirho`,
+    `run_binary_with_guard_chirho`, and `run_binary_absoluter_chirho` helper methods
+  - Reduces match arm complexity in `run_propagator_chirho` from ~130 lines to ~30 lines
+
+### Added
+
+- **New Arena Propagator Types**
+  - `SubtractorChirho` - Bidirectional a - b = c
+  - `DividerChirho` - Bidirectional a / b = c
+  - `SqrterChirho` - Bidirectional √a = b
+  - `AbsoluterChirho` - Bidirectional |a| = b
+  - `NegaterChirho` - Bidirectional -a = b
+
+- **Arena Tests**: 8 new tests for new propagator types (total: 13 arena tests)
+
 ## [0.1.1] - 2025-01-24
 
 ### Changed
