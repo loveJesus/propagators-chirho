@@ -113,6 +113,40 @@ where
     }
 }
 
+impl<L, P1, P2> PropagatorFnChirho<L> for ComposedChirho<L, P1, P2>
+where
+    L: LatticeChirho,
+    P1: PropagatorFnChirho<L>,
+    P2: PropagatorFnChirho<L>,
+{
+    fn arity_chirho(&self) -> usize {
+        // Composed propagators operate on the same cells
+        self.first_chirho.arity_chirho()
+    }
+
+    fn propagate_chirho(&self, cells_chirho: &[L]) -> Vec<L> {
+        // Run first propagator
+        let first_results_chirho = self.first_chirho.propagate_chirho(cells_chirho);
+
+        // Apply first results by joining with original values
+        let intermediate_chirho: Vec<L> = cells_chirho
+            .iter()
+            .zip(first_results_chirho.iter())
+            .map(|(orig_chirho, new_chirho)| orig_chirho.join_chirho(new_chirho))
+            .collect();
+
+        // Run second propagator on intermediate state
+        let second_results_chirho = self.second_chirho.propagate_chirho(&intermediate_chirho);
+
+        // Join both results
+        first_results_chirho
+            .iter()
+            .zip(second_results_chirho.iter())
+            .map(|(a_chirho, b_chirho)| a_chirho.join_chirho(b_chirho))
+            .collect()
+    }
+}
+
 /// Extension trait for composing propagators.
 pub trait PropagatorComposeChirho<L: LatticeChirho>: PropagatorFnChirho<L> + Sized {
     /// Composes this propagator with another.

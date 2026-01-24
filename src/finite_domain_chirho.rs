@@ -413,7 +413,7 @@ mod tests_chirho {
             FiniteDomainChirho::range_chirho(3, 7), // b
         ];
 
-        let results_chirho = prop_chirho.propagate_chirho(&cells_chirho);
+        let _results_chirho = prop_chirho.propagate_chirho(&cells_chirho);
 
         // a < b means a can't be >= 7, and b can't be <= 1
         // a: originally {1,2,3,4,5}, filtered to {1,2,3,4,5,6} (all < 7) - no change
