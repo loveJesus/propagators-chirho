@@ -248,6 +248,96 @@ fn proof_merge_monotonic_chirho() {
     // If merged is contradiction, that's fine (intervals didn't overlap)
 }
 
+/// Proof: Exact value is contained in its interval.
+#[kani::proof]
+#[kani::unwind(2)]
+fn proof_exact_contains_value_chirho() {
+    let value_chirho: f64 = kani::any();
+    kani::assume(value_chirho.is_finite());
+
+    let interval_chirho = IntervalChirho::exact_chirho(value_chirho);
+
+    kani::assert(
+        interval_chirho.contains_chirho(value_chirho),
+        "Exact interval must contain its value"
+    );
+    kani::assert(
+        interval_chirho.lo_chirho == value_chirho && interval_chirho.hi_chirho == value_chirho,
+        "Exact interval has lo == hi == value"
+    );
+}
+
+/// Proof: Interval width is non-negative for valid intervals.
+#[kani::proof]
+#[kani::unwind(2)]
+fn proof_interval_width_nonnegative_chirho() {
+    let lo_chirho: f64 = kani::any();
+    let hi_chirho: f64 = kani::any();
+
+    kani::assume(lo_chirho.is_finite() && hi_chirho.is_finite());
+    kani::assume(lo_chirho <= hi_chirho);
+
+    let interval_chirho = IntervalChirho::new_chirho(lo_chirho, hi_chirho);
+    let width_chirho = interval_chirho.width_chirho();
+
+    kani::assert(
+        width_chirho >= 0.0,
+        "Interval width must be non-negative"
+    );
+}
+
+/// Proof: Intersection result is contained in both operands.
+#[kani::proof]
+#[kani::unwind(2)]
+fn proof_intersection_containment_chirho() {
+    let a_lo_chirho: f64 = kani::any();
+    let a_hi_chirho: f64 = kani::any();
+    let b_lo_chirho: f64 = kani::any();
+    let b_hi_chirho: f64 = kani::any();
+
+    kani::assume(a_lo_chirho.is_finite() && a_hi_chirho.is_finite());
+    kani::assume(b_lo_chirho.is_finite() && b_hi_chirho.is_finite());
+    kani::assume(a_lo_chirho <= a_hi_chirho);
+    kani::assume(b_lo_chirho <= b_hi_chirho);
+
+    let a_chirho = IntervalChirho::new_chirho(a_lo_chirho, a_hi_chirho);
+    let b_chirho = IntervalChirho::new_chirho(b_lo_chirho, b_hi_chirho);
+    let result_chirho = a_chirho.intersect_chirho(&b_chirho);
+
+    // If result is non-empty, it must be contained in both
+    if !result_chirho.is_empty_chirho() {
+        kani::assert(
+            result_chirho.lo_chirho >= a_lo_chirho && result_chirho.hi_chirho <= a_hi_chirho,
+            "Intersection must be subset of first operand"
+        );
+        kani::assert(
+            result_chirho.lo_chirho >= b_lo_chirho && result_chirho.hi_chirho <= b_hi_chirho,
+            "Intersection must be subset of second operand"
+        );
+    }
+}
+
+/// Proof: Contradiction absorbs in merge (top absorbs).
+#[kani::proof]
+#[kani::unwind(2)]
+fn proof_contradiction_absorbs_chirho() {
+    let lo_chirho: f64 = kani::any();
+    let hi_chirho: f64 = kani::any();
+
+    kani::assume(lo_chirho.is_finite() && hi_chirho.is_finite());
+    kani::assume(lo_chirho <= hi_chirho);
+
+    let a_chirho = NumericInfoChirho::interval_chirho(lo_chirho, hi_chirho);
+    let top_chirho = NumericInfoChirho::ContradictionChirho;
+
+    let result_chirho = a_chirho.merge_chirho(&top_chirho);
+
+    kani::assert(
+        result_chirho.is_contradiction_chirho(),
+        "Contradiction must absorb: a ⊔ ⊤ = ⊤"
+    );
+}
+
 // ============================================================================
 // DISABLED PROOFS (documented limitations)
 // ============================================================================

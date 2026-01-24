@@ -7,6 +7,8 @@
 [![Crates.io](https://img.shields.io/crates/v/propagators-chirho.svg)](https://crates.io/crates/propagators-chirho)
 [![Documentation](https://docs.rs/propagators-chirho/badge.svg)](https://docs.rs/propagators-chirho)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Kani](https://img.shields.io/badge/Kani-Verified-green.svg)](https://model-checking.github.io/kani/)
+[![Demo](https://img.shields.io/badge/Demo-Live-blue.svg)](https://propagators-chirho.lovejesus.software/)
 
 > *"For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life."* — John 3:16
 
