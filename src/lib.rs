@@ -154,6 +154,7 @@ pub mod interval_chirho;
 pub mod lattice_chirho;
 pub mod propagator_chirho;
 pub mod scheduler_chirho;
+pub mod simd_chirho;
 pub mod tms_chirho;
 pub mod worldview_chirho;
 
@@ -206,6 +207,10 @@ pub use finite_domain_chirho::{
     FiniteDomainChirho, AllDifferentChirho, LessThanChirho, EqualsChirho, NotEqualsChirho,
 };
 pub use generic_cell_chirho::{GenericCellChirho, GenericNetworkChirho};
+pub use simd_chirho::{
+    batch_add_chirho, batch_sub_chirho, batch_mul_chirho, batch_intersect_chirho,
+    batch_square_chirho, batch_sqrt_chirho, IntervalVecChirho,
+};
 
 // Feature-gated re-exports
 #[cfg(feature = "arena")]

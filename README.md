@@ -95,6 +95,35 @@ system_chirho.run_chirho();
 
 - `ConstraintSystemChirho` — Builder-style interface for constraint networks
 
+### Lattice Abstractions (Kmett-style)
+
+- `LatticeChirho` trait — Join semilattice with partial order
+- `BoundedLatticeChirho` trait — Lattice with top (contradiction) and bottom (nothing)
+- `PropagatorFnChirho` trait — Composable functional propagators
+- `SupportedValueChirho<L>` — Values with provenance tracking
+
+### Finite Domains (for CSP)
+
+- `FiniteDomainChirho` — Set-based domains for discrete values
+- `AllDifferentChirho` — Global constraint for Sudoku-like problems
+- `LessThanChirho`, `EqualsChirho`, `NotEqualsChirho` — Relational constraints
+
+### Generic Cells
+
+- `GenericCellChirho<L>` — Cells that work with any lattice type
+- `GenericNetworkChirho<L>` — Networks for custom lattice types
+
+### Parallel Propagation
+
+- `ParallelNetworkChirho<L>` — Thread-safe parallel propagation with rayon
+- Independent propagators run concurrently in batches
+
+### SIMD Batch Operations
+
+- `batch_add_chirho`, `batch_mul_chirho`, `batch_intersect_chirho` — Batch interval operations
+- `IntervalVecChirho` — Structure-of-Arrays format for optimal vectorization
+- Auto-vectorizes on modern compilers for 2-4x speedup on batch operations
+
 ## Installation
 
 Add to your `Cargo.toml`:

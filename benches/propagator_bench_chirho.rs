@@ -8,6 +8,7 @@ use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use propagators_chirho::{
     CellChirho, ConstraintSystemChirho, IntervalAdderChirho, IntervalChirho, NumericInfoChirho,
     SchedulerChirho,
+    simd_chirho::{batch_add_chirho, batch_mul_chirho, batch_intersect_chirho, IntervalVecChirho},
 };
 
 fn benchmark_interval_operations_chirho(c_chirho: &mut Criterion) {
@@ -37,6 +38,87 @@ fn benchmark_merge_operations_chirho(c_chirho: &mut Criterion) {
 
     c_chirho.bench_function("numeric_info_merge", |bench_chirho| {
         bench_chirho.iter(|| black_box(a_chirho.merge_chirho(&b_chirho)))
+    });
+}
+
+fn benchmark_simd_operations_chirho(c_chirho: &mut Criterion) {
+    // Create test data
+    let size_chirho = 1000;
+    let a_intervals_chirho: Vec<IntervalChirho> = (0..size_chirho)
+        .map(|i_chirho| IntervalChirho::new_chirho(i_chirho as f64, (i_chirho + 10) as f64))
+        .collect();
+    let b_intervals_chirho: Vec<IntervalChirho> = (0..size_chirho)
+        .map(|i_chirho| IntervalChirho::new_chirho((i_chirho * 2) as f64, (i_chirho * 2 + 5) as f64))
+        .collect();
+
+    // Benchmark scalar vs batch add
+    c_chirho.bench_function("simd_scalar_add_1000", |bench_chirho| {
+        bench_chirho.iter(|| {
+            let result_chirho: Vec<IntervalChirho> = a_intervals_chirho
+                .iter()
+                .zip(b_intervals_chirho.iter())
+                .map(|(a_chirho, b_chirho)| a_chirho.add_chirho(b_chirho))
+                .collect();
+            black_box(result_chirho)
+        })
+    });
+
+    c_chirho.bench_function("simd_batch_add_1000", |bench_chirho| {
+        bench_chirho.iter(|| {
+            black_box(batch_add_chirho(&a_intervals_chirho, &b_intervals_chirho))
+        })
+    });
+
+    // Benchmark scalar vs batch multiply
+    c_chirho.bench_function("simd_scalar_mul_1000", |bench_chirho| {
+        bench_chirho.iter(|| {
+            let result_chirho: Vec<IntervalChirho> = a_intervals_chirho
+                .iter()
+                .zip(b_intervals_chirho.iter())
+                .map(|(a_chirho, b_chirho)| a_chirho.mul_chirho(b_chirho))
+                .collect();
+            black_box(result_chirho)
+        })
+    });
+
+    c_chirho.bench_function("simd_batch_mul_1000", |bench_chirho| {
+        bench_chirho.iter(|| {
+            black_box(batch_mul_chirho(&a_intervals_chirho, &b_intervals_chirho))
+        })
+    });
+
+    // Benchmark scalar vs batch intersect
+    c_chirho.bench_function("simd_scalar_intersect_1000", |bench_chirho| {
+        bench_chirho.iter(|| {
+            let result_chirho: Vec<IntervalChirho> = a_intervals_chirho
+                .iter()
+                .zip(b_intervals_chirho.iter())
+                .map(|(a_chirho, b_chirho)| a_chirho.intersect_chirho(b_chirho))
+                .collect();
+            black_box(result_chirho)
+        })
+    });
+
+    c_chirho.bench_function("simd_batch_intersect_1000", |bench_chirho| {
+        bench_chirho.iter(|| {
+            black_box(batch_intersect_chirho(&a_intervals_chirho, &b_intervals_chirho))
+        })
+    });
+
+    // Benchmark SoA (IntervalVec) format for optimal vectorization
+    let a_soa_chirho = IntervalVecChirho::from_intervals_chirho(&a_intervals_chirho);
+    let b_soa_chirho = IntervalVecChirho::from_intervals_chirho(&b_intervals_chirho);
+
+    c_chirho.bench_function("simd_soa_add_1000", |bench_chirho| {
+        bench_chirho.iter(|| {
+            black_box(a_soa_chirho.add_chirho(&b_soa_chirho))
+        })
+    });
+
+    c_chirho.bench_function("simd_soa_intersect_1000", |bench_chirho| {
+        bench_chirho.iter(|| {
+            black_box(a_soa_chirho.intersect_chirho(&b_soa_chirho))
+        })
     });
 }
 
@@ -236,6 +318,7 @@ criterion_group!(
     benches_chirho,
     benchmark_interval_operations_chirho,
     benchmark_merge_operations_chirho,
+    benchmark_simd_operations_chirho,
     benchmark_propagation_chirho,
     benchmark_constraint_system_chirho,
     benchmark_arena_chirho,
@@ -247,6 +330,7 @@ criterion_group!(
     benches_chirho,
     benchmark_interval_operations_chirho,
     benchmark_merge_operations_chirho,
+    benchmark_simd_operations_chirho,
     benchmark_propagation_chirho,
     benchmark_constraint_system_chirho,
     benchmark_arena_chirho,
@@ -257,6 +341,7 @@ criterion_group!(
     benches_chirho,
     benchmark_interval_operations_chirho,
     benchmark_merge_operations_chirho,
+    benchmark_simd_operations_chirho,
     benchmark_propagation_chirho,
     benchmark_constraint_system_chirho,
     benchmark_parallel_chirho,
@@ -267,6 +352,7 @@ criterion_group!(
     benches_chirho,
     benchmark_interval_operations_chirho,
     benchmark_merge_operations_chirho,
+    benchmark_simd_operations_chirho,
     benchmark_propagation_chirho,
     benchmark_constraint_system_chirho,
 );

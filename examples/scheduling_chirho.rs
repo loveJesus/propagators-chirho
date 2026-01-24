@@ -21,7 +21,7 @@ fn main_chirho() {
     println!("====================================\n");
 
     // Time slots: 0-9 (each slot is 1 hour)
-    let time_slots_chirho = 10;
+    let _time_slots_chirho = 10;
 
     // Create a network for finite domain (discrete) values
     let mut network_chirho: GenericNetworkChirho<FiniteDomainChirho> =

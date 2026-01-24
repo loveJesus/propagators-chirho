@@ -11,7 +11,11 @@
 //! - Idempotency: merging with self is identity
 //! - Soundness: propagated values are correct
 
-use propagators_chirho::{ConstraintSystemChirho, IntervalChirho, NumericInfoChirho};
+use propagators_chirho::{
+    ConstraintSystemChirho, IntervalChirho, NumericInfoChirho, FiniteDomainChirho,
+    simd_chirho::{batch_add_chirho, batch_mul_chirho, batch_intersect_chirho, IntervalVecChirho},
+    lattice_chirho::{BoundedLatticeChirho, LatticeChirho},
+};
 use proptest::prelude::*;
 
 // ============================================================================
@@ -350,5 +354,188 @@ proptest! {
 
         let result_chirho = a_chirho.mul_chirho(&b_chirho);
         prop_assert!(result_chirho.contains_chirho(product_chirho));
+    }
+}
+
+// ============================================================================
+// SIMD BATCH OPERATIONS: CONSISTENCY WITH SCALAR
+// ============================================================================
+
+proptest! {
+    /// Batch add produces same results as scalar add
+    #[test]
+    fn test_batch_add_consistent_chirho(
+        lo1_chirho in -100.0f64..100.0,
+        hi1_chirho in -100.0f64..100.0,
+        lo2_chirho in -100.0f64..100.0,
+        hi2_chirho in -100.0f64..100.0,
+        lo3_chirho in -100.0f64..100.0,
+        hi3_chirho in -100.0f64..100.0,
+        lo4_chirho in -100.0f64..100.0,
+        hi4_chirho in -100.0f64..100.0,
+    ) {
+        let a_chirho = vec![
+            IntervalChirho::new_chirho(lo1_chirho.min(hi1_chirho), lo1_chirho.max(hi1_chirho)),
+            IntervalChirho::new_chirho(lo2_chirho.min(hi2_chirho), lo2_chirho.max(hi2_chirho)),
+        ];
+        let b_chirho = vec![
+            IntervalChirho::new_chirho(lo3_chirho.min(hi3_chirho), lo3_chirho.max(hi3_chirho)),
+            IntervalChirho::new_chirho(lo4_chirho.min(hi4_chirho), lo4_chirho.max(hi4_chirho)),
+        ];
+
+        // Scalar computation
+        let scalar_chirho: Vec<IntervalChirho> = a_chirho.iter()
+            .zip(b_chirho.iter())
+            .map(|(a_i_chirho, b_i_chirho)| a_i_chirho.add_chirho(b_i_chirho))
+            .collect();
+
+        // Batch computation
+        let batch_chirho = batch_add_chirho(&a_chirho, &b_chirho);
+
+        for i_chirho in 0..2 {
+            prop_assert!((scalar_chirho[i_chirho].lo_chirho - batch_chirho[i_chirho].lo_chirho).abs() < 1e-10);
+            prop_assert!((scalar_chirho[i_chirho].hi_chirho - batch_chirho[i_chirho].hi_chirho).abs() < 1e-10);
+        }
+    }
+
+    /// Batch mul produces same results as scalar mul
+    #[test]
+    fn test_batch_mul_consistent_chirho(
+        lo1_chirho in -10.0f64..10.0,
+        hi1_chirho in -10.0f64..10.0,
+        lo2_chirho in -10.0f64..10.0,
+        hi2_chirho in -10.0f64..10.0,
+        lo3_chirho in -10.0f64..10.0,
+        hi3_chirho in -10.0f64..10.0,
+        lo4_chirho in -10.0f64..10.0,
+        hi4_chirho in -10.0f64..10.0,
+    ) {
+        let a_chirho = vec![
+            IntervalChirho::new_chirho(lo1_chirho.min(hi1_chirho), lo1_chirho.max(hi1_chirho)),
+            IntervalChirho::new_chirho(lo2_chirho.min(hi2_chirho), lo2_chirho.max(hi2_chirho)),
+        ];
+        let b_chirho = vec![
+            IntervalChirho::new_chirho(lo3_chirho.min(hi3_chirho), lo3_chirho.max(hi3_chirho)),
+            IntervalChirho::new_chirho(lo4_chirho.min(hi4_chirho), lo4_chirho.max(hi4_chirho)),
+        ];
+
+        let scalar_chirho: Vec<IntervalChirho> = a_chirho.iter()
+            .zip(b_chirho.iter())
+            .map(|(a_i_chirho, b_i_chirho)| a_i_chirho.mul_chirho(b_i_chirho))
+            .collect();
+
+        let batch_chirho = batch_mul_chirho(&a_chirho, &b_chirho);
+
+        for i_chirho in 0..2 {
+            prop_assert!((scalar_chirho[i_chirho].lo_chirho - batch_chirho[i_chirho].lo_chirho).abs() < 1e-10);
+            prop_assert!((scalar_chirho[i_chirho].hi_chirho - batch_chirho[i_chirho].hi_chirho).abs() < 1e-10);
+        }
+    }
+
+    /// IntervalVec SoA format produces same results as scalar
+    #[test]
+    fn test_interval_vec_consistent_chirho(
+        lo1_chirho in -100.0f64..100.0,
+        hi1_chirho in -100.0f64..100.0,
+        lo2_chirho in -100.0f64..100.0,
+        hi2_chirho in -100.0f64..100.0,
+    ) {
+        let intervals_chirho = vec![
+            IntervalChirho::new_chirho(lo1_chirho.min(hi1_chirho), lo1_chirho.max(hi1_chirho)),
+            IntervalChirho::new_chirho(lo2_chirho.min(hi2_chirho), lo2_chirho.max(hi2_chirho)),
+        ];
+
+        let vec_chirho = IntervalVecChirho::from_intervals_chirho(&intervals_chirho);
+        let back_chirho = vec_chirho.to_intervals_chirho();
+
+        for i_chirho in 0..2 {
+            prop_assert!((intervals_chirho[i_chirho].lo_chirho - back_chirho[i_chirho].lo_chirho).abs() < 1e-10);
+            prop_assert!((intervals_chirho[i_chirho].hi_chirho - back_chirho[i_chirho].hi_chirho).abs() < 1e-10);
+        }
+    }
+}
+
+// ============================================================================
+// FINITE DOMAIN LATTICE PROPERTIES
+// ============================================================================
+
+proptest! {
+    /// Finite domain join is commutative
+    #[test]
+    fn test_finite_domain_join_commutative_chirho(
+        v1_chirho in 0i64..100,
+        v2_chirho in 0i64..100,
+        v3_chirho in 0i64..100,
+        v4_chirho in 0i64..100,
+    ) {
+        use std::collections::BTreeSet;
+        let a_chirho = FiniteDomainChirho::from_set_chirho(
+            vec![v1_chirho, v2_chirho].into_iter().collect::<BTreeSet<_>>()
+        );
+        let b_chirho = FiniteDomainChirho::from_set_chirho(
+            vec![v3_chirho, v4_chirho].into_iter().collect::<BTreeSet<_>>()
+        );
+
+        let ab_chirho = a_chirho.join_chirho(&b_chirho);
+        let ba_chirho = b_chirho.join_chirho(&a_chirho);
+
+        // Both should have same values
+        let ab_values_chirho: Vec<i64> = ab_chirho.iter_chirho().collect();
+        let ba_values_chirho: Vec<i64> = ba_chirho.iter_chirho().collect();
+        prop_assert_eq!(ab_values_chirho, ba_values_chirho);
+    }
+
+    /// Finite domain join is idempotent
+    #[test]
+    fn test_finite_domain_join_idempotent_chirho(
+        v1_chirho in 0i64..100,
+        v2_chirho in 0i64..100,
+    ) {
+        use std::collections::BTreeSet;
+        let a_chirho = FiniteDomainChirho::from_set_chirho(
+            vec![v1_chirho, v2_chirho].into_iter().collect::<BTreeSet<_>>()
+        );
+
+        let result_chirho = a_chirho.join_chirho(&a_chirho);
+
+        let a_values_chirho: Vec<i64> = a_chirho.iter_chirho().collect();
+        let result_values_chirho: Vec<i64> = result_chirho.iter_chirho().collect();
+        prop_assert_eq!(a_values_chirho, result_values_chirho);
+    }
+
+    /// Singleton contains its value
+    #[test]
+    fn test_singleton_contains_value_chirho(v_chirho in -1000i64..1000) {
+        let singleton_chirho = FiniteDomainChirho::singleton_chirho(v_chirho);
+
+        prop_assert!(singleton_chirho.contains_chirho(v_chirho));
+        prop_assert_eq!(singleton_chirho.size_chirho(), 1);
+    }
+
+    /// Range contains all values in range
+    #[test]
+    fn test_range_contains_all_chirho(
+        start_chirho in 0i64..50,
+        len_chirho in 1i64..20,
+    ) {
+        let end_chirho = start_chirho + len_chirho;
+        let range_chirho = FiniteDomainChirho::range_chirho(start_chirho, end_chirho);
+
+        for v_chirho in start_chirho..=end_chirho {
+            prop_assert!(range_chirho.contains_chirho(v_chirho));
+        }
+    }
+
+    /// Range has correct size
+    #[test]
+    fn test_range_size_chirho(
+        start_chirho in 0i64..50,
+        len_chirho in 1i64..20,
+    ) {
+        let end_chirho = start_chirho + len_chirho;
+        let range_chirho = FiniteDomainChirho::range_chirho(start_chirho, end_chirho);
+
+        // Range is inclusive on both ends
+        prop_assert_eq!(range_chirho.size_chirho(), (len_chirho + 1) as usize);
     }
 }
