@@ -59,8 +59,8 @@ pub enum PropagatorTypeChirho {
 #[derive(Clone, Debug)]
 struct PropagatorEntryChirho {
     type_chirho: PropagatorTypeChirho,
-    inputs_chirho: Vec<CellIdChirho>,
-    outputs_chirho: Vec<CellIdChirho>,
+    /// All connected cells (bidirectional propagators read/write all).
+    cells_chirho: Vec<CellIdChirho>,
 }
 
 /// High-performance arena-based propagator network.
@@ -173,9 +173,8 @@ impl ArenaNetworkChirho {
         let idx_chirho = self.propagators_chirho.len();
         self.propagators_chirho.push(PropagatorEntryChirho {
             type_chirho: PropagatorTypeChirho::AdderChirho,
-            inputs_chirho: vec![a_chirho, b_chirho, c_chirho],
-            outputs_chirho: vec![a_chirho, b_chirho, c_chirho],
-        });
+            cells_chirho: vec![a_chirho, b_chirho, c_chirho],
+                    });
 
         // Register with all cells (bidirectional)
         self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
@@ -193,9 +192,8 @@ impl ArenaNetworkChirho {
         let idx_chirho = self.propagators_chirho.len();
         self.propagators_chirho.push(PropagatorEntryChirho {
             type_chirho: PropagatorTypeChirho::MultiplierChirho,
-            inputs_chirho: vec![a_chirho, b_chirho, c_chirho],
-            outputs_chirho: vec![a_chirho, b_chirho, c_chirho],
-        });
+            cells_chirho: vec![a_chirho, b_chirho, c_chirho],
+                    });
 
         self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
         self.cell_to_propagators_chirho[b_chirho.0].push(idx_chirho);
@@ -207,9 +205,8 @@ impl ArenaNetworkChirho {
         let idx_chirho = self.propagators_chirho.len();
         self.propagators_chirho.push(PropagatorEntryChirho {
             type_chirho: PropagatorTypeChirho::SquarerChirho,
-            inputs_chirho: vec![a_chirho, b_chirho],
-            outputs_chirho: vec![a_chirho, b_chirho],
-        });
+            cells_chirho: vec![a_chirho, b_chirho],
+                    });
 
         self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
         self.cell_to_propagators_chirho[b_chirho.0].push(idx_chirho);
@@ -240,13 +237,13 @@ impl ArenaNetworkChirho {
     fn run_propagator_chirho(&mut self, prop_idx_chirho: usize) {
         // Copy propagator data to avoid borrow conflicts
         let type_chirho = self.propagators_chirho[prop_idx_chirho].type_chirho;
-        let inputs_chirho = self.propagators_chirho[prop_idx_chirho].inputs_chirho.clone();
+        let cells_chirho = self.propagators_chirho[prop_idx_chirho].cells_chirho.clone();
 
         match type_chirho {
             PropagatorTypeChirho::AdderChirho => {
-                let a_chirho = self.cells_chirho[inputs_chirho[0].0];
-                let b_chirho = self.cells_chirho[inputs_chirho[1].0];
-                let c_chirho = self.cells_chirho[inputs_chirho[2].0];
+                let a_chirho = self.cells_chirho[cells_chirho[0].0];
+                let b_chirho = self.cells_chirho[cells_chirho[1].0];
+                let c_chirho = self.cells_chirho[cells_chirho[2].0];
 
                 // Forward: c = a + b
                 if let (Some(a_iv_chirho), Some(b_iv_chirho)) =
@@ -254,7 +251,7 @@ impl ArenaNetworkChirho {
                 {
                     let result_chirho = a_iv_chirho.add_chirho(&b_iv_chirho);
                     self.add_info_chirho(
-                        inputs_chirho[2],
+                        cells_chirho[2],
                         NumericInfoChirho::IntervalChirho(result_chirho),
                     );
                 }
@@ -265,7 +262,7 @@ impl ArenaNetworkChirho {
                 {
                     let result_chirho = c_iv_chirho.sub_chirho(&b_iv_chirho);
                     self.add_info_chirho(
-                        inputs_chirho[0],
+                        cells_chirho[0],
                         NumericInfoChirho::IntervalChirho(result_chirho),
                     );
                 }
@@ -276,16 +273,16 @@ impl ArenaNetworkChirho {
                 {
                     let result_chirho = c_iv_chirho.sub_chirho(&a_iv_chirho);
                     self.add_info_chirho(
-                        inputs_chirho[1],
+                        cells_chirho[1],
                         NumericInfoChirho::IntervalChirho(result_chirho),
                     );
                 }
             }
 
             PropagatorTypeChirho::MultiplierChirho => {
-                let a_chirho = self.cells_chirho[inputs_chirho[0].0];
-                let b_chirho = self.cells_chirho[inputs_chirho[1].0];
-                let c_chirho = self.cells_chirho[inputs_chirho[2].0];
+                let a_chirho = self.cells_chirho[cells_chirho[0].0];
+                let b_chirho = self.cells_chirho[cells_chirho[1].0];
+                let c_chirho = self.cells_chirho[cells_chirho[2].0];
 
                 // Forward: c = a * b
                 if let (Some(a_iv_chirho), Some(b_iv_chirho)) =
@@ -293,7 +290,7 @@ impl ArenaNetworkChirho {
                 {
                     let result_chirho = a_iv_chirho.mul_chirho(&b_iv_chirho);
                     self.add_info_chirho(
-                        inputs_chirho[2],
+                        cells_chirho[2],
                         NumericInfoChirho::IntervalChirho(result_chirho),
                     );
                 }
@@ -305,7 +302,7 @@ impl ArenaNetworkChirho {
                     let result_chirho = c_iv_chirho.div_chirho(&b_iv_chirho);
                     if !result_chirho.is_empty_chirho() {
                         self.add_info_chirho(
-                            inputs_chirho[0],
+                            cells_chirho[0],
                             NumericInfoChirho::IntervalChirho(result_chirho),
                         );
                     }
@@ -318,7 +315,7 @@ impl ArenaNetworkChirho {
                     let result_chirho = c_iv_chirho.div_chirho(&a_iv_chirho);
                     if !result_chirho.is_empty_chirho() {
                         self.add_info_chirho(
-                            inputs_chirho[1],
+                            cells_chirho[1],
                             NumericInfoChirho::IntervalChirho(result_chirho),
                         );
                     }
@@ -326,14 +323,14 @@ impl ArenaNetworkChirho {
             }
 
             PropagatorTypeChirho::SquarerChirho => {
-                let a_chirho = self.cells_chirho[inputs_chirho[0].0];
-                let b_chirho = self.cells_chirho[inputs_chirho[1].0];
+                let a_chirho = self.cells_chirho[cells_chirho[0].0];
+                let b_chirho = self.cells_chirho[cells_chirho[1].0];
 
                 // Forward: b = a²
                 if let Some(a_iv_chirho) = a_chirho.as_interval_chirho() {
                     let result_chirho = a_iv_chirho.square_chirho();
                     self.add_info_chirho(
-                        inputs_chirho[1],
+                        cells_chirho[1],
                         NumericInfoChirho::IntervalChirho(result_chirho),
                     );
                 }
@@ -343,7 +340,7 @@ impl ArenaNetworkChirho {
                     let result_chirho = b_iv_chirho.sqrt_chirho();
                     if !result_chirho.is_empty_chirho() {
                         self.add_info_chirho(
-                            inputs_chirho[0],
+                            cells_chirho[0],
                             NumericInfoChirho::IntervalChirho(result_chirho),
                         );
                     }
@@ -351,15 +348,15 @@ impl ArenaNetworkChirho {
             }
 
             PropagatorTypeChirho::SqrterChirho => {
-                let a_chirho = self.cells_chirho[inputs_chirho[0].0];
-                let b_chirho = self.cells_chirho[inputs_chirho[1].0];
+                let a_chirho = self.cells_chirho[cells_chirho[0].0];
+                let b_chirho = self.cells_chirho[cells_chirho[1].0];
 
                 // Forward: b = √a (sqrt returns interval, may be empty if negative)
                 if let Some(a_iv_chirho) = a_chirho.as_interval_chirho() {
                     let result_chirho = a_iv_chirho.sqrt_chirho();
                     if !result_chirho.is_empty_chirho() {
                         self.add_info_chirho(
-                            inputs_chirho[1],
+                            cells_chirho[1],
                             NumericInfoChirho::IntervalChirho(result_chirho),
                         );
                     }
@@ -369,7 +366,7 @@ impl ArenaNetworkChirho {
                 if let Some(b_iv_chirho) = b_chirho.as_interval_chirho() {
                     let result_chirho = b_iv_chirho.square_chirho();
                     self.add_info_chirho(
-                        inputs_chirho[0],
+                        cells_chirho[0],
                         NumericInfoChirho::IntervalChirho(result_chirho),
                     );
                 }

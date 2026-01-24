@@ -149,6 +149,7 @@ pub mod amb_chirho;
 pub mod cell_chirho;
 pub mod constraint_system_chirho;
 pub mod interval_chirho;
+pub mod lattice_chirho;
 pub mod propagator_chirho;
 pub mod scheduler_chirho;
 pub mod tms_chirho;
@@ -174,6 +175,10 @@ pub use propagator_chirho::{
 pub use scheduler_chirho::SchedulerChirho;
 pub use tms_chirho::{BeliefChirho, PremiseSetChirho, SupportedChirho, TmsCellChirho};
 pub use worldview_chirho::WorldviewChirho;
+pub use lattice_chirho::{
+    LatticeChirho, BoundedLatticeChirho, PropagatorFnChirho, PropagatorComposeChirho,
+    SupportedValueChirho, AddPropagatorChirho, MulPropagatorChirho, SquarePropagatorChirho,
+};
 
 /// Prelude module for convenient imports.
 ///
