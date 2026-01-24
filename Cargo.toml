@@ -14,7 +14,7 @@ readme = "README.md"
 homepage = "https://github.com/loveJesus/propagators-chirho"
 repository = "https://github.com/loveJesus/propagators-chirho"
 license = "MIT"
-keywords = ["propagators", "constraints", "interval-arithmetic", "constraint-programming", "bidirectional"]
+keywords = ["propagators", "constraints", "interval-arithmetic", "csp", "bidirectional"]
 categories = ["algorithms", "mathematics", "science"]
 include = [
     "/src/**/*",
