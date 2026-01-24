@@ -11,6 +11,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2025-01-24
+
+### Added
+
+- **WebSocket Transport** (`network-websocket` feature)
+  - `WebSocketClientChirho` - Async WebSocket client for connecting to peers
+  - `WebSocketServerChirho` - Async WebSocket server for hosting networks
+  - `AsyncDistributedNetworkChirho` - High-level async network wrapper
+  - Full duplex messaging with automatic reconnection handling
+  - Tokio-based async runtime integration
+
+- **PropCoin Cryptocurrency** (`crypto` feature)
+  - `PropCoinLedgerChirho` - Propagator-based distributed ledger
+  - `AccountChirho` - Accounts with interval balance bounds
+  - `TransactionChirho` - Transfer transactions with nonce protection
+  - `BlockChirho` - Blockchain blocks with transaction batching
+  - CRDT-like balance merging for conflict-free distributed sync
+  - Interval balances enable partial knowledge and privacy proofs
+  - 6 comprehensive tests for ledger operations
+
 ## [0.1.4] - 2025-01-24
 
 ### Added

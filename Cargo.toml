@@ -4,7 +4,7 @@
 
 [package]
 name = "propagators-chirho"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 rust-version = "1.70"
 authors = ["loveJesus <loveJesus@loveJesus.software>"]
@@ -69,6 +69,14 @@ tracing = { version = "0.1", optional = true }
 indexmap = { version = "2.0", optional = true }
 # Required for no_std math operations (sqrt, powi, etc.)
 libm = { version = "0.2", optional = true }
+# Optional: Async runtime for network transports
+tokio = { version = "1.0", features = ["rt-multi-thread", "net", "sync", "macros", "time"], optional = true }
+# Optional: WebSocket support
+tokio-tungstenite = { version = "0.24", optional = true }
+# Optional: Async utilities
+futures = { version = "0.3", optional = true }
+# Optional: URL parsing for WebSocket connections
+url = { version = "2.5", optional = true }
 
 [dev-dependencies]
 criterion = "0.5"
@@ -97,9 +105,13 @@ backtrack = ["dep:indexmap", "tms-full"]
 # no_std support (disables features requiring std)
 no-std = ["dep:libm"]
 # Distributed network support for multi-node propagation
-network = []
+network = ["serde"]
+# WebSocket transport for distributed networks
+network-websocket = ["network", "dep:tokio", "dep:tokio-tungstenite", "dep:futures", "dep:url"]
 # Cloudflare Durable Objects integration
 cloudflare = ["serde"]
+# PropCoin cryptocurrency implementation
+crypto = ["network", "serde"]
 
 [[bench]]
 name = "propagator_bench_chirho"

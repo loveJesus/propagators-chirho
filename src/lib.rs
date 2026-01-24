@@ -247,6 +247,27 @@ pub mod network_chirho;
 #[cfg_attr(docsrs, doc(cfg(all(feature = "cloudflare", not(feature = "no-std")))))]
 pub mod cloudflare_chirho;
 
+/// WebSocket transport for distributed propagator networks.
+///
+/// Enable with the `network-websocket` feature for real network transport.
+/// Provides async WebSocket client and server for multi-node synchronization.
+/// Not available in no_std mode.
+#[cfg(all(feature = "network-websocket", not(feature = "no-std")))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(all(feature = "network-websocket", not(feature = "no-std"))))
+)]
+pub mod websocket_transport_chirho;
+
+/// PropCoin: A propagator-based cryptocurrency.
+///
+/// Enable with the `crypto` feature for a complete digital currency
+/// implementation using propagator networks for distributed consensus.
+/// Not available in no_std mode.
+#[cfg(all(feature = "crypto", not(feature = "no-std")))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "crypto", not(feature = "no-std")))))]
+pub mod crypto_coin_chirho;
+
 /// WebAssembly bindings for browser/Node.js usage.
 ///
 /// Enable with the `wasm` and `arena` features.
