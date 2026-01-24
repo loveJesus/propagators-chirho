@@ -10,29 +10,29 @@ capabilities using interval arithmetic and lattice-based partial information.
 
 Example usage::
 
-    from propagators_chirho import PropagatorNetwork, Interval
+    from propagators_chirho import PropagatorNetworkChirho, IntervalChirho
 
     # Create a network
-    net = PropagatorNetwork()
+    net_chirho = PropagatorNetworkChirho()
 
     # Create cells for a + b = c
-    a = net.make_cell_chirho()
-    b = net.make_cell_chirho()
-    c = net.make_cell_chirho()
+    a_chirho = net_chirho.make_cell_chirho()
+    b_chirho = net_chirho.make_cell_chirho()
+    c_chirho = net_chirho.make_cell_chirho()
 
-    net.add_adder_chirho(a, b, c)
+    net_chirho.add_adder_chirho(a_chirho, b_chirho, c_chirho)
 
     # Set values and propagate
-    net.set_exact_chirho(a, 3.0)
-    net.set_exact_chirho(b, 4.0)
-    net.propagate_chirho()
+    net_chirho.set_exact_chirho(a_chirho, 3.0)
+    net_chirho.set_exact_chirho(b_chirho, 4.0)
+    net_chirho.propagate_chirho()
 
-    print(net.get_exact_chirho(c))  # 7.0
+    print(net_chirho.get_exact_chirho(c_chirho))  # 7.0
 """
 
 # Import from the native Rust extension module
-from .propagators_chirho import PropagatorNetwork, Interval
+from .propagators_chirho import PropagatorNetworkChirho, IntervalChirho
 
-__all__ = ['PropagatorNetwork', 'Interval']
+__all__ = ['PropagatorNetworkChirho', 'IntervalChirho']
 __version__ = "0.1.0"
 __author__ = "loveJesus"

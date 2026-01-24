@@ -27,28 +27,28 @@
 //! # Python Usage
 //!
 //! ```python
-//! from propagators_chirho import PropagatorNetwork, Interval
+//! from propagators_chirho import PropagatorNetworkChirho, IntervalChirho
 //!
 //! # Create a network
-//! net = PropagatorNetwork()
+//! net_chirho = PropagatorNetworkChirho()
 //!
 //! # Create cells
-//! a = net.make_cell()
-//! b = net.make_cell()
-//! c = net.make_cell()
+//! a_chirho = net_chirho.make_cell_chirho()
+//! b_chirho = net_chirho.make_cell_chirho()
+//! c_chirho = net_chirho.make_cell_chirho()
 //!
 //! # Add constraint: a + b = c
-//! net.add_adder(a, b, c)
+//! net_chirho.add_adder_chirho(a_chirho, b_chirho, c_chirho)
 //!
 //! # Set values
-//! net.set_exact(a, 3.0)
-//! net.set_exact(b, 4.0)
+//! net_chirho.set_exact_chirho(a_chirho, 3.0)
+//! net_chirho.set_exact_chirho(b_chirho, 4.0)
 //!
 //! # Propagate
-//! net.propagate()
+//! net_chirho.propagate_chirho()
 //!
 //! # Get result
-//! print(net.get_exact(c))  # 7.0
+//! print(net_chirho.get_exact_chirho(c_chirho))  # 7.0
 //! ```
 
 use pyo3::exceptions::PyValueError;
@@ -60,7 +60,7 @@ use crate::interval_chirho::NumericInfoChirho;
 /// A propagator network for constraint propagation.
 ///
 /// This is the main entry point for using propagators from Python.
-#[pyclass(name = "PropagatorNetwork")]
+#[pyclass(name = "PropagatorNetworkChirho")]
 pub struct PyNetworkChirho {
     network_chirho: ArenaNetworkChirho,
 }
@@ -242,7 +242,7 @@ impl PyNetworkChirho {
     /// String representation of the network.
     fn __repr__(&self) -> String {
         format!(
-            "PropagatorNetwork(cells={}, propagators={}, propagations={})",
+            "PropagatorNetworkChirho(cells_chirho={}, propagators_chirho={}, propagations_chirho={})",
             self.network_chirho.cell_count_chirho(),
             self.network_chirho.propagator_count_chirho(),
             self.network_chirho.propagation_count_chirho()
@@ -253,7 +253,7 @@ impl PyNetworkChirho {
 /// An interval representing partial numeric information.
 ///
 /// An interval [lo, hi] represents all values x where lo <= x <= hi.
-#[pyclass(name = "Interval")]
+#[pyclass(name = "IntervalChirho")]
 #[derive(Clone)]
 pub struct PyIntervalChirho {
     /// Lower bound
@@ -377,9 +377,9 @@ impl PyIntervalChirho {
     /// String representation.
     fn __repr__(&self) -> String {
         if self.is_exact_chirho() {
-            format!("Interval.exact({})", self.lo_chirho)
+            format!("IntervalChirho.exact_chirho({})", self.lo_chirho)
         } else {
-            format!("Interval({}, {})", self.lo_chirho, self.hi_chirho)
+            format!("IntervalChirho({}, {})", self.lo_chirho, self.hi_chirho)
         }
     }
 
