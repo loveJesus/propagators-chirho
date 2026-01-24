@@ -84,6 +84,33 @@
 //! - **Amb Operator**: Nondeterministic choice with backtracking
 //! - **Scheduler**: Runs propagators to fixpoint
 //!
+//! ## Cargo Features
+//!
+//! - `arena`: High-performance arena-based cells (reduces Rc overhead)
+//! - `parallel`: Parallel propagation using rayon
+//! - `serde`: Serialization support for intervals and cells
+//! - `tracing`: Debugging instrumentation (adds overhead)
+//! - `tms-full`: Full TMS with justification tracking (memory overhead)
+//! - `no-std`: Embedded/no_std support (see below)
+//!
+//! ## no_std Support
+//!
+//! Enable the `no-std` feature for embedded or bare-metal environments:
+//!
+//! ```toml
+//! [dependencies]
+//! propagators-chirho = { version = "0.1", default-features = false, features = ["no-std"] }
+//! ```
+//!
+//! In no_std mode, only core modules are available:
+//! - `IntervalChirho` and `NumericInfoChirho` for interval arithmetic
+//! - `algebra_chirho` traits (`SemigroupChirho`, `MonoidChirho`, etc.)
+//! - `simd_chirho` for batch SIMD operations
+//!
+//! The full propagator network (cells, schedulers, TMS) requires `std`.
+//!
+//! **Note**: The `no-std` feature is mutually exclusive with other features.
+//!
 //! ## References
 //!
 //! 1. Radul, A., & Sussman, G. J. (2009). *The Art of the Propagator*.
@@ -121,6 +148,14 @@
 //! // With proper propagators set up, fahrenheit would become 212.0
 //! ```
 
+// no_std support: use core + alloc when std is not available
+// Note: Most modules require alloc for Vec, HashMap, etc.
+// Only the core interval arithmetic in interval_chirho works with just core.
+//
+// To use in a no_std environment, enable the "no-std" feature and provide
+// an alloc crate. Full propagator networks require alloc; only interval
+// arithmetic can work with just core.
+#![cfg_attr(feature = "no-std", no_std)]
 #![doc(html_root_url = "https://docs.rs/propagators-chirho/0.1.0")]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs)]
@@ -145,45 +180,72 @@
 #![allow(clippy::manual_assert)]
 #![allow(clippy::unnecessary_literal_bound)]
 
-pub mod amb_chirho;
-pub mod cell_chirho;
-pub mod constraint_system_chirho;
-pub mod finite_domain_chirho;
-pub mod generic_cell_chirho;
+// Provide alloc crate when in no_std mode
+#[cfg(feature = "no-std")]
+extern crate alloc;
+
+// Core modules that work in no_std (with alloc)
+pub mod algebra_chirho;
 pub mod interval_chirho;
-pub mod lattice_chirho;
-pub mod propagator_chirho;
-pub mod scheduler_chirho;
 pub mod simd_chirho;
+
+// Modules requiring std (cells, scheduling, propagators, etc.)
+#[cfg(not(feature = "no-std"))]
+pub mod amb_chirho;
+#[cfg(not(feature = "no-std"))]
+pub mod cell_chirho;
+#[cfg(not(feature = "no-std"))]
+pub mod constraint_system_chirho;
+#[cfg(not(feature = "no-std"))]
+pub mod finite_domain_chirho;
+#[cfg(not(feature = "no-std"))]
+pub mod generic_cell_chirho;
+#[cfg(not(feature = "no-std"))]
+pub mod lattice_chirho;
+#[cfg(not(feature = "no-std"))]
+pub mod propagator_chirho;
+#[cfg(not(feature = "no-std"))]
+pub mod scheduler_chirho;
+#[cfg(not(feature = "no-std"))]
 pub mod tms_chirho;
+#[cfg(not(feature = "no-std"))]
+pub mod tracing_chirho;
+#[cfg(not(feature = "no-std"))]
 pub mod worldview_chirho;
 
 /// High-performance arena-based implementation.
 ///
 /// Enable with the `arena` feature for reduced allocation overhead.
-#[cfg(feature = "arena")]
-#[cfg_attr(docsrs, doc(cfg(feature = "arena")))]
+/// Not available in no_std mode.
+#[cfg(all(feature = "arena", not(feature = "no-std")))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "arena", not(feature = "no-std")))))]
 pub mod arena_chirho;
 
 /// Parallel propagation using rayon.
 ///
 /// Enable with the `parallel` feature for concurrent propagation.
-#[cfg(feature = "parallel")]
-#[cfg_attr(docsrs, doc(cfg(feature = "parallel")))]
+/// Not available in no_std mode.
+#[cfg(all(feature = "parallel", not(feature = "no-std")))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "parallel", not(feature = "no-std")))))]
 pub mod parallel_chirho;
 
 /// WebAssembly bindings for browser/Node.js usage.
 ///
 /// Enable with the `wasm` and `arena` features.
-#[cfg(all(feature = "wasm", feature = "arena"))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "wasm", feature = "arena"))))]
+/// Not available in no_std mode.
+#[cfg(all(feature = "wasm", feature = "arena", not(feature = "no-std")))]
+#[cfg_attr(
+    docsrs,
+    doc(cfg(all(feature = "wasm", feature = "arena", not(feature = "no-std"))))
+)]
 pub mod wasm_chirho;
 
 /// Python bindings via PyO3.
 ///
 /// Enable with the `python` feature. Build with maturin.
-#[cfg(feature = "python")]
-#[cfg_attr(docsrs, doc(cfg(feature = "python")))]
+/// Not available in no_std mode.
+#[cfg(all(feature = "python", not(feature = "no-std")))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "python", not(feature = "no-std")))))]
 pub mod python_chirho;
 
 /// Kani formal verification proofs.
@@ -194,51 +256,81 @@ pub mod python_chirho;
 pub mod kani_proofs_chirho;
 
 // Re-exports for convenience
-pub use amb_chirho::{AmbChirho, BacktrackingSearchChirho, SearchResultChirho};
+// Core exports (always available)
+pub use algebra_chirho::{
+    BoundedJoinSemilatticeChirho, CommutativeSemigroupChirho, IdempotentSemigroupChirho,
+    JoinSemilatticeChirho, MonoidChirho, PropagatorErrorChirho, PropagatorResultChirho,
+    SemigroupChirho,
+};
+pub use interval_chirho::{IntervalChirho, NumericInfoChirho};
+pub use simd_chirho::{
+    batch_add_chirho, batch_intersect_chirho, batch_mul_chirho, batch_sqrt_chirho,
+    batch_square_chirho, batch_sub_chirho, IntervalVecChirho,
+};
+
+// Exports requiring std (not available in no_std mode)
+#[cfg(not(feature = "no-std"))]
+pub use amb_chirho::{
+    AmbChirho, BacktrackingSearchChirho, DependencyDirectedSearchChirho, SearchResultChirho,
+};
+#[cfg(not(feature = "no-std"))]
 pub use cell_chirho::{CellChirho, MergeableChirho};
+#[cfg(not(feature = "no-std"))]
 pub use constraint_system_chirho::ConstraintSystemChirho;
+#[cfg(not(feature = "no-std"))]
 pub use finite_domain_chirho::{
     AllDifferentChirho, EqualsChirho, FiniteDomainChirho, LessThanChirho, NotEqualsChirho,
 };
+#[cfg(not(feature = "no-std"))]
 pub use generic_cell_chirho::{GenericCellChirho, GenericNetworkChirho};
-pub use interval_chirho::{IntervalChirho, NumericInfoChirho};
+#[cfg(not(feature = "no-std"))]
 pub use lattice_chirho::{
     AddPropagatorChirho, BoundedLatticeChirho, LatticeChirho, MulPropagatorChirho,
     PropagatorComposeChirho, PropagatorFnChirho, SquarePropagatorChirho, SupportedValueChirho,
 };
+#[cfg(not(feature = "no-std"))]
 pub use propagator_chirho::{
     AbsoluterChirho, ClampChirho, ConditionalChirho, ConstantChirho, ExpChirho,
     IntervalAdderChirho, IntervalDividerChirho, IntervalMultiplierChirho, IntervalSubtractorChirho,
     LnChirho, MaxChirho, MinChirho, NegaterChirho, PowerChirho, PropagatorChirho, SqrterChirho,
     SquarerChirho,
 };
+#[cfg(not(feature = "no-std"))]
 pub use scheduler_chirho::SchedulerChirho;
-pub use simd_chirho::{
-    batch_add_chirho, batch_intersect_chirho, batch_mul_chirho, batch_sqrt_chirho,
-    batch_square_chirho, batch_sub_chirho, IntervalVecChirho,
+#[cfg(not(feature = "no-std"))]
+pub use tms_chirho::{
+    BeliefChirho, JustificationChirho, NogoodStoreChirho, PremiseSetChirho, SupportedChirho,
+    TmsCellChirho, TmsNetworkChirho,
 };
-pub use tms_chirho::{BeliefChirho, PremiseSetChirho, SupportedChirho, TmsCellChirho};
+#[cfg(not(feature = "no-std"))]
 pub use worldview_chirho::WorldviewChirho;
 
-// Feature-gated re-exports
-#[cfg(feature = "arena")]
+// Feature-gated re-exports (requires std)
+#[cfg(all(feature = "arena", not(feature = "no-std")))]
 pub use arena_chirho::{ArenaNetworkChirho, CellIdChirho};
 
-#[cfg(feature = "parallel")]
+#[cfg(all(feature = "parallel", not(feature = "no-std")))]
 pub use parallel_chirho::{
     NumericParallelNetworkChirho, ParallelCellChirho, ParallelNetworkChirho,
 };
 
 /// Prelude module for convenient imports.
 ///
+/// In no_std mode, only interval-related exports are available.
+///
 /// # Example
 ///
 /// ```
 /// use propagators_chirho::prelude_chirho::*;
 /// ```
+#[cfg(not(feature = "no-std"))]
 pub mod prelude_chirho {
     //! Convenient re-exports for common usage.
 
+    pub use crate::algebra_chirho::{
+        BoundedJoinSemilatticeChirho, JoinSemilatticeChirho, MonoidChirho, PropagatorErrorChirho,
+        PropagatorResultChirho, SemigroupChirho,
+    };
     pub use crate::amb_chirho::{AmbChirho, BacktrackingSearchChirho, SearchResultChirho};
     pub use crate::cell_chirho::{CellChirho, MergeableChirho};
     pub use crate::constraint_system_chirho::ConstraintSystemChirho;
@@ -253,7 +345,22 @@ pub mod prelude_chirho {
     pub use crate::worldview_chirho::WorldviewChirho;
 }
 
+/// Minimal prelude for no_std mode.
+#[cfg(feature = "no-std")]
+pub mod prelude_chirho {
+    //! Minimal re-exports for no_std mode.
+    //!
+    //! Only interval arithmetic and algebraic traits are available.
+
+    pub use crate::algebra_chirho::{
+        BoundedJoinSemilatticeChirho, JoinSemilatticeChirho, MonoidChirho, PropagatorErrorChirho,
+        PropagatorResultChirho, SemigroupChirho,
+    };
+    pub use crate::interval_chirho::{IntervalChirho, NumericInfoChirho};
+}
+
 #[cfg(test)]
+#[cfg(not(feature = "no-std"))]
 mod tests_chirho {
     use super::*;
 

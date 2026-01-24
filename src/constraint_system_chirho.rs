@@ -34,6 +34,7 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
+use crate::algebra_chirho::{PropagatorErrorChirho, PropagatorResultChirho};
 use crate::cell_chirho::CellChirho;
 use crate::interval_chirho::NumericInfoChirho;
 use crate::propagator_chirho::{
@@ -102,23 +103,49 @@ impl ConstraintSystemChirho {
     /// # Panics
     ///
     /// Panics if a cell with this name already exists.
+    /// Use [`try_make_cell_chirho`](Self::try_make_cell_chirho) for a non-panicking version.
     pub fn make_cell_chirho(&mut self, name_chirho: &str) -> String {
+        self.try_make_cell_chirho(name_chirho)
+            .expect("Cell already exists")
+    }
+
+    /// Creates a new cell with the given name (non-panicking version).
+    ///
+    /// Returns `Ok(name)` on success, or an error if the cell already exists.
+    ///
+    /// # Errors
+    ///
+    /// Returns `PropagatorErrorChirho::CellAlreadyExistsChirho` if a cell
+    /// with the given name already exists in the system.
+    pub fn try_make_cell_chirho(&mut self, name_chirho: &str) -> PropagatorResultChirho<String> {
         if self.cells_chirho.contains_key(name_chirho) {
-            panic!("Cell '{}' already exists", name_chirho);
+            return Err(PropagatorErrorChirho::CellAlreadyExistsChirho {
+                name_chirho: name_chirho.to_string(),
+            });
         }
 
         let cell_chirho = CellChirho::new_chirho(name_chirho);
         self.cells_chirho
             .insert(name_chirho.to_string(), cell_chirho);
-        name_chirho.to_string()
+        Ok(name_chirho.to_string())
     }
 
     /// Gets a cell by name.
     fn get_cell_chirho(&self, name_chirho: &str) -> Rc<CellChirho<NumericInfoChirho>> {
-        self.cells_chirho
-            .get(name_chirho)
-            .cloned()
-            .unwrap_or_else(|| panic!("Cell '{}' not found", name_chirho))
+        self.try_get_cell_chirho(name_chirho)
+            .expect("Cell not found")
+    }
+
+    /// Gets a cell by name (non-panicking version).
+    fn try_get_cell_chirho(
+        &self,
+        name_chirho: &str,
+    ) -> PropagatorResultChirho<Rc<CellChirho<NumericInfoChirho>>> {
+        self.cells_chirho.get(name_chirho).cloned().ok_or_else(|| {
+            PropagatorErrorChirho::CellNameNotFoundChirho {
+                name_chirho: name_chirho.to_string(),
+            }
+        })
     }
 
     /// Gets the current value of a cell.

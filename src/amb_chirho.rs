@@ -13,14 +13,23 @@
 //! The amb operator was introduced by John McCarthy and has been used
 //! extensively in logic programming and constraint solving.
 //!
+//! # Features
+//!
+//! - `backtrack`: Enables dependency-directed backtracking, which uses
+//!   nogood information to focus the search and skip irrelevant choices.
+//!
 //! # References
 //!
 //! - McCarthy, J. (1963). *A Basis for a Mathematical Theory of Computation*.
 //!
 //! - Radul, A., & Sussman, G. J. (2009). *The Art of the Propagator*, Section 9.
 //!   <https://dspace.mit.edu/handle/1721.1/44215>
+//!
+//! - Stallman, R. M., & Sussman, G. J. (1977). *Forward Reasoning and
+//!   Dependency-Directed Backtracking*. Artificial Intelligence, 9(2), 135-196.
 
 use std::cell::RefCell;
+use std::collections::HashSet;
 
 use crate::interval_chirho::NumericInfoChirho;
 
@@ -299,6 +308,250 @@ impl Default for BacktrackingSearchChirho {
     }
 }
 
+/// Dependency-directed backtracking search.
+///
+/// Unlike chronological backtracking (which always backtracks to the most
+/// recent choice), dependency-directed backtracking analyzes the conflict
+/// to determine which choice actually caused the contradiction, and jumps
+/// directly to that choice.
+///
+/// This can dramatically reduce search time by avoiding futile exploration
+/// of unrelated choices.
+///
+/// # Feature Flag
+///
+/// Requires the `backtrack` feature:
+///
+/// ```toml
+/// [dependencies]
+/// propagators-chirho = { version = "0.1", features = ["backtrack"] }
+/// ```
+///
+/// # Algorithm
+///
+/// 1. When a contradiction is detected, collect the premises involved
+/// 2. Find the most recent choice that contributed to those premises
+/// 3. Backtrack directly to that choice (skipping intermediate choices)
+/// 4. Record the nogood so we don't repeat the same mistake
+///
+/// # Example
+///
+/// ```
+/// use propagators_chirho::{
+///     DependencyDirectedSearchChirho, AmbChirho, NumericInfoChirho
+/// };
+///
+/// let search_chirho = DependencyDirectedSearchChirho::new_chirho();
+///
+/// // Create amb choices with premise names
+/// let ambs_chirho = vec![
+///     ("x".to_string(), AmbChirho::range_chirho(1, 5)),
+///     ("y".to_string(), AmbChirho::range_chirho(1, 5)),
+/// ];
+/// ```
+#[derive(Clone, Debug)]
+pub struct DependencyDirectedSearchChirho {
+    /// Maximum backtracks before giving up.
+    max_backtracks_chirho: usize,
+    /// Current backtrack count.
+    backtrack_count_chirho: RefCell<usize>,
+    /// Nogoods learned during search.
+    nogoods_chirho: RefCell<Vec<HashSet<String>>>,
+    /// Statistics: chronological backtracks avoided.
+    jumps_chirho: RefCell<usize>,
+}
+
+impl DependencyDirectedSearchChirho {
+    /// Creates a new dependency-directed search engine.
+    pub fn new_chirho() -> Self {
+        Self {
+            max_backtracks_chirho: 10000,
+            backtrack_count_chirho: RefCell::new(0),
+            nogoods_chirho: RefCell::new(Vec::new()),
+            jumps_chirho: RefCell::new(0),
+        }
+    }
+
+    /// Creates a search engine with a custom backtrack limit.
+    pub fn with_limit_chirho(max_backtracks_chirho: usize) -> Self {
+        Self {
+            max_backtracks_chirho,
+            backtrack_count_chirho: RefCell::new(0),
+            nogoods_chirho: RefCell::new(Vec::new()),
+            jumps_chirho: RefCell::new(0),
+        }
+    }
+
+    /// Returns the number of backtracks performed.
+    pub fn backtrack_count_chirho(&self) -> usize {
+        *self.backtrack_count_chirho.borrow()
+    }
+
+    /// Returns the number of dependency-directed jumps (skipped levels).
+    pub fn jump_count_chirho(&self) -> usize {
+        *self.jumps_chirho.borrow()
+    }
+
+    /// Returns the learned nogoods.
+    pub fn nogoods_chirho(&self) -> Vec<HashSet<String>> {
+        self.nogoods_chirho.borrow().clone()
+    }
+
+    /// Resets all counters and learned nogoods.
+    pub fn reset_chirho(&self) {
+        *self.backtrack_count_chirho.borrow_mut() = 0;
+        *self.jumps_chirho.borrow_mut() = 0;
+        self.nogoods_chirho.borrow_mut().clear();
+    }
+
+    /// Searches for a solution using dependency-directed backtracking.
+    ///
+    /// # Arguments
+    ///
+    /// * `ambs_chirho` - Named amb choices (premise name, amb)
+    /// * `check_consistent_chirho` - Returns `Ok(())` if consistent, or
+    ///   `Err(conflicting_premises)` if contradiction
+    pub fn search_chirho<F>(
+        &self,
+        ambs_chirho: &[(String, AmbChirho)],
+        check_consistent_chirho: F,
+    ) -> SearchResultChirho
+    where
+        F: Fn(&[(String, NumericInfoChirho)]) -> Result<(), HashSet<String>>,
+    {
+        self.reset_chirho();
+
+        let mut assignment_chirho: Vec<Option<(String, NumericInfoChirho)>> =
+            vec![None; ambs_chirho.len()];
+
+        match self.search_recursive_dd_chirho(
+            ambs_chirho,
+            &mut assignment_chirho,
+            0,
+            &check_consistent_chirho,
+        ) {
+            Ok(()) => {
+                let solution_chirho: Vec<NumericInfoChirho> = assignment_chirho
+                    .into_iter()
+                    .map(|opt_chirho| opt_chirho.unwrap().1)
+                    .collect();
+                SearchResultChirho::SolutionChirho(solution_chirho)
+            }
+            Err(_) => {
+                if *self.backtrack_count_chirho.borrow() >= self.max_backtracks_chirho {
+                    SearchResultChirho::AbandonedChirho
+                } else {
+                    SearchResultChirho::NoSolutionChirho
+                }
+            }
+        }
+    }
+
+    fn search_recursive_dd_chirho<F>(
+        &self,
+        ambs_chirho: &[(String, AmbChirho)],
+        assignment_chirho: &mut [Option<(String, NumericInfoChirho)>],
+        index_chirho: usize,
+        check_consistent_chirho: &F,
+    ) -> Result<(), HashSet<String>>
+    where
+        F: Fn(&[(String, NumericInfoChirho)]) -> Result<(), HashSet<String>>,
+    {
+        // Check backtrack limit
+        if *self.backtrack_count_chirho.borrow() >= self.max_backtracks_chirho {
+            return Err(HashSet::new());
+        }
+
+        // Base case: all variables assigned
+        if index_chirho >= ambs_chirho.len() {
+            let values_chirho: Vec<(String, NumericInfoChirho)> = assignment_chirho
+                .iter()
+                .map(|opt_chirho| opt_chirho.clone().unwrap())
+                .collect();
+            return check_consistent_chirho(&values_chirho);
+        }
+
+        let (premise_name_chirho, amb_chirho) = &ambs_chirho[index_chirho];
+
+        // Check if current assignment contains a known nogood
+        let current_premises_chirho: HashSet<String> = assignment_chirho
+            .iter()
+            .take(index_chirho)
+            .filter_map(|opt_chirho| {
+                opt_chirho
+                    .as_ref()
+                    .map(|(name_chirho, _)| name_chirho.clone())
+            })
+            .collect();
+
+        for nogood_chirho in self.nogoods_chirho.borrow().iter() {
+            if nogood_chirho.is_subset(&current_premises_chirho) {
+                // Already known to be inconsistent
+                return Err(nogood_chirho.clone());
+            }
+        }
+
+        let mut conflict_premises_chirho: HashSet<String> = HashSet::new();
+
+        for choice_chirho in amb_chirho.choices_chirho() {
+            assignment_chirho[index_chirho] = Some((premise_name_chirho.clone(), *choice_chirho));
+
+            // Check partial consistency
+            let partial_chirho: Vec<(String, NumericInfoChirho)> = assignment_chirho
+                .iter()
+                .take(index_chirho + 1)
+                .filter_map(Option::clone)
+                .collect();
+
+            match check_consistent_chirho(&partial_chirho) {
+                Ok(()) => {
+                    // Recurse
+                    match self.search_recursive_dd_chirho(
+                        ambs_chirho,
+                        assignment_chirho,
+                        index_chirho + 1,
+                        check_consistent_chirho,
+                    ) {
+                        Ok(()) => return Ok(()),
+                        Err(child_conflict_chirho) => {
+                            // Check if this level is involved in the conflict
+                            if !child_conflict_chirho.contains(premise_name_chirho) {
+                                // This level is not involved - jump back!
+                                *self.jumps_chirho.borrow_mut() += 1;
+                                assignment_chirho[index_chirho] = None;
+                                return Err(child_conflict_chirho);
+                            }
+                            // This level is involved, continue trying
+                            conflict_premises_chirho.extend(child_conflict_chirho);
+                        }
+                    }
+                }
+                Err(local_conflict_chirho) => {
+                    conflict_premises_chirho.extend(local_conflict_chirho);
+                }
+            }
+
+            *self.backtrack_count_chirho.borrow_mut() += 1;
+        }
+
+        // All choices failed - record nogood
+        if !conflict_premises_chirho.is_empty() {
+            self.nogoods_chirho
+                .borrow_mut()
+                .push(conflict_premises_chirho.clone());
+        }
+
+        assignment_chirho[index_chirho] = None;
+        Err(conflict_premises_chirho)
+    }
+}
+
+impl Default for DependencyDirectedSearchChirho {
+    fn default() -> Self {
+        Self::new_chirho()
+    }
+}
+
 #[cfg(test)]
 mod tests_chirho {
     use super::*;
@@ -385,5 +638,119 @@ mod tests_chirho {
             result_chirho,
             SearchResultChirho::NoSolutionChirho
         ));
+    }
+
+    #[test]
+    fn test_dd_search_basic_chirho() {
+        let search_chirho = DependencyDirectedSearchChirho::new_chirho();
+
+        // Find x, y where x + y = 5 and x, y ∈ {1, 2, 3, 4}
+        let ambs_chirho = vec![
+            ("x".to_string(), AmbChirho::range_chirho(1, 4)),
+            ("y".to_string(), AmbChirho::range_chirho(1, 4)),
+        ];
+
+        let result_chirho = search_chirho.search_chirho(&ambs_chirho, |values_chirho| {
+            if values_chirho.len() < 2 {
+                Ok(())
+            } else {
+                let x_chirho = values_chirho[0].1.as_interval_chirho().unwrap().lo_chirho;
+                let y_chirho = values_chirho[1].1.as_interval_chirho().unwrap().lo_chirho;
+                if (x_chirho + y_chirho - 5.0).abs() < 1e-10 {
+                    Ok(())
+                } else {
+                    let mut conflict_chirho = HashSet::new();
+                    conflict_chirho.insert("x".to_string());
+                    conflict_chirho.insert("y".to_string());
+                    Err(conflict_chirho)
+                }
+            }
+        });
+
+        match result_chirho {
+            SearchResultChirho::SolutionChirho(solution_chirho) => {
+                let x_chirho = solution_chirho[0].as_interval_chirho().unwrap().lo_chirho;
+                let y_chirho = solution_chirho[1].as_interval_chirho().unwrap().lo_chirho;
+                assert!((x_chirho + y_chirho - 5.0).abs() < 1e-10);
+            }
+            _ => panic!("Expected solution"),
+        }
+    }
+
+    #[test]
+    fn test_dd_search_with_irrelevant_variable_chirho() {
+        let search_chirho = DependencyDirectedSearchChirho::new_chirho();
+
+        // z is irrelevant to the constraint x + y = 5
+        // DD backtracking should skip trying all values of z
+        let ambs_chirho = vec![
+            ("x".to_string(), AmbChirho::range_chirho(1, 3)),
+            ("y".to_string(), AmbChirho::range_chirho(1, 3)),
+            ("z".to_string(), AmbChirho::range_chirho(1, 100)), // Many choices, but irrelevant
+        ];
+
+        let result_chirho = search_chirho.search_chirho(&ambs_chirho, |values_chirho| {
+            if values_chirho.len() < 2 {
+                Ok(())
+            } else {
+                let x_chirho = values_chirho[0].1.as_interval_chirho().unwrap().lo_chirho;
+                let y_chirho = values_chirho[1].1.as_interval_chirho().unwrap().lo_chirho;
+                if (x_chirho + y_chirho - 4.0).abs() < 1e-10 {
+                    Ok(())
+                } else {
+                    // Only x and y are involved in the conflict
+                    let mut conflict_chirho = HashSet::new();
+                    conflict_chirho.insert("x".to_string());
+                    conflict_chirho.insert("y".to_string());
+                    Err(conflict_chirho)
+                }
+            }
+        });
+
+        match result_chirho {
+            SearchResultChirho::SolutionChirho(_) => {
+                // Should have some jumps due to z being irrelevant
+                // The exact number depends on search order
+                println!("Jumps: {}", search_chirho.jump_count_chirho());
+                println!("Backtracks: {}", search_chirho.backtrack_count_chirho());
+            }
+            _ => panic!("Expected solution"),
+        }
+    }
+
+    #[test]
+    fn test_dd_search_no_solution_chirho() {
+        let search_chirho = DependencyDirectedSearchChirho::new_chirho();
+
+        // No solution: x + y = 100 with x, y ∈ {1, 2, 3}
+        let ambs_chirho = vec![
+            ("x".to_string(), AmbChirho::range_chirho(1, 3)),
+            ("y".to_string(), AmbChirho::range_chirho(1, 3)),
+        ];
+
+        let result_chirho = search_chirho.search_chirho(&ambs_chirho, |values_chirho| {
+            if values_chirho.len() < 2 {
+                Ok(())
+            } else {
+                let x_chirho = values_chirho[0].1.as_interval_chirho().unwrap().lo_chirho;
+                let y_chirho = values_chirho[1].1.as_interval_chirho().unwrap().lo_chirho;
+                if (x_chirho + y_chirho - 100.0).abs() < 1e-10 {
+                    Ok(())
+                } else {
+                    let mut conflict_chirho = HashSet::new();
+                    conflict_chirho.insert("x".to_string());
+                    conflict_chirho.insert("y".to_string());
+                    Err(conflict_chirho)
+                }
+            }
+        });
+
+        assert!(matches!(
+            result_chirho,
+            SearchResultChirho::NoSolutionChirho
+        ));
+
+        // Should have learned some nogoods
+        assert!(!search_chirho.nogoods_chirho().is_empty());
     }
 }

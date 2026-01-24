@@ -339,6 +339,164 @@ fn proof_contradiction_absorbs_chirho() {
 }
 
 // ============================================================================
+// ALGEBRAIC STRUCTURE PROOFS
+// ============================================================================
+
+/// Proof: Merge is associative (semigroup law).
+///
+/// (a ⊔ b) ⊔ c = a ⊔ (b ⊔ c)
+#[kani::proof]
+#[kani::unwind(2)]
+fn proof_merge_associative_chirho() {
+    let a_lo_chirho: f64 = kani::any();
+    let a_hi_chirho: f64 = kani::any();
+    let b_lo_chirho: f64 = kani::any();
+    let b_hi_chirho: f64 = kani::any();
+    let c_lo_chirho: f64 = kani::any();
+    let c_hi_chirho: f64 = kani::any();
+
+    kani::assume(a_lo_chirho.is_finite() && a_hi_chirho.is_finite());
+    kani::assume(b_lo_chirho.is_finite() && b_hi_chirho.is_finite());
+    kani::assume(c_lo_chirho.is_finite() && c_hi_chirho.is_finite());
+    kani::assume(a_lo_chirho <= a_hi_chirho);
+    kani::assume(b_lo_chirho <= b_hi_chirho);
+    kani::assume(c_lo_chirho <= c_hi_chirho);
+
+    let a_chirho = NumericInfoChirho::interval_chirho(a_lo_chirho, a_hi_chirho);
+    let b_chirho = NumericInfoChirho::interval_chirho(b_lo_chirho, b_hi_chirho);
+    let c_chirho = NumericInfoChirho::interval_chirho(c_lo_chirho, c_hi_chirho);
+
+    // (a ⊔ b) ⊔ c
+    let left_chirho = a_chirho.merge_chirho(&b_chirho).merge_chirho(&c_chirho);
+    // a ⊔ (b ⊔ c)
+    let right_chirho = a_chirho.merge_chirho(&b_chirho.merge_chirho(&c_chirho));
+
+    // Compare results
+    match (
+        left_chirho.as_interval_chirho(),
+        right_chirho.as_interval_chirho(),
+    ) {
+        (Some(l_iv_chirho), Some(r_iv_chirho)) => {
+            kani::assert(
+                l_iv_chirho.lo_chirho == r_iv_chirho.lo_chirho
+                    && l_iv_chirho.hi_chirho == r_iv_chirho.hi_chirho,
+                "Merge must be associative: (a ⊔ b) ⊔ c = a ⊔ (b ⊔ c)",
+            );
+        }
+        (None, None) => {
+            // Both are contradictions - acceptable
+        }
+        _ => {
+            kani::assert(false, "Merge associativity failed: different result types");
+        }
+    }
+}
+
+/// Proof: Interval addition is commutative.
+#[kani::proof]
+#[kani::unwind(2)]
+fn proof_interval_add_commutative_chirho() {
+    let a_lo_chirho: f64 = kani::any();
+    let a_hi_chirho: f64 = kani::any();
+    let b_lo_chirho: f64 = kani::any();
+    let b_hi_chirho: f64 = kani::any();
+
+    // Use bounded values to avoid overflow
+    kani::assume(a_lo_chirho.is_finite() && a_hi_chirho.is_finite());
+    kani::assume(b_lo_chirho.is_finite() && b_hi_chirho.is_finite());
+    kani::assume(a_lo_chirho <= a_hi_chirho);
+    kani::assume(b_lo_chirho <= b_hi_chirho);
+    kani::assume(a_lo_chirho > -1e10 && a_hi_chirho < 1e10);
+    kani::assume(b_lo_chirho > -1e10 && b_hi_chirho < 1e10);
+
+    let a_chirho = IntervalChirho::new_chirho(a_lo_chirho, a_hi_chirho);
+    let b_chirho = IntervalChirho::new_chirho(b_lo_chirho, b_hi_chirho);
+
+    let ab_chirho = a_chirho.add_chirho(&b_chirho);
+    let ba_chirho = b_chirho.add_chirho(&a_chirho);
+
+    kani::assert(
+        ab_chirho.lo_chirho == ba_chirho.lo_chirho && ab_chirho.hi_chirho == ba_chirho.hi_chirho,
+        "Interval addition must be commutative: [a] + [b] = [b] + [a]",
+    );
+}
+
+/// Proof: Interval subtraction bounds are correct.
+#[kani::proof]
+#[kani::unwind(2)]
+fn proof_interval_sub_bounds_chirho() {
+    let a_lo_chirho: f64 = kani::any();
+    let a_hi_chirho: f64 = kani::any();
+    let b_lo_chirho: f64 = kani::any();
+    let b_hi_chirho: f64 = kani::any();
+
+    kani::assume(a_lo_chirho.is_finite() && a_hi_chirho.is_finite());
+    kani::assume(b_lo_chirho.is_finite() && b_hi_chirho.is_finite());
+    kani::assume(a_lo_chirho <= a_hi_chirho);
+    kani::assume(b_lo_chirho <= b_hi_chirho);
+    kani::assume(a_lo_chirho > -1e10 && a_hi_chirho < 1e10);
+    kani::assume(b_lo_chirho > -1e10 && b_hi_chirho < 1e10);
+
+    let a_chirho = IntervalChirho::new_chirho(a_lo_chirho, a_hi_chirho);
+    let b_chirho = IntervalChirho::new_chirho(b_lo_chirho, b_hi_chirho);
+
+    let result_chirho = a_chirho.sub_chirho(&b_chirho);
+
+    // [a_lo, a_hi] - [b_lo, b_hi] = [a_lo - b_hi, a_hi - b_lo]
+    kani::assert(
+        result_chirho.lo_chirho == a_lo_chirho - b_hi_chirho,
+        "Subtraction lower bound: a_lo - b_hi",
+    );
+    kani::assert(
+        result_chirho.hi_chirho == a_hi_chirho - b_lo_chirho,
+        "Subtraction upper bound: a_hi - b_lo",
+    );
+}
+
+/// Proof: Square of non-negative interval is non-negative.
+#[kani::proof]
+#[kani::unwind(2)]
+fn proof_square_nonnegative_chirho() {
+    let lo_chirho: f64 = kani::any();
+    let hi_chirho: f64 = kani::any();
+
+    kani::assume(lo_chirho.is_finite() && hi_chirho.is_finite());
+    kani::assume(lo_chirho >= 0.0);
+    kani::assume(lo_chirho <= hi_chirho);
+    kani::assume(hi_chirho < 1e10); // Avoid overflow
+
+    let a_chirho = IntervalChirho::new_chirho(lo_chirho, hi_chirho);
+    let result_chirho = a_chirho.square_chirho();
+
+    kani::assert(
+        result_chirho.lo_chirho >= 0.0,
+        "Square of non-negative interval must be non-negative",
+    );
+}
+
+/// Proof: Interval containing zero squares to include zero.
+#[kani::proof]
+#[kani::unwind(2)]
+fn proof_square_zero_crossing_chirho() {
+    let lo_chirho: f64 = kani::any();
+    let hi_chirho: f64 = kani::any();
+
+    kani::assume(lo_chirho.is_finite() && hi_chirho.is_finite());
+    kani::assume(lo_chirho < 0.0 && hi_chirho > 0.0); // Crosses zero
+    kani::assume(lo_chirho <= hi_chirho);
+    kani::assume(lo_chirho > -1e5 && hi_chirho < 1e5);
+
+    let a_chirho = IntervalChirho::new_chirho(lo_chirho, hi_chirho);
+    let result_chirho = a_chirho.square_chirho();
+
+    // When interval crosses zero, the minimum of the square is 0
+    kani::assert(
+        result_chirho.lo_chirho == 0.0,
+        "Square of zero-crossing interval must have lo = 0",
+    );
+}
+
+// ============================================================================
 // DISABLED PROOFS (documented limitations)
 // ============================================================================
 //

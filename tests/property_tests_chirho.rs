@@ -13,7 +13,7 @@
 
 use propagators_chirho::{
     lattice_chirho::{BoundedLatticeChirho, LatticeChirho},
-    simd_chirho::{batch_add_chirho, batch_intersect_chirho, batch_mul_chirho, IntervalVecChirho},
+    simd_chirho::{batch_add_chirho, batch_mul_chirho, IntervalVecChirho},
     ConstraintSystemChirho, FiniteDomainChirho, IntervalChirho, NumericInfoChirho,
 };
 use proptest::prelude::*;
@@ -573,5 +573,172 @@ proptest! {
 
         // Range is inclusive on both ends
         prop_assert_eq!(range_chirho.size_chirho(), (len_chirho + 1) as usize);
+    }
+}
+
+// ============================================================================
+// ALGEBRAIC LAWS (SEMIGROUP/MONOID)
+// ============================================================================
+
+use propagators_chirho::algebra_chirho::{MonoidChirho, SemigroupChirho};
+
+proptest! {
+    /// Semigroup associativity: (a ⊕ b) ⊕ c = a ⊕ (b ⊕ c)
+    #[test]
+    fn test_semigroup_associativity_chirho(
+        a_lo_chirho in -1000.0f64..1000.0,
+        a_hi_chirho in -1000.0f64..1000.0,
+        b_lo_chirho in -1000.0f64..1000.0,
+        b_hi_chirho in -1000.0f64..1000.0,
+        c_lo_chirho in -1000.0f64..1000.0,
+        c_hi_chirho in -1000.0f64..1000.0,
+    ) {
+        let a_chirho = NumericInfoChirho::interval_chirho(
+            a_lo_chirho.min(a_hi_chirho),
+            a_lo_chirho.max(a_hi_chirho)
+        );
+        let b_chirho = NumericInfoChirho::interval_chirho(
+            b_lo_chirho.min(b_hi_chirho),
+            b_lo_chirho.max(b_hi_chirho)
+        );
+        let c_chirho = NumericInfoChirho::interval_chirho(
+            c_lo_chirho.min(c_hi_chirho),
+            c_lo_chirho.max(c_hi_chirho)
+        );
+
+        let left_chirho = a_chirho.combine_chirho(&b_chirho).combine_chirho(&c_chirho);
+        let right_chirho = a_chirho.combine_chirho(&b_chirho.combine_chirho(&c_chirho));
+
+        prop_assert_eq!(format!("{:?}", left_chirho), format!("{:?}", right_chirho));
+    }
+
+    /// Monoid left identity: empty ⊕ a = a
+    #[test]
+    fn test_monoid_left_identity_chirho(
+        lo_chirho in -1000.0f64..1000.0,
+        hi_chirho in -1000.0f64..1000.0,
+    ) {
+        let a_chirho = NumericInfoChirho::interval_chirho(
+            lo_chirho.min(hi_chirho),
+            lo_chirho.max(hi_chirho)
+        );
+        let empty_chirho = NumericInfoChirho::empty_chirho();
+
+        let result_chirho = empty_chirho.combine_chirho(&a_chirho);
+
+        prop_assert_eq!(format!("{:?}", result_chirho), format!("{:?}", a_chirho));
+    }
+
+    /// Monoid right identity: a ⊕ empty = a
+    #[test]
+    fn test_monoid_right_identity_chirho(
+        lo_chirho in -1000.0f64..1000.0,
+        hi_chirho in -1000.0f64..1000.0,
+    ) {
+        let a_chirho = NumericInfoChirho::interval_chirho(
+            lo_chirho.min(hi_chirho),
+            lo_chirho.max(hi_chirho)
+        );
+        let empty_chirho = NumericInfoChirho::empty_chirho();
+
+        let result_chirho = a_chirho.combine_chirho(&empty_chirho);
+
+        prop_assert_eq!(format!("{:?}", result_chirho), format!("{:?}", a_chirho));
+    }
+
+    /// Mconcat produces correct result
+    #[test]
+    fn test_mconcat_chirho(
+        a_lo_chirho in -100.0f64..100.0,
+        a_hi_chirho in -100.0f64..100.0,
+        b_lo_chirho in -100.0f64..100.0,
+        b_hi_chirho in -100.0f64..100.0,
+        c_lo_chirho in -100.0f64..100.0,
+        c_hi_chirho in -100.0f64..100.0,
+    ) {
+        let a_chirho = NumericInfoChirho::interval_chirho(
+            a_lo_chirho.min(a_hi_chirho),
+            a_lo_chirho.max(a_hi_chirho)
+        );
+        let b_chirho = NumericInfoChirho::interval_chirho(
+            b_lo_chirho.min(b_hi_chirho),
+            b_lo_chirho.max(b_hi_chirho)
+        );
+        let c_chirho = NumericInfoChirho::interval_chirho(
+            c_lo_chirho.min(c_hi_chirho),
+            c_lo_chirho.max(c_hi_chirho)
+        );
+
+        let items_chirho = vec![a_chirho.clone(), b_chirho.clone(), c_chirho.clone()];
+        let mconcat_result_chirho = NumericInfoChirho::mconcat_chirho(&items_chirho);
+        let manual_result_chirho = a_chirho.combine_chirho(&b_chirho).combine_chirho(&c_chirho);
+
+        prop_assert_eq!(format!("{:?}", mconcat_result_chirho), format!("{:?}", manual_result_chirho));
+    }
+}
+
+// ============================================================================
+// CONSTRAINT SYSTEM DETERMINISM
+// ============================================================================
+
+proptest! {
+    /// Same inputs produce same outputs (determinism)
+    #[test]
+    fn test_constraint_system_determinism_chirho(
+        a_val_chirho in -100.0f64..100.0,
+        b_val_chirho in -100.0f64..100.0,
+    ) {
+        // Run the same computation twice
+        let run_computation_chirho = || {
+            let mut system_chirho = ConstraintSystemChirho::new_chirho();
+
+            let a_chirho = system_chirho.make_cell_chirho("a");
+            let b_chirho = system_chirho.make_cell_chirho("b");
+            let c_chirho = system_chirho.make_cell_chirho("c");
+
+            system_chirho.add_adder_chirho(&a_chirho, &b_chirho, &c_chirho);
+            system_chirho.set_exact_chirho(&a_chirho, a_val_chirho);
+            system_chirho.set_exact_chirho(&b_chirho, b_val_chirho);
+            system_chirho.run_chirho();
+
+            system_chirho.get_chirho(&c_chirho)
+        };
+
+        let result1_chirho = run_computation_chirho();
+        let result2_chirho = run_computation_chirho();
+
+        prop_assert_eq!(format!("{:?}", result1_chirho), format!("{:?}", result2_chirho));
+    }
+
+    /// Constraint order doesn't affect final result
+    #[test]
+    fn test_constraint_order_independence_chirho(
+        a_val_chirho in 1.0f64..100.0, // Positive to avoid division issues
+        b_val_chirho in 1.0f64..100.0,
+    ) {
+        // Order 1: set a first, then b
+        let mut sys1_chirho = ConstraintSystemChirho::new_chirho();
+        let a1_chirho = sys1_chirho.make_cell_chirho("a");
+        let b1_chirho = sys1_chirho.make_cell_chirho("b");
+        let c1_chirho = sys1_chirho.make_cell_chirho("c");
+        sys1_chirho.add_adder_chirho(&a1_chirho, &b1_chirho, &c1_chirho);
+        sys1_chirho.set_exact_chirho(&a1_chirho, a_val_chirho);
+        sys1_chirho.set_exact_chirho(&b1_chirho, b_val_chirho);
+        sys1_chirho.run_chirho();
+
+        // Order 2: set b first, then a
+        let mut sys2_chirho = ConstraintSystemChirho::new_chirho();
+        let a2_chirho = sys2_chirho.make_cell_chirho("a");
+        let b2_chirho = sys2_chirho.make_cell_chirho("b");
+        let c2_chirho = sys2_chirho.make_cell_chirho("c");
+        sys2_chirho.add_adder_chirho(&a2_chirho, &b2_chirho, &c2_chirho);
+        sys2_chirho.set_exact_chirho(&b2_chirho, b_val_chirho); // b first
+        sys2_chirho.set_exact_chirho(&a2_chirho, a_val_chirho); // a second
+        sys2_chirho.run_chirho();
+
+        let c1_result_chirho = sys1_chirho.get_chirho(&c1_chirho);
+        let c2_result_chirho = sys2_chirho.get_chirho(&c2_chirho);
+
+        prop_assert_eq!(format!("{:?}", c1_result_chirho), format!("{:?}", c2_result_chirho));
     }
 }

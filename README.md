@@ -80,7 +80,9 @@ system_chirho.run_chirho();
 
 - `BeliefChirho` — Values with supporting premises
 - `TmsCellChirho` — Cells that track multiple beliefs
-- Nogood detection — Find which premises cause contradictions
+- `JustificationChirho` — Track derivation chains (with `tms-full` feature)
+- `NogoodStoreChirho` — Manage contradictory premise sets with minimal nogood computation
+- `TmsNetworkChirho` — Full TMS-aware propagator networks
 
 ### Worldviews (Hypothetical Reasoning)
 
@@ -92,12 +94,21 @@ system_chirho.run_chirho();
 
 - `AmbChirho` — Choice among values
 - `BacktrackingSearchChirho` — Constraint satisfaction with backtracking
+- `DependencyDirectedSearchChirho` — Smart backtracking using nogood information (skips irrelevant choices)
 
 ### High-Level API
 
 - `ConstraintSystemChirho` — Builder-style interface for constraint networks
 
-### Lattice Abstractions (Kmett-style)
+### Algebraic Traits (Kmett-style)
+
+- `SemigroupChirho` — Associative binary operation
+- `MonoidChirho` — Semigroup with identity element
+- `JoinSemilatticeChirho` — Idempotent, commutative monoid
+- `BoundedJoinSemilatticeChirho` — Semilattice with top element
+- `PropagatorErrorChirho` / `PropagatorResultChirho` — Proper error handling
+
+### Lattice Abstractions
 
 - `LatticeChirho` trait — Join semilattice with partial order
 - `BoundedLatticeChirho` trait — Lattice with top (contradiction) and bottom (nothing)
@@ -134,6 +145,34 @@ Add to your `Cargo.toml`:
 [dependencies]
 propagators-chirho = "0.1"
 ```
+
+## Cargo Features
+
+| Feature | Description | Overhead |
+|---------|-------------|----------|
+| `arena` | High-performance arena-based cells | Faster, uses typed-arena |
+| `parallel` | Parallel propagation with rayon | Thread-safe, uses rayon |
+| `serde` | Serialization for intervals/cells | Adds serde dependency |
+| `tracing` | Debug instrumentation | Runtime overhead when enabled |
+| `tms-full` | Full TMS with justification tracking | Memory overhead |
+| `backtrack` | Dependency-directed backtracking | Memory + CPU overhead |
+| `no-std` | Embedded/bare-metal support | Limited modules |
+
+### no_std Support
+
+For embedded or bare-metal environments:
+
+```toml
+[dependencies]
+propagators-chirho = { version = "0.1", default-features = false, features = ["no-std"] }
+```
+
+Available modules in no_std mode:
+- `IntervalChirho` / `NumericInfoChirho` — Interval arithmetic
+- `algebra_chirho` traits — `SemigroupChirho`, `MonoidChirho`, etc.
+- `simd_chirho` — Batch SIMD operations
+
+**Note**: `no-std` is mutually exclusive with other features.
 
 ## Examples
 
@@ -326,9 +365,18 @@ cd tmp-chirho/comparison-bench-chirho && cargo bench
 ## Testing
 
 ```bash
-cargo test                    # Run all tests
-cargo test --features arena   # Test arena mode
-cargo test --test property    # Property-based tests
+cargo test                                          # Run all tests
+cargo test --features arena                         # Test arena mode
+cargo test --features parallel                      # Test parallel mode
+cargo test --features serde                         # Test serialization
+cargo test --features "parallel,serde,arena,tracing,tms-full"  # All std features
+cargo test --test property_tests_chirho             # Property-based tests
+```
+
+### Formal Verification (Kani)
+
+```bash
+cargo kani --features kani    # Run Kani proofs for interval arithmetic laws
 ```
 
 ## Architecture

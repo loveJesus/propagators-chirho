@@ -9,6 +9,66 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Algebraic Traits (Kmett-style)**
+  - `SemigroupChirho` - Associative binary operation with `combine_chirho`
+  - `CommutativeSemigroupChirho` - Commutative semigroup
+  - `IdempotentSemigroupChirho` - Idempotent semigroup
+  - `MonoidChirho` - Semigroup with identity element
+  - `JoinSemilatticeChirho` - Idempotent, commutative monoid
+  - `BoundedJoinSemilatticeChirho` - Semilattice with top element
+
+- **Enhanced Truth Maintenance System**
+  - `JustificationChirho` - Track derivation chains with antecedents
+  - `NogoodStoreChirho` - Manage contradictory premise sets with minimal nogood computation
+  - `TmsNetworkChirho` - Full TMS-aware propagator networks
+  - Feature flag `tms-full` for full justification tracking
+
+- **Dependency-Directed Backtracking**
+  - `DependencyDirectedSearchChirho` - Smart backtracking using nogood information
+  - Skips irrelevant choices based on conflict analysis
+  - Tracks jump statistics for efficiency measurement
+
+- **Error Handling**
+  - `PropagatorErrorChirho` enum with structured error variants
+  - `PropagatorResultChirho<T>` type alias
+  - `try_make_cell_chirho` and `try_get_cell_chirho` for fallible operations
+  - Error variants: `ContradictionChirho`, `InvalidIntervalChirho`, `CellNameNotFoundChirho`, `CellAlreadyExistsChirho`
+
+- **no_std Support**
+  - Feature flag `no-std` for embedded/bare-metal environments
+  - Core interval arithmetic works without std
+  - Uses `libm` for math operations in no_std mode
+  - Modules available: `IntervalChirho`, `NumericInfoChirho`, `algebra_chirho`, `simd_chirho`
+
+- **Tracing Support**
+  - Feature flag `tracing` for debug instrumentation
+  - `SpanGuardChirho` for RAII-style span management
+  - Logs propagator invocations, cell updates, and scheduling
+
+- **Serde Serialization**
+  - Feature flag `serde` for serialization support
+  - Serialization for `IntervalChirho` and `NumericInfoChirho`
+  - Roundtrip tests in CI
+
+- **Additional Kani Proofs**
+  - Formal verification of interval arithmetic laws
+  - Proofs for semilattice properties
+  - Proofs for merge monotonicity
+
+- **Property-Based Tests**
+  - Extended proptest coverage for all interval operations
+  - Tests for algebraic trait laws
+  - Tests for TMS consistency
+
+### Changed
+
+- CI workflow now tests serde serialization
+- CI workflow includes no_std build verification
+
 ## [0.1.0] - 2025-01-23
 
 ### Added

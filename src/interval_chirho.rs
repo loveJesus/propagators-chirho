@@ -35,10 +35,42 @@
 //! assert_eq!(sum_chirho.hi_chirho, 7.0);
 //! ```
 
+#[cfg(not(feature = "no-std"))]
 use std::fmt;
+
+#[cfg(feature = "no-std")]
+use core::fmt;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
+
+// Helper functions for math operations that differ between std and no_std
+
+/// Compute square root, using libm in no_std mode.
+#[inline]
+fn sqrt_f64_chirho(x_chirho: f64) -> f64 {
+    #[cfg(not(feature = "no-std"))]
+    {
+        x_chirho.sqrt()
+    }
+    #[cfg(feature = "no-std")]
+    {
+        libm::sqrt(x_chirho)
+    }
+}
+
+/// Compute x^2 (square), using libm in no_std mode.
+#[inline]
+fn powi_2_f64_chirho(x_chirho: f64) -> f64 {
+    #[cfg(not(feature = "no-std"))]
+    {
+        x_chirho.powi(2)
+    }
+    #[cfg(feature = "no-std")]
+    {
+        x_chirho * x_chirho
+    }
+}
 
 /// An interval `[lo, hi]` representing partial numeric information.
 ///
@@ -487,7 +519,7 @@ impl IntervalChirho {
             // Interval contains zero
             Self {
                 lo_chirho: 0.0,
-                hi_chirho: self.lo_chirho.abs().max(self.hi_chirho.abs()).powi(2),
+                hi_chirho: powi_2_f64_chirho(self.lo_chirho.abs().max(self.hi_chirho.abs())),
             }
         }
     }
@@ -518,9 +550,9 @@ impl IntervalChirho {
                 lo_chirho: if self.lo_chirho < 0.0 {
                     0.0
                 } else {
-                    self.lo_chirho.sqrt()
+                    sqrt_f64_chirho(self.lo_chirho)
                 },
-                hi_chirho: self.hi_chirho.sqrt(),
+                hi_chirho: sqrt_f64_chirho(self.hi_chirho),
             }
         }
     }
@@ -1085,6 +1117,44 @@ mod tests_chirho {
             // Contradiction refines everything
             assert!(contradiction_chirho.refines_chirho(&wide_chirho));
             assert!(contradiction_chirho.refines_chirho(&narrow_chirho));
+        }
+
+        #[cfg(feature = "serde")]
+        mod serde_tests_chirho {
+            use super::*;
+
+            #[test]
+            fn test_interval_serde_roundtrip_chirho() {
+                let interval_chirho = IntervalChirho::new_chirho(1.5, 3.5);
+                let json_chirho = serde_json::to_string(&interval_chirho).unwrap();
+                let deserialized_chirho: IntervalChirho =
+                    serde_json::from_str(&json_chirho).unwrap();
+                assert_eq!(interval_chirho, deserialized_chirho);
+            }
+
+            #[test]
+            fn test_numeric_info_serde_roundtrip_chirho() {
+                // Test Nothing
+                let nothing_chirho = NumericInfoChirho::NothingChirho;
+                let json_chirho = serde_json::to_string(&nothing_chirho).unwrap();
+                let deserialized_chirho: NumericInfoChirho =
+                    serde_json::from_str(&json_chirho).unwrap();
+                assert_eq!(nothing_chirho, deserialized_chirho);
+
+                // Test Interval
+                let interval_chirho = NumericInfoChirho::interval_chirho(0.0, 100.0);
+                let json_chirho = serde_json::to_string(&interval_chirho).unwrap();
+                let deserialized_chirho: NumericInfoChirho =
+                    serde_json::from_str(&json_chirho).unwrap();
+                assert_eq!(interval_chirho, deserialized_chirho);
+
+                // Test Contradiction
+                let contradiction_chirho = NumericInfoChirho::ContradictionChirho;
+                let json_chirho = serde_json::to_string(&contradiction_chirho).unwrap();
+                let deserialized_chirho: NumericInfoChirho =
+                    serde_json::from_str(&json_chirho).unwrap();
+                assert_eq!(contradiction_chirho, deserialized_chirho);
+            }
         }
     }
 }

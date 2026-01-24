@@ -36,6 +36,12 @@
 //! // sums_chirho = [[6, 8], [10, 12]]
 //! ```
 
+// Conditional imports for no_std support
+#[cfg(feature = "no-std")]
+use alloc::vec;
+#[cfg(feature = "no-std")]
+use alloc::vec::Vec;
+
 use crate::interval_chirho::IntervalChirho;
 
 /// Batch-add two slices of intervals.
