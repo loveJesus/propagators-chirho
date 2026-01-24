@@ -96,6 +96,8 @@ tms-full = []
 backtrack = ["dep:indexmap", "tms-full"]
 # no_std support (disables features requiring std)
 no-std = ["dep:libm"]
+# Distributed network support for multi-node propagation
+network = []
 
 [[bench]]
 name = "propagator_bench_chirho"

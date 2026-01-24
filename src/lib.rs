@@ -229,6 +229,15 @@ pub mod arena_chirho;
 #[cfg_attr(docsrs, doc(cfg(all(feature = "parallel", not(feature = "no-std")))))]
 pub mod parallel_chirho;
 
+/// Distributed propagator network for multi-node computation.
+///
+/// Enable with the `network` feature for distributed propagation.
+/// Provides CRDT-like conflict-free merging across nodes.
+/// Not available in no_std mode.
+#[cfg(all(feature = "network", not(feature = "no-std")))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "network", not(feature = "no-std")))))]
+pub mod network_chirho;
+
 /// WebAssembly bindings for browser/Node.js usage.
 ///
 /// Enable with the `wasm` and `arena` features.
@@ -312,6 +321,13 @@ pub use arena_chirho::{ArenaNetworkChirho, CellIdChirho};
 #[cfg(all(feature = "parallel", not(feature = "no-std")))]
 pub use parallel_chirho::{
     NumericParallelNetworkChirho, ParallelCellChirho, ParallelNetworkChirho,
+};
+
+#[cfg(all(feature = "network", not(feature = "no-std")))]
+pub use network_chirho::{
+    CellIdChirho as NetworkCellIdChirho, CellUpdateChirho, DistributedCellChirho,
+    DistributedNetworkChirho, InMemoryTransportChirho, NetworkMessageChirho, TransportChirho,
+    TransportErrorChirho,
 };
 
 /// Prelude module for convenient imports.
