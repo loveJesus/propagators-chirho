@@ -478,166 +478,125 @@ binary_propagator_chirho! {
 }
 
 // ============================================================================
+// COMPARISON PROPAGATOR MACRO (Max/Min)
+// ============================================================================
+
+/// Macro for generating comparison propagators (max, min) with symmetric backward bounds.
+///
+/// These propagators have special backward propagation that bounds both a and b from c.
+macro_rules! comparison_propagator_chirho {
+    (
+        $(#[$attr_chirho:meta])*
+        $name_chirho:ident,
+        $name_str_chirho:expr,
+        forward: |$a_fwd_chirho:ident, $b_fwd_chirho:ident| $forward_body_chirho:expr,
+        backward_bound: |$c_bwd_chirho:ident| $backward_bound_chirho:expr
+    ) => {
+        $(#[$attr_chirho])*
+        pub struct $name_chirho {
+            id_chirho: usize,
+            a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+            b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+            c_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        }
+
+        impl $name_chirho {
+            /// Creates and installs this propagator, connecting it to the given cells.
+            pub fn install_chirho(
+                a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+                b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+                c_chirho: Rc<CellChirho<NumericInfoChirho>>,
+                scheduler_chirho: &SchedulerChirho,
+            ) -> Rc<Self> {
+                let propagator_chirho = Rc::new(Self {
+                    id_chirho: next_id_chirho(),
+                    a_chirho: a_chirho.clone(),
+                    b_chirho: b_chirho.clone(),
+                    c_chirho: c_chirho.clone(),
+                });
+
+                a_chirho.add_neighbor_chirho(propagator_chirho.clone());
+                b_chirho.add_neighbor_chirho(propagator_chirho.clone());
+                c_chirho.add_neighbor_chirho(propagator_chirho.clone());
+
+                scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
+
+                propagator_chirho
+            }
+        }
+
+        impl PropagatorChirho for $name_chirho {
+            fn id_chirho(&self) -> usize {
+                self.id_chirho
+            }
+
+            fn name_chirho(&self) -> &str {
+                $name_str_chirho
+            }
+
+            fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
+                let a_content_chirho = self.a_chirho.content_chirho();
+                let b_content_chirho = self.b_chirho.content_chirho();
+                let c_content_chirho = self.c_chirho.content_chirho();
+
+                // Forward: c = op(a, b)
+                if let (
+                    NumericInfoChirho::IntervalChirho($a_fwd_chirho),
+                    NumericInfoChirho::IntervalChirho($b_fwd_chirho),
+                ) = (&a_content_chirho, &b_content_chirho)
+                {
+                    let c_new_chirho = $forward_body_chirho;
+                    self.c_chirho.add_content_chirho(
+                        NumericInfoChirho::IntervalChirho(c_new_chirho),
+                        scheduler_chirho,
+                    );
+                }
+
+                // Backward: apply same bound to both a and b
+                if let NumericInfoChirho::IntervalChirho($c_bwd_chirho) = &c_content_chirho {
+                    let bound_chirho = $backward_bound_chirho;
+                    self.a_chirho.add_content_chirho(
+                        NumericInfoChirho::IntervalChirho(bound_chirho),
+                        scheduler_chirho,
+                    );
+                    self.b_chirho.add_content_chirho(
+                        NumericInfoChirho::IntervalChirho(bound_chirho),
+                        scheduler_chirho,
+                    );
+                }
+            }
+        }
+    };
+}
+
+// ============================================================================
 // MAX: max(a, b) = c
 // ============================================================================
 
-// Max and Min have special backward propagation that doesn't fit the standard
-// ternary macro (they bound both a and b from c), so we keep manual implementations.
-
-/// A propagator for maximum: `max(a, b) = c`.
-pub struct MaxChirho {
-    id_chirho: usize,
-    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-}
-
-impl MaxChirho {
-    /// Creates and installs a max propagator.
-    pub fn install_chirho(
-        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        scheduler_chirho: &SchedulerChirho,
-    ) -> Rc<Self> {
-        let propagator_chirho = Rc::new(Self {
-            id_chirho: next_id_chirho(),
-            a_chirho: a_chirho.clone(),
-            b_chirho: b_chirho.clone(),
-            c_chirho: c_chirho.clone(),
-        });
-
-        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        c_chirho.add_neighbor_chirho(propagator_chirho.clone());
-
-        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
-
-        propagator_chirho
-    }
-}
-
-impl PropagatorChirho for MaxChirho {
-    fn id_chirho(&self) -> usize {
-        self.id_chirho
-    }
-
-    fn name_chirho(&self) -> &str {
-        "max"
-    }
-
-    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
-        let a_chirho = self.a_chirho.content_chirho();
-        let b_chirho = self.b_chirho.content_chirho();
-        let c_chirho = self.c_chirho.content_chirho();
-
-        // Forward: c = max(a, b)
-        if let (
-            NumericInfoChirho::IntervalChirho(a_int_chirho),
-            NumericInfoChirho::IntervalChirho(b_int_chirho),
-        ) = (&a_chirho, &b_chirho)
-        {
-            let c_new_chirho = a_int_chirho.max_chirho(b_int_chirho);
-            self.c_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(c_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: a <= c and b <= c
-        if let NumericInfoChirho::IntervalChirho(c_int_chirho) = &c_chirho {
-            let upper_bound_chirho =
-                IntervalChirho::new_chirho(f64::NEG_INFINITY, c_int_chirho.hi_chirho);
-            self.a_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(upper_bound_chirho),
-                scheduler_chirho,
-            );
-            self.b_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(upper_bound_chirho),
-                scheduler_chirho,
-            );
-        }
-    }
+comparison_propagator_chirho! {
+    /// A propagator for maximum: `max(a, b) = c`.
+    ///
+    /// Forward: computes c = max(a, b)
+    /// Backward: constrains a <= c.hi and b <= c.hi
+    MaxChirho,
+    "max",
+    forward: |a_chirho, b_chirho| a_chirho.max_chirho(b_chirho),
+    backward_bound: |c_chirho| IntervalChirho::new_chirho(f64::NEG_INFINITY, c_chirho.hi_chirho)
 }
 
 // ============================================================================
 // MIN: min(a, b) = c
 // ============================================================================
 
-/// A propagator for minimum: `min(a, b) = c`.
-pub struct MinChirho {
-    id_chirho: usize,
-    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-    c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-}
-
-impl MinChirho {
-    /// Creates and installs a min propagator.
-    pub fn install_chirho(
-        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        c_chirho: Rc<CellChirho<NumericInfoChirho>>,
-        scheduler_chirho: &SchedulerChirho,
-    ) -> Rc<Self> {
-        let propagator_chirho = Rc::new(Self {
-            id_chirho: next_id_chirho(),
-            a_chirho: a_chirho.clone(),
-            b_chirho: b_chirho.clone(),
-            c_chirho: c_chirho.clone(),
-        });
-
-        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
-        c_chirho.add_neighbor_chirho(propagator_chirho.clone());
-
-        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
-
-        propagator_chirho
-    }
-}
-
-impl PropagatorChirho for MinChirho {
-    fn id_chirho(&self) -> usize {
-        self.id_chirho
-    }
-
-    fn name_chirho(&self) -> &str {
-        "min"
-    }
-
-    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
-        let a_chirho = self.a_chirho.content_chirho();
-        let b_chirho = self.b_chirho.content_chirho();
-        let c_chirho = self.c_chirho.content_chirho();
-
-        // Forward: c = min(a, b)
-        if let (
-            NumericInfoChirho::IntervalChirho(a_int_chirho),
-            NumericInfoChirho::IntervalChirho(b_int_chirho),
-        ) = (&a_chirho, &b_chirho)
-        {
-            let c_new_chirho = a_int_chirho.min_chirho(b_int_chirho);
-            self.c_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(c_new_chirho),
-                scheduler_chirho,
-            );
-        }
-
-        // Backward: a >= c and b >= c
-        if let NumericInfoChirho::IntervalChirho(c_int_chirho) = &c_chirho {
-            let lower_bound_chirho =
-                IntervalChirho::new_chirho(c_int_chirho.lo_chirho, f64::INFINITY);
-            self.a_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(lower_bound_chirho),
-                scheduler_chirho,
-            );
-            self.b_chirho.add_content_chirho(
-                NumericInfoChirho::IntervalChirho(lower_bound_chirho),
-                scheduler_chirho,
-            );
-        }
-    }
+comparison_propagator_chirho! {
+    /// A propagator for minimum: `min(a, b) = c`.
+    ///
+    /// Forward: computes c = min(a, b)
+    /// Backward: constrains a >= c.lo and b >= c.lo
+    MinChirho,
+    "min",
+    forward: |a_chirho, b_chirho| a_chirho.min_chirho(b_chirho),
+    backward_bound: |c_chirho| IntervalChirho::new_chirho(c_chirho.lo_chirho, f64::INFINITY)
 }
 
 // ============================================================================

@@ -38,9 +38,9 @@ use crate::algebra_chirho::{PropagatorErrorChirho, PropagatorResultChirho};
 use crate::cell_chirho::CellChirho;
 use crate::interval_chirho::NumericInfoChirho;
 use crate::propagator_chirho::{
-    AbsoluterChirho, ConstantChirho, IntervalAdderChirho, IntervalDividerChirho,
-    IntervalMultiplierChirho, IntervalSubtractorChirho, MaxChirho, MinChirho, SqrterChirho,
-    SquarerChirho,
+    AbsoluterChirho, ClampChirho, ConstantChirho, ExpChirho, IntervalAdderChirho,
+    IntervalDividerChirho, IntervalMultiplierChirho, IntervalSubtractorChirho, LnChirho, MaxChirho,
+    MinChirho, NegaterChirho, PowerChirho, SqrterChirho, SquarerChirho,
 };
 use crate::scheduler_chirho::SchedulerChirho;
 
@@ -297,6 +297,62 @@ impl ConstraintSystemChirho {
         );
         self.scheduler_chirho
             .alert_propagator_chirho(propagator_chirho);
+    }
+
+    /// Adds a negation constraint: -a = b.
+    pub fn add_negater_chirho(&self, a_chirho: &str, b_chirho: &str) {
+        NegaterChirho::install_chirho(
+            self.get_cell_chirho(a_chirho),
+            self.get_cell_chirho(b_chirho),
+            &self.scheduler_chirho,
+        );
+    }
+
+    /// Adds an exponential constraint: e^a = b.
+    pub fn add_exp_chirho(&self, a_chirho: &str, b_chirho: &str) {
+        ExpChirho::install_chirho(
+            self.get_cell_chirho(a_chirho),
+            self.get_cell_chirho(b_chirho),
+            &self.scheduler_chirho,
+        );
+    }
+
+    /// Adds a natural logarithm constraint: ln(a) = b.
+    pub fn add_ln_chirho(&self, a_chirho: &str, b_chirho: &str) {
+        LnChirho::install_chirho(
+            self.get_cell_chirho(a_chirho),
+            self.get_cell_chirho(b_chirho),
+            &self.scheduler_chirho,
+        );
+    }
+
+    /// Adds a power constraint: a^n = b.
+    ///
+    /// # Arguments
+    ///
+    /// * `n_chirho` - The exponent (must be non-zero)
+    /// * `a_chirho` - The base cell name
+    /// * `b_chirho` - The result cell name
+    pub fn add_power_chirho(&self, n_chirho: i32, a_chirho: &str, b_chirho: &str) {
+        PowerChirho::install_chirho(
+            n_chirho,
+            self.get_cell_chirho(a_chirho),
+            self.get_cell_chirho(b_chirho),
+            &self.scheduler_chirho,
+        );
+    }
+
+    /// Adds a clamp constraint: clamp(a, lo, hi) = b.
+    ///
+    /// The result b is constrained to be within [lo, hi].
+    pub fn add_clamp_chirho(&self, a_chirho: &str, lo_chirho: f64, hi_chirho: f64, b_chirho: &str) {
+        ClampChirho::install_chirho(
+            lo_chirho,
+            hi_chirho,
+            self.get_cell_chirho(a_chirho),
+            self.get_cell_chirho(b_chirho),
+            &self.scheduler_chirho,
+        );
     }
 
     // ========================================================================
