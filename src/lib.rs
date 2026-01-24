@@ -191,6 +191,14 @@ pub use lattice_chirho::{
 pub use finite_domain_chirho::{
     FiniteDomainChirho, AllDifferentChirho, LessThanChirho, EqualsChirho, NotEqualsChirho,
 };
+pub use generic_cell_chirho::{GenericCellChirho, GenericNetworkChirho};
+
+// Feature-gated re-exports
+#[cfg(feature = "arena")]
+pub use arena_chirho::{ArenaNetworkChirho, CellIdChirho};
+
+#[cfg(feature = "parallel")]
+pub use parallel_chirho::{ParallelCellChirho, ParallelNetworkChirho, NumericParallelNetworkChirho};
 
 /// Prelude module for convenient imports.
 ///

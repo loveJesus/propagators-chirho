@@ -7,6 +7,18 @@
 //! This module provides parallel variants of the propagator network that
 //! use rayon for concurrent propagation of independent propagators.
 //!
+//! # When to Use Parallel Propagation
+//!
+//! Parallel propagation adds overhead from thread synchronization. It's only
+//! beneficial when:
+//!
+//! 1. **Large networks** - Thousands of cells and propagators
+//! 2. **Expensive propagators** - Each propagator does significant work (ms, not µs)
+//! 3. **High independence** - Many propagators operate on disjoint cell sets
+//!
+//! For small networks or simple interval arithmetic, sequential propagation
+//! (via `propagate_sequential_chirho()`) is typically faster.
+//!
 //! # Feature Flag
 //!
 //! This module requires the `parallel` feature:

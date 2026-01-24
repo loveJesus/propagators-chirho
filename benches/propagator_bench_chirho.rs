@@ -140,7 +140,109 @@ fn benchmark_arena_chirho(c_chirho: &mut Criterion) {
     });
 }
 
-#[cfg(feature = "arena")]
+#[cfg(feature = "parallel")]
+fn benchmark_parallel_chirho(c_chirho: &mut Criterion) {
+    use propagators_chirho::parallel_chirho::NumericParallelNetworkChirho;
+
+    // Benchmark with many independent propagators (ideal for parallelism)
+    c_chirho.bench_function("parallel_many_independent_sequential", |bench_chirho| {
+        bench_chirho.iter(|| {
+            let mut network_chirho = NumericParallelNetworkChirho::new_chirho();
+
+            // Create 100 independent a + b = c constraints
+            let mut c_cells_chirho = Vec::new();
+            for i_chirho in 0..100 {
+                let a_chirho = network_chirho.make_cell_chirho();
+                let b_chirho = network_chirho.make_cell_chirho();
+                let c_chirho = network_chirho.make_cell_chirho();
+                network_chirho.add_adder_chirho(a_chirho, b_chirho, c_chirho);
+                network_chirho.set_cell_chirho(a_chirho, NumericInfoChirho::exact_chirho(i_chirho as f64));
+                network_chirho.set_cell_chirho(b_chirho, NumericInfoChirho::exact_chirho(i_chirho as f64 * 2.0));
+                c_cells_chirho.push(c_chirho);
+            }
+
+            network_chirho.propagate_sequential_chirho();
+            black_box(network_chirho.propagation_count_chirho())
+        })
+    });
+
+    c_chirho.bench_function("parallel_many_independent_parallel", |bench_chirho| {
+        bench_chirho.iter(|| {
+            let mut network_chirho = NumericParallelNetworkChirho::new_chirho();
+
+            // Create 100 independent a + b = c constraints
+            let mut c_cells_chirho = Vec::new();
+            for i_chirho in 0..100 {
+                let a_chirho = network_chirho.make_cell_chirho();
+                let b_chirho = network_chirho.make_cell_chirho();
+                let c_chirho = network_chirho.make_cell_chirho();
+                network_chirho.add_adder_chirho(a_chirho, b_chirho, c_chirho);
+                network_chirho.set_cell_chirho(a_chirho, NumericInfoChirho::exact_chirho(i_chirho as f64));
+                network_chirho.set_cell_chirho(b_chirho, NumericInfoChirho::exact_chirho(i_chirho as f64 * 2.0));
+                c_cells_chirho.push(c_chirho);
+            }
+
+            network_chirho.propagate_parallel_chirho();
+            black_box(network_chirho.propagation_count_chirho())
+        })
+    });
+
+    // Benchmark with a chain (less parallelism opportunity)
+    c_chirho.bench_function("parallel_chain_sequential", |bench_chirho| {
+        bench_chirho.iter(|| {
+            let mut network_chirho = NumericParallelNetworkChirho::new_chirho();
+
+            // Create a chain: a + 1 = b, b + 1 = c, c + 1 = d, ...
+            let mut prev_chirho = network_chirho.make_cell_chirho();
+            network_chirho.set_cell_chirho(prev_chirho, NumericInfoChirho::exact_chirho(0.0));
+
+            for _ in 0..50 {
+                let one_chirho = network_chirho.make_cell_chirho();
+                network_chirho.set_cell_chirho(one_chirho, NumericInfoChirho::exact_chirho(1.0));
+                let next_chirho = network_chirho.make_cell_chirho();
+                network_chirho.add_adder_chirho(prev_chirho, one_chirho, next_chirho);
+                prev_chirho = next_chirho;
+            }
+
+            network_chirho.propagate_sequential_chirho();
+            black_box(network_chirho.propagation_count_chirho())
+        })
+    });
+
+    c_chirho.bench_function("parallel_chain_parallel", |bench_chirho| {
+        bench_chirho.iter(|| {
+            let mut network_chirho = NumericParallelNetworkChirho::new_chirho();
+
+            // Create a chain: a + 1 = b, b + 1 = c, c + 1 = d, ...
+            let mut prev_chirho = network_chirho.make_cell_chirho();
+            network_chirho.set_cell_chirho(prev_chirho, NumericInfoChirho::exact_chirho(0.0));
+
+            for _ in 0..50 {
+                let one_chirho = network_chirho.make_cell_chirho();
+                network_chirho.set_cell_chirho(one_chirho, NumericInfoChirho::exact_chirho(1.0));
+                let next_chirho = network_chirho.make_cell_chirho();
+                network_chirho.add_adder_chirho(prev_chirho, one_chirho, next_chirho);
+                prev_chirho = next_chirho;
+            }
+
+            network_chirho.propagate_parallel_chirho();
+            black_box(network_chirho.propagation_count_chirho())
+        })
+    });
+}
+
+#[cfg(all(feature = "arena", feature = "parallel"))]
+criterion_group!(
+    benches_chirho,
+    benchmark_interval_operations_chirho,
+    benchmark_merge_operations_chirho,
+    benchmark_propagation_chirho,
+    benchmark_constraint_system_chirho,
+    benchmark_arena_chirho,
+    benchmark_parallel_chirho,
+);
+
+#[cfg(all(feature = "arena", not(feature = "parallel")))]
 criterion_group!(
     benches_chirho,
     benchmark_interval_operations_chirho,
@@ -150,7 +252,17 @@ criterion_group!(
     benchmark_arena_chirho,
 );
 
-#[cfg(not(feature = "arena"))]
+#[cfg(all(not(feature = "arena"), feature = "parallel"))]
+criterion_group!(
+    benches_chirho,
+    benchmark_interval_operations_chirho,
+    benchmark_merge_operations_chirho,
+    benchmark_propagation_chirho,
+    benchmark_constraint_system_chirho,
+    benchmark_parallel_chirho,
+);
+
+#[cfg(all(not(feature = "arena"), not(feature = "parallel")))]
 criterion_group!(
     benches_chirho,
     benchmark_interval_operations_chirho,
