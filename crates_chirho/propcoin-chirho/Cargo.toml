@@ -1,0 +1,30 @@
+# For God so loved the world that he gave his only begotten Son,
+#     that whoever believes in him should not perish but have eternal life.
+#     John 3:16
+
+[package]
+name = "propcoin-chirho"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.70"
+authors = ["loveJesus <loveJesus@loveJesus.software>"]
+description = "A propagator-based cryptocurrency using interval balances and CRDT-like distributed consensus"
+documentation = "https://docs.rs/propcoin-chirho"
+readme = "README.md"
+homepage = "https://github.com/loveJesus/propagators-chirho"
+repository = "https://github.com/loveJesus/propagators-chirho"
+license = "MIT"
+keywords = ["cryptocurrency", "propagators", "distributed", "crdt", "blockchain"]
+categories = ["cryptography", "network-programming"]
+
+[dependencies]
+propagators-chirho = { path = "../..", features = ["network", "serde"] }
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
+
+[features]
+default = ["serde"]
+serde = ["dep:serde", "dep:serde_json"]
+
+[dev-dependencies]
+tokio = { version = "1.0", features = ["rt-multi-thread", "macros"] }

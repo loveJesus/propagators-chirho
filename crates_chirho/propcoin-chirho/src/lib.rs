@@ -77,15 +77,16 @@
 //! - **Parallel Validation**: Transactions on disjoint accounts validate independently
 //! - **Privacy**: Can prove "I have ≥ 100" without revealing exact balance
 //!
-//! # Feature Flag
+//! # Usage
 //!
-//! Enable with the `crypto` feature:
+//! Add to your `Cargo.toml`:
 //! ```toml
-//! propagators-chirho = { version = "0.1", features = ["crypto", "network"] }
+//! [dependencies]
+//! propcoin-chirho = "0.1"
 //! ```
 
-use crate::interval_chirho::NumericInfoChirho;
-use crate::network_chirho::{CellIdChirho, CellUpdateChirho, DistributedCellChirho};
+use propagators_chirho::interval_chirho::NumericInfoChirho;
+use propagators_chirho::network_chirho::{CellIdChirho, CellUpdateChirho, DistributedCellChirho};
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};

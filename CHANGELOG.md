@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- **Reorganized into Workspace**: PropCoin cryptocurrency moved to separate crate
+  - Created `crates_chirho/propcoin-chirho/` as standalone crate
+  - Root `Cargo.toml` now defines workspace with propagators-chirho + propcoin-chirho
+  - Removed `crypto` feature from propagators-chirho (use `propcoin-chirho` crate instead)
+  - PropCoin imports propagators-chirho as dependency with `network` and `serde` features
+  - Cleaner separation of concerns: core library vs cryptocurrency application
+
 ## [0.1.5] - 2025-01-24
 
 ### Added

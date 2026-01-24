@@ -259,15 +259,6 @@ pub mod cloudflare_chirho;
 )]
 pub mod websocket_transport_chirho;
 
-/// PropCoin: A propagator-based cryptocurrency.
-///
-/// Enable with the `crypto` feature for a complete digital currency
-/// implementation using propagator networks for distributed consensus.
-/// Not available in no_std mode.
-#[cfg(all(feature = "crypto", not(feature = "no-std")))]
-#[cfg_attr(docsrs, doc(cfg(all(feature = "crypto", not(feature = "no-std")))))]
-pub mod crypto_coin_chirho;
-
 /// WebAssembly bindings for browser/Node.js usage.
 ///
 /// Enable with the `wasm` and `arena` features.
