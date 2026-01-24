@@ -154,6 +154,13 @@ pub mod scheduler_chirho;
 pub mod tms_chirho;
 pub mod worldview_chirho;
 
+/// High-performance arena-based implementation.
+///
+/// Enable with the `arena` feature for reduced allocation overhead.
+#[cfg(feature = "arena")]
+#[cfg_attr(docsrs, doc(cfg(feature = "arena")))]
+pub mod arena_chirho;
+
 // Re-exports for convenience
 pub use amb_chirho::{AmbChirho, BacktrackingSearchChirho, SearchResultChirho};
 pub use cell_chirho::{CellChirho, MergeableChirho};

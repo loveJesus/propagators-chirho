@@ -94,6 +94,63 @@ fn benchmark_constraint_system_chirho(c_chirho: &mut Criterion) {
     });
 }
 
+#[cfg(feature = "arena")]
+fn benchmark_arena_chirho(c_chirho: &mut Criterion) {
+    use propagators_chirho::arena_chirho::ArenaNetworkChirho;
+
+    c_chirho.bench_function("arena_simple_addition", |bench_chirho| {
+        bench_chirho.iter(|| {
+            let mut net_chirho = ArenaNetworkChirho::new_chirho();
+
+            let a_chirho = net_chirho.make_cell_chirho();
+            let b_chirho = net_chirho.make_cell_chirho();
+            let c_chirho = net_chirho.make_cell_chirho();
+
+            net_chirho.add_adder_chirho(a_chirho, b_chirho, c_chirho);
+
+            net_chirho.set_exact_chirho(a_chirho, 3.0);
+            net_chirho.set_exact_chirho(b_chirho, 4.0);
+            net_chirho.propagate_chirho();
+
+            black_box(net_chirho.get_exact_chirho(c_chirho))
+        })
+    });
+
+    c_chirho.bench_function("arena_temperature_conversion", |bench_chirho| {
+        bench_chirho.iter(|| {
+            let mut net_chirho = ArenaNetworkChirho::new_chirho();
+
+            let celsius_chirho = net_chirho.make_cell_chirho();
+            let nine_fifths_chirho = net_chirho.make_cell_chirho();
+            let product_chirho = net_chirho.make_cell_chirho();
+            let thirty_two_chirho = net_chirho.make_cell_chirho();
+            let fahrenheit_chirho = net_chirho.make_cell_chirho();
+
+            net_chirho.add_multiplier_chirho(celsius_chirho, nine_fifths_chirho, product_chirho);
+            net_chirho.add_adder_chirho(product_chirho, thirty_two_chirho, fahrenheit_chirho);
+
+            net_chirho.set_exact_chirho(nine_fifths_chirho, 1.8);
+            net_chirho.set_exact_chirho(thirty_two_chirho, 32.0);
+            net_chirho.set_exact_chirho(celsius_chirho, 100.0);
+
+            net_chirho.propagate_chirho();
+
+            black_box(net_chirho.get_exact_chirho(fahrenheit_chirho))
+        })
+    });
+}
+
+#[cfg(feature = "arena")]
+criterion_group!(
+    benches_chirho,
+    benchmark_interval_operations_chirho,
+    benchmark_merge_operations_chirho,
+    benchmark_propagation_chirho,
+    benchmark_constraint_system_chirho,
+    benchmark_arena_chirho,
+);
+
+#[cfg(not(feature = "arena"))]
 criterion_group!(
     benches_chirho,
     benchmark_interval_operations_chirho,

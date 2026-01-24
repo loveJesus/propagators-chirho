@@ -47,7 +47,7 @@ use crate::scheduler_chirho::SchedulerChirho;
 /// let b_chirho = NumericInfoChirho::interval_chirho(5.0, 15.0);
 /// let merged_chirho = a_chirho.merge_chirho(&b_chirho);
 /// ```
-pub trait MergeableChirho: Clone + Default + fmt::Debug {
+pub trait MergeableChirho: Clone + Default + fmt::Debug + PartialEq {
     /// Merges two pieces of partial information.
     ///
     /// Returns the lattice join of `self` and `other`.
@@ -227,9 +227,8 @@ impl<T: MergeableChirho> CellChirho<T> {
         let old_content_chirho = self.content_chirho.borrow().clone();
         let new_content_chirho = old_content_chirho.merge_chirho(&increment_chirho);
 
-        // Check if content actually changed
-        let changed_chirho =
-            format!("{:?}", new_content_chirho) != format!("{:?}", old_content_chirho);
+        // Check if content actually changed (using PartialEq, not string formatting)
+        let changed_chirho = new_content_chirho != old_content_chirho;
 
         if changed_chirho {
             *self.content_chirho.borrow_mut() = new_content_chirho;
