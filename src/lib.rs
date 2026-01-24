@@ -238,6 +238,15 @@ pub mod parallel_chirho;
 #[cfg_attr(docsrs, doc(cfg(all(feature = "network", not(feature = "no-std")))))]
 pub mod network_chirho;
 
+/// Cloudflare Durable Objects integration for long-lived propagator networks.
+///
+/// Enable with the `cloudflare` feature for patterns and utilities
+/// for running propagators as stateful Durable Objects.
+/// Not available in no_std mode.
+#[cfg(all(feature = "cloudflare", not(feature = "no-std")))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "cloudflare", not(feature = "no-std")))))]
+pub mod cloudflare_chirho;
+
 /// WebAssembly bindings for browser/Node.js usage.
 ///
 /// Enable with the `wasm` and `arena` features.

@@ -64,6 +64,7 @@ run_test_chirho "tracing feature" "cargo check --lib --features tracing"
 run_test_chirho "tms-full feature" "cargo check --lib --features tms-full"
 run_test_chirho "backtrack feature" "cargo check --lib --features backtrack"
 run_test_chirho "network feature" "cargo check --lib --features network"
+run_test_chirho "cloudflare feature" "cargo check --lib --features cloudflare"
 run_test_chirho "kani feature" "cargo check --lib --features kani"
 
 echo ""

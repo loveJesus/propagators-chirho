@@ -4,7 +4,7 @@
 
 [package]
 name = "propagators-chirho"
-version = "0.1.3"
+version = "0.1.4"
 edition = "2021"
 rust-version = "1.70"
 authors = ["loveJesus <loveJesus@loveJesus.software>"]
@@ -98,6 +98,8 @@ backtrack = ["dep:indexmap", "tms-full"]
 no-std = ["dep:libm"]
 # Distributed network support for multi-node propagation
 network = []
+# Cloudflare Durable Objects integration
+cloudflare = ["serde"]
 
 [[bench]]
 name = "propagator_bench_chirho"

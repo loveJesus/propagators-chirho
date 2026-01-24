@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.4] - 2025-01-24
+
+### Added
+
+- **Cloudflare Durable Objects Module** (`cloudflare` feature)
+  - `DurableCellStateChirho` - Persistent cell state for Durable Object storage
+  - `WsMessageChirho` - WebSocket message types for real-time subscriptions
+  - `MultiDoConfigChirho` - Configuration for sharding across multiple DOs
+  - `ShardingStrategyChirho` - Strategies: single, hash-based, prefix-based, explicit
+  - `HibernationHintsChirho` - Hints for DO hibernation optimization
+  - Storage key helpers: `cell_key_chirho`, `CELL_INDEX_KEY_CHIRHO`, `CLOCK_KEY_CHIRHO`
+  - Comprehensive documentation with TypeScript DO example
+  - Best practices for persistence, hibernation, and cost optimization
+
 ## [0.1.3] - 2025-01-24
 
 ### Added
