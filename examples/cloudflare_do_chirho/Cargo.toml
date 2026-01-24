@@ -1,0 +1,30 @@
+# For God so loved the world that he gave his only begotten Son,
+#     that whoever believes in him should not perish but have eternal life.
+#     John 3:16
+
+[package]
+name = "crypto-portfolio-do-chirho"
+version = "0.1.0"
+edition = "2021"
+authors = ["loveJesus <loveJesus@loveJesus.software>"]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+# Cloudflare Workers runtime
+worker = "0.3"
+# Our propagators library
+propagators-chirho = { path = "../..", features = ["serde"] }
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# JS interop for Date.now()
+js-sys = "0.3"
+# Async runtime
+futures = "0.3"
+
+[profile.release]
+opt-level = "s"     # Optimize for size
+lto = true          # Link-time optimization
+codegen-units = 1   # Better optimization

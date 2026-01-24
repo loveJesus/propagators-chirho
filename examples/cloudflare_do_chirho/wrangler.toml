@@ -1,0 +1,33 @@
+# For God so loved the world that he gave his only begotten Son,
+#     that whoever believes in him should not perish but have eternal life.
+#     John 3:16
+
+name = "crypto-portfolio-chirho"
+main = "build/worker/shim.mjs"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "cargo install -q worker-build && worker-build --release"
+
+# Durable Objects binding
+[durable_objects]
+bindings = [
+  { name = "CRYPTO_PORTFOLIO", class_name = "CryptoPortfolioDoChirho" }
+]
+
+# Migrations for Durable Objects (required for first deploy)
+[[migrations]]
+tag = "v1"
+new_classes = ["CryptoPortfolioDoChirho"]
+
+# Development settings
+[dev]
+port = 8787
+local_protocol = "http"
+
+# Environment-specific settings
+[env.production]
+name = "crypto-portfolio-chirho-prod"
+
+[env.staging]
+name = "crypto-portfolio-chirho-staging"
