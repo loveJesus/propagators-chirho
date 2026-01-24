@@ -37,6 +37,9 @@
 
 use std::fmt;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// An interval `[lo, hi]` representing partial numeric information.
 ///
 /// Intervals are the primary representation of partial numeric knowledge in
@@ -65,6 +68,7 @@ use std::fmt;
 /// assert_eq!(refined_chirho.hi_chirho, 30.0);
 /// ```
 #[derive(Clone, Copy, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct IntervalChirho {
     /// Lower bound of the interval.
     pub lo_chirho: f64,
@@ -671,6 +675,7 @@ impl Default for IntervalChirho {
 /// assert!(matches!(merged_chirho, NumericInfoChirho::IntervalChirho(_)));
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum NumericInfoChirho {
     /// No information known (bottom of lattice).
     NothingChirho,

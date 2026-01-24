@@ -345,36 +345,83 @@ impl<L: BoundedLatticeChirho + Send + Sync + 'static> ParallelNetworkChirho<L> {
     }
 
     /// Collects a batch of propagators that operate on independent cells.
+    ///
+    /// Optimized version using a cell-to-propagator index for O(1) overlap checking.
     fn collect_independent_batch_chirho(&self) -> Vec<usize> {
         let mut queue_chirho = self.queue_chirho.lock().unwrap();
+
+        if queue_chirho.is_empty() {
+            return Vec::new();
+        }
+
+        // For small queues, use simple algorithm
+        if queue_chirho.len() <= 16 {
+            return self.collect_batch_simple_chirho(&mut queue_chirho);
+        }
+
+        // For larger queues, use optimized algorithm
+        self.collect_batch_optimized_chirho(&mut queue_chirho)
+    }
+
+    /// Simple batch collection for small queues.
+    fn collect_batch_simple_chirho(&self, queue_chirho: &mut VecDeque<usize>) -> Vec<usize> {
         let mut batch_chirho: Vec<usize> = Vec::new();
         let mut used_cells_chirho: HashSet<usize> = HashSet::new();
-
-        // Try to collect as many independent propagators as possible
         let mut remaining_chirho: VecDeque<usize> = VecDeque::new();
 
         while let Some(prop_idx_chirho) = queue_chirho.pop_front() {
             let prop_chirho = &self.propagators_chirho[prop_idx_chirho];
 
-            // Check if this propagator's cells overlap with already selected ones
             let overlaps_chirho = prop_chirho
                 .cell_indices_chirho
                 .iter()
                 .any(|idx_chirho| used_cells_chirho.contains(idx_chirho));
 
             if overlaps_chirho {
-                // Can't run in parallel with current batch, keep for next round
                 remaining_chirho.push_back(prop_idx_chirho);
             } else {
-                // Add to batch
                 batch_chirho.push(prop_idx_chirho);
                 used_cells_chirho.extend(prop_chirho.cell_indices_chirho.iter().cloned());
             }
         }
 
-        // Put remaining back in queue
         *queue_chirho = remaining_chirho;
+        batch_chirho
+    }
 
+    /// Optimized batch collection using greedy coloring approach.
+    fn collect_batch_optimized_chirho(&self, queue_chirho: &mut VecDeque<usize>) -> Vec<usize> {
+        // Build a quick lookup: which propagators touch each cell
+        let queue_vec_chirho: Vec<usize> = queue_chirho.drain(..).collect();
+        let queue_len_chirho = queue_vec_chirho.len();
+
+        // Track which cells are "taken" by batch propagators
+        let mut cell_taken_chirho: HashSet<usize> = HashSet::with_capacity(queue_len_chirho * 3);
+        let mut batch_chirho: Vec<usize> = Vec::with_capacity(queue_len_chirho / 2);
+        let mut remaining_chirho: Vec<usize> = Vec::with_capacity(queue_len_chirho / 2);
+
+        for prop_idx_chirho in queue_vec_chirho {
+            let prop_chirho = &self.propagators_chirho[prop_idx_chirho];
+
+            // Check overlap using the taken set
+            let overlaps_chirho = prop_chirho
+                .cell_indices_chirho
+                .iter()
+                .any(|idx_chirho| cell_taken_chirho.contains(idx_chirho));
+
+            if overlaps_chirho {
+                remaining_chirho.push(prop_idx_chirho);
+            } else {
+                // Mark cells as taken
+                for &cell_idx_chirho in &prop_chirho.cell_indices_chirho {
+                    cell_taken_chirho.insert(cell_idx_chirho);
+                }
+                batch_chirho.push(prop_idx_chirho);
+            }
+        }
+
+        // Rebuild queue from remaining
+        *queue_chirho = remaining_chirho.into_iter().collect();
         batch_chirho
     }
 

@@ -171,6 +171,13 @@ pub mod arena_chirho;
 #[cfg_attr(docsrs, doc(cfg(feature = "parallel")))]
 pub mod parallel_chirho;
 
+/// WebAssembly bindings for browser/Node.js usage.
+///
+/// Enable with the `wasm` and `arena` features.
+#[cfg(all(feature = "wasm", feature = "arena"))]
+#[cfg_attr(docsrs, doc(cfg(all(feature = "wasm", feature = "arena"))))]
+pub mod wasm_chirho;
+
 // Re-exports for convenience
 pub use amb_chirho::{AmbChirho, BacktrackingSearchChirho, SearchResultChirho};
 pub use cell_chirho::{CellChirho, MergeableChirho};

@@ -29,12 +29,16 @@ use crate::lattice_chirho::{BoundedLatticeChirho, LatticeChirho};
 use std::collections::BTreeSet;
 use std::fmt;
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// A finite domain representing a set of possible values.
 ///
 /// Join is intersection (narrowing possibilities).
 /// Bottom is the full domain (all values possible).
 /// Top is the empty domain (contradiction - no values possible).
 #[derive(Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct FiniteDomainChirho {
     /// The set of possible values.
     values_chirho: BTreeSet<i64>,

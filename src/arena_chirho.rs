@@ -40,7 +40,21 @@ use crate::interval_chirho::{IntervalChirho, NumericInfoChirho};
 
 /// Index handle to a cell in the arena.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct CellIdChirho(usize);
+pub struct CellIdChirho(pub usize);
+
+impl CellIdChirho {
+    /// Creates a CellId from a raw index.
+    #[inline]
+    pub fn from_index_chirho(index_chirho: usize) -> Self {
+        Self(index_chirho)
+    }
+
+    /// Returns the underlying index.
+    #[inline]
+    pub fn index_chirho(self) -> usize {
+        self.0
+    }
+}
 
 /// Type of propagator operation.
 #[derive(Clone, Copy, Debug)]

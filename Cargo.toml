@@ -50,6 +50,12 @@ path = "examples/electrical_chirho.rs"
 typed-arena = { version = "2.0", optional = true }
 # Optional: Parallel propagation
 rayon = { version = "1.10", optional = true }
+# Optional: Serialization support
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
+# Optional: WebAssembly bindings
+wasm-bindgen = { version = "0.2", optional = true }
+js-sys = { version = "0.3", optional = true }
 
 [dev-dependencies]
 criterion = "0.5"
@@ -63,6 +69,10 @@ kani = []
 arena = ["typed-arena"]
 # Parallel propagation using rayon
 parallel = ["rayon"]
+# Serialization support via serde
+serde = ["dep:serde", "dep:serde_json"]
+# WebAssembly support
+wasm = ["dep:wasm-bindgen", "dep:js-sys"]
 
 [[bench]]
 name = "propagator_bench_chirho"
