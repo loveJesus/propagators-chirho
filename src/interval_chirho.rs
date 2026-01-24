@@ -20,7 +20,7 @@
 //! - `[a,b] + [c,d] = [a+c, b+d]`
 //! - `[a,b] - [c,d] = [a-d, b-c]`
 //! - `[a,b] × [c,d] = [min(ac,ad,bc,bd), max(ac,ad,bc,bd)]`
-//! - `[a,b] ÷ [c,d] = [a,b] × [1/d, 1/c]` (when 0 ∉ [c,d])
+//! - `[a,b] ÷ [c,d] = [a,b] × [1/d, 1/c]` (when 0 ∉ \[c,d\])
 //!
 //! # Example
 //!
@@ -423,7 +423,7 @@ impl IntervalChirho {
     ///
     /// # Mathematical Definition
     ///
-    /// `[a,b] ÷ [c,d] = [a,b] × [1/d, 1/c]` when 0 ∉ [c,d]
+    /// `[a,b] ÷ [c,d] = [a,b] × [1/d, 1/c]` when 0 ∉ \[c,d\]
     ///
     /// # Example
     ///

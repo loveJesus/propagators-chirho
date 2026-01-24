@@ -17,3 +17,14 @@ Cargo.lock
 .DS_Store
 Thumbs.db
 tmp-chirho/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.so
+*.egg-info/
+dist/
+build/
+*.whl

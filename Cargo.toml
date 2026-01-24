@@ -17,12 +17,12 @@ license = "MIT"
 keywords = ["propagators", "constraints", "interval-arithmetic", "constraint-programming", "bidirectional"]
 categories = ["algorithms", "mathematics", "science"]
 include = [
-    "src/**/*",
-    "examples/**/*",
-    "Cargo.toml",
-    "LICENSE",
-    "README.md",
-    "CHANGELOG.md",
+    "/src/**/*",
+    "/examples/**/*",
+    "/Cargo.toml",
+    "/LICENSE",
+    "/README.md",
+    "/CHANGELOG.md",
 ]
 
 [lib]
@@ -89,6 +89,9 @@ harness = false
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(kani)'] }
 
 [badges]
 maintenance = { status = "actively-developed" }

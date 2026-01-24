@@ -55,7 +55,7 @@ use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
 
 use crate::arena_chirho::{ArenaNetworkChirho, CellIdChirho};
-use crate::interval_chirho::{IntervalChirho, NumericInfoChirho};
+use crate::interval_chirho::NumericInfoChirho;
 
 /// A propagator network for constraint propagation.
 ///
