@@ -13,13 +13,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- **Arena Module DRY Improvements**
-  - Added `impl_add_ternary_chirho!` and `impl_add_binary_chirho!` macros for add_* methods
-  - Extracted `run_ternary_chirho`, `run_ternary_with_guard_chirho`, `run_binary_chirho`,
-    `run_binary_with_guard_chirho`, and `run_binary_absoluter_chirho` helper methods
-  - Reduces match arm complexity in `run_propagator_chirho` from ~130 lines to ~30 lines
+- **DRY Improvements**
+  - Added `comparison_propagator_chirho!` macro for Max/Min propagators (reduces ~70 lines)
+  - Added `impl_add_ternary_chirho!` and `impl_add_binary_chirho!` macros for arena add_* methods
+  - Extracted helper methods in arena_chirho.rs: `run_ternary_chirho`, `run_ternary_with_guard_chirho`,
+    `run_binary_chirho`, `run_binary_with_guard_chirho`, `run_binary_absoluter_chirho`
+  - Reduces match arm complexity in arena `run_propagator_chirho` from ~130 lines to ~30 lines
 
 ### Added
+
+- **New ConstraintSystemChirho Methods**
+  - `add_negater_chirho` - Negation: -a = b
+  - `add_exp_chirho` - Exponential: e^a = b
+  - `add_ln_chirho` - Natural logarithm: ln(a) = b
+  - `add_power_chirho` - Integer power: a^n = b
+  - `add_clamp_chirho` - Clamping: clamp(a, lo, hi) = b
 
 - **New Arena Propagator Types**
   - `SubtractorChirho` - Bidirectional a - b = c
@@ -28,7 +36,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `AbsoluterChirho` - Bidirectional |a| = b
   - `NegaterChirho` - Bidirectional -a = b
 
-- **Arena Tests**: 8 new tests for new propagator types (total: 13 arena tests)
+- **New Tests**
+  - 8 arena propagator tests (total: 13)
+  - 7 ConstraintSystemChirho tests (total: 12)
+  - Total tests: 245
 
 ## [0.1.1] - 2025-01-24
 
