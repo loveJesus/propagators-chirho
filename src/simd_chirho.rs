@@ -348,6 +348,7 @@ impl IntervalVecChirho {
     /// This format is optimal for SIMD auto-vectorization since
     /// bounds are stored contiguously.
     #[inline]
+    #[allow(clippy::needless_range_loop)] // Explicit indexing for SIMD auto-vectorization
     pub fn add_chirho(&self, other_chirho: &Self) -> Self {
         assert_eq!(self.lo_chirho.len(), other_chirho.lo_chirho.len());
 
@@ -372,6 +373,7 @@ impl IntervalVecChirho {
 
     /// Subtracts two interval vectors element-wise.
     #[inline]
+    #[allow(clippy::needless_range_loop)] // Explicit indexing for SIMD auto-vectorization
     pub fn sub_chirho(&self, other_chirho: &Self) -> Self {
         assert_eq!(self.lo_chirho.len(), other_chirho.lo_chirho.len());
 
@@ -397,6 +399,7 @@ impl IntervalVecChirho {
     ///
     /// Invalid intersections (lo > hi) are kept as-is; callers should check.
     #[inline]
+    #[allow(clippy::needless_range_loop)] // Explicit indexing for SIMD auto-vectorization
     pub fn intersect_chirho(&self, other_chirho: &Self) -> Self {
         assert_eq!(self.lo_chirho.len(), other_chirho.lo_chirho.len());
 

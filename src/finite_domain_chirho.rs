@@ -161,7 +161,7 @@ impl fmt::Debug for FiniteDomainChirho {
         } else if self.values_chirho.len() <= 5 {
             write!(f_chirho, "{{{}}}",
                 self.values_chirho.iter()
-                    .map(|v_chirho| v_chirho.to_string())
+                    .map(std::string::ToString::to_string)
                     .collect::<Vec<_>>()
                     .join(", "))
         } else {

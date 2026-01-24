@@ -264,6 +264,10 @@ impl PyIntervalChirho {
     /// Args:
     ///     lo: Lower bound
     ///     hi: Upper bound
+    ///
+    /// # Errors
+    ///
+    /// Returns `PyValueError` if `lo > hi`.
     #[new]
     pub fn new_chirho(lo_chirho: f64, hi_chirho: f64) -> PyResult<Self> {
         if lo_chirho > hi_chirho {

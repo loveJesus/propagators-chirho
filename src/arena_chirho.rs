@@ -248,6 +248,7 @@ impl ArenaNetworkChirho {
         true
     }
 
+    #[allow(clippy::too_many_lines)] // Match arms for each propagator type, clearer as one function
     fn run_propagator_chirho(&mut self, prop_idx_chirho: usize) {
         // Copy propagator data to avoid borrow conflicts
         let type_chirho = self.propagators_chirho[prop_idx_chirho].type_chirho;
@@ -263,7 +264,7 @@ impl ArenaNetworkChirho {
                 if let (Some(a_iv_chirho), Some(b_iv_chirho)) =
                     (a_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
                 {
-                    let result_chirho = a_iv_chirho.add_chirho(&b_iv_chirho);
+                    let result_chirho = a_iv_chirho.add_chirho(b_iv_chirho);
                     self.add_info_chirho(
                         cells_chirho[2],
                         NumericInfoChirho::IntervalChirho(result_chirho),
@@ -274,7 +275,7 @@ impl ArenaNetworkChirho {
                 if let (Some(c_iv_chirho), Some(b_iv_chirho)) =
                     (c_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
                 {
-                    let result_chirho = c_iv_chirho.sub_chirho(&b_iv_chirho);
+                    let result_chirho = c_iv_chirho.sub_chirho(b_iv_chirho);
                     self.add_info_chirho(
                         cells_chirho[0],
                         NumericInfoChirho::IntervalChirho(result_chirho),
@@ -285,7 +286,7 @@ impl ArenaNetworkChirho {
                 if let (Some(c_iv_chirho), Some(a_iv_chirho)) =
                     (c_chirho.as_interval_chirho(), a_chirho.as_interval_chirho())
                 {
-                    let result_chirho = c_iv_chirho.sub_chirho(&a_iv_chirho);
+                    let result_chirho = c_iv_chirho.sub_chirho(a_iv_chirho);
                     self.add_info_chirho(
                         cells_chirho[1],
                         NumericInfoChirho::IntervalChirho(result_chirho),
@@ -302,7 +303,7 @@ impl ArenaNetworkChirho {
                 if let (Some(a_iv_chirho), Some(b_iv_chirho)) =
                     (a_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
                 {
-                    let result_chirho = a_iv_chirho.mul_chirho(&b_iv_chirho);
+                    let result_chirho = a_iv_chirho.mul_chirho(b_iv_chirho);
                     self.add_info_chirho(
                         cells_chirho[2],
                         NumericInfoChirho::IntervalChirho(result_chirho),
@@ -313,7 +314,7 @@ impl ArenaNetworkChirho {
                 if let (Some(c_iv_chirho), Some(b_iv_chirho)) =
                     (c_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
                 {
-                    let result_chirho = c_iv_chirho.div_chirho(&b_iv_chirho);
+                    let result_chirho = c_iv_chirho.div_chirho(b_iv_chirho);
                     if !result_chirho.is_empty_chirho() {
                         self.add_info_chirho(
                             cells_chirho[0],
@@ -326,7 +327,7 @@ impl ArenaNetworkChirho {
                 if let (Some(c_iv_chirho), Some(a_iv_chirho)) =
                     (c_chirho.as_interval_chirho(), a_chirho.as_interval_chirho())
                 {
-                    let result_chirho = c_iv_chirho.div_chirho(&a_iv_chirho);
+                    let result_chirho = c_iv_chirho.div_chirho(a_iv_chirho);
                     if !result_chirho.is_empty_chirho() {
                         self.add_info_chirho(
                             cells_chirho[1],
@@ -410,7 +411,7 @@ impl ArenaNetworkChirho {
     pub fn has_contradiction_chirho(&self) -> bool {
         self.cells_chirho
             .iter()
-            .any(|c_chirho| c_chirho.is_contradiction_chirho())
+            .any(super::interval_chirho::NumericInfoChirho::is_contradiction_chirho)
     }
 
     /// Resets the network, clearing all cell values.

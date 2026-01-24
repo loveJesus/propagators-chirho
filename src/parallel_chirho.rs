@@ -123,11 +123,11 @@ impl<L: BoundedLatticeChirho + Send + Sync> ParallelCellChirho<L> {
         let old_chirho = content_chirho.clone();
         let new_chirho = old_chirho.join_chirho(&info_chirho);
 
-        if new_chirho != old_chirho {
+        if new_chirho == old_chirho {
+            false
+        } else {
             *content_chirho = new_chirho;
             true
-        } else {
-            false
         }
     }
 
@@ -154,6 +154,7 @@ impl<L: BoundedLatticeChirho + Send + Sync> std::fmt::Debug for ParallelCellChir
 }
 
 /// A propagator entry for parallel networks.
+#[allow(clippy::type_complexity)] // Thread-safe propagator callbacks require this signature
 struct ParallelPropagatorChirho<L: BoundedLatticeChirho + Send + Sync> {
     /// The propagator function (wrapped for thread safety).
     propagator_fn_chirho: Box<dyn Fn(&[L]) -> Vec<L> + Send + Sync>,
@@ -260,9 +261,8 @@ impl<L: BoundedLatticeChirho + Send + Sync + 'static> ParallelNetworkChirho<L> {
         loop {
             let prop_idx_opt_chirho = self.queue_chirho.lock().unwrap().pop_front();
 
-            let prop_idx_chirho = match prop_idx_opt_chirho {
-                Some(idx_chirho) => idx_chirho,
-                None => break,
+            let Some(prop_idx_chirho) = prop_idx_opt_chirho else {
+                break;
             };
 
             self.propagation_count_chirho.fetch_add(1, Ordering::SeqCst);

@@ -1,0 +1,591 @@
+<!--
+  For God so loved the world that he gave his only begotten Son,
+      that whoever believes in him should not perish but have eternal life.
+      John 3:16
+-->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Propagators Chirho - Bidirectional Constraint Networks</title>
+    <style>
+        :root {
+            --bg-primary-chirho: #0a0a0f;
+            --bg-secondary-chirho: #12121a;
+            --bg-card-chirho: #1a1a24;
+            --text-primary-chirho: #e8e8f0;
+            --text-secondary-chirho: #a0a0b0;
+            --accent-gold-chirho: #d4af37;
+            --accent-blue-chirho: #4a9eff;
+            --accent-green-chirho: #4ade80;
+            --accent-red-chirho: #f87171;
+            --border-color-chirho: #2a2a3a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-primary-chirho);
+            color: var(--text-primary-chirho);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container-chirho { max-width: 1200px; margin: 0 auto; padding: 2rem; }
+
+        .gospel-header-chirho {
+            text-align: center;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, var(--bg-secondary-chirho), var(--bg-card-chirho));
+            border-bottom: 2px solid var(--accent-gold-chirho);
+            margin-bottom: 2rem;
+        }
+
+        .gospel-verse-chirho {
+            font-style: italic;
+            color: var(--accent-gold-chirho);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto 1rem;
+        }
+
+        .gospel-ref-chirho { color: var(--text-secondary-chirho); font-size: 0.9rem; }
+
+        h1 {
+            font-size: 2.5rem;
+            margin: 1.5rem 0 0.5rem;
+            background: linear-gradient(90deg, var(--text-primary-chirho), var(--accent-blue-chirho));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .tagline-chirho { color: var(--text-secondary-chirho); font-size: 1.1rem; }
+
+        section {
+            background: var(--bg-card-chirho);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color-chirho);
+        }
+
+        h2 { color: var(--accent-blue-chirho); margin-bottom: 1rem; font-size: 1.5rem; }
+        h3 { color: var(--text-primary-chirho); margin: 1.5rem 0 0.75rem; }
+        p { color: var(--text-secondary-chirho); margin-bottom: 1rem; }
+
+        .math-chirho {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            background: var(--bg-secondary-chirho);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .math-block-chirho {
+            font-family: 'Times New Roman', serif;
+            background: var(--bg-secondary-chirho);
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            text-align: center;
+            font-size: 1.2rem;
+            border-left: 3px solid var(--accent-gold-chirho);
+        }
+
+        .demo-container-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        @media (max-width: 768px) { .demo-container-chirho { grid-template-columns: 1fr; } }
+
+        .demo-panel-chirho {
+            background: var(--bg-secondary-chirho);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .demo-panel-chirho h3 { margin-top: 0; color: var(--accent-blue-chirho); }
+
+        .control-group-chirho { margin-bottom: 1rem; }
+
+        label {
+            display: block;
+            color: var(--text-secondary-chirho);
+            margin-bottom: 0.3rem;
+            font-size: 0.9rem;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 0.6rem;
+            background: var(--bg-card-chirho);
+            border: 1px solid var(--border-color-chirho);
+            border-radius: 6px;
+            color: var(--text-primary-chirho);
+            font-size: 1rem;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent-blue-chirho);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            background: var(--accent-blue-chirho);
+            color: var(--bg-primary-chirho);
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 0.5rem;
+        }
+
+        button:hover { background: #5aa8ff; }
+
+        .btn-secondary-chirho {
+            background: var(--bg-card-chirho);
+            color: var(--text-primary-chirho);
+            border: 1px solid var(--border-color-chirho);
+        }
+
+        .result-chirho {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-card-chirho);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent-green-chirho);
+            display: none;
+        }
+
+        .result-label-chirho { font-size: 0.85rem; color: var(--text-secondary-chirho); }
+        .result-value-chirho { font-size: 1.5rem; font-weight: 600; color: var(--accent-green-chirho); }
+
+        .network-viz-chirho {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: var(--bg-card-chirho);
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+        }
+
+        code {
+            font-family: 'Courier New', monospace;
+            background: var(--bg-secondary-chirho);
+            padding: 0.2rem 0.4rem;
+            border-radius: 4px;
+        }
+
+        pre {
+            background: var(--bg-secondary-chirho);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        pre code { background: none; padding: 0; }
+
+        .features-chirho {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .feature-chirho {
+            background: var(--bg-secondary-chirho);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color-chirho);
+        }
+
+        .feature-chirho h4 { color: var(--accent-gold-chirho); margin-bottom: 0.5rem; }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary-chirho);
+            border-top: 1px solid var(--border-color-chirho);
+        }
+
+        footer a { color: var(--accent-blue-chirho); text-decoration: none; }
+
+        #loading-chirho { text-align: center; padding: 2rem; }
+
+        .spinner-chirho {
+            border: 3px solid var(--border-color-chirho);
+            border-top-color: var(--accent-blue-chirho);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin-chirho 1s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin-chirho { to { transform: rotate(360deg); } }
+
+        ul { margin-left: 2rem; color: var(--text-secondary-chirho); }
+    </style>
+</head>
+<body>
+    <header class="gospel-header-chirho">
+        <p class="gospel-verse-chirho">
+            "For God so loved the world that he gave his only begotten Son,
+            that whoever believes in him should not perish but have eternal life."
+        </p>
+        <p class="gospel-ref-chirho">— John 3:16</p>
+        <h1>Propagators Chirho</h1>
+        <p class="tagline-chirho">Bidirectional Constraint Networks in Rust + WebAssembly</p>
+    </header>
+
+    <main class="container-chirho">
+        <section>
+            <h2>What are Propagator Networks?</h2>
+            <p>
+                Propagator networks are a computational model for <strong>bidirectional constraint propagation</strong>,
+                inspired by the work of Gerald Jay Sussman and Alexey Radul at MIT. Unlike traditional functions
+                that compute outputs from inputs, propagators work with <em>partial information</em> that flows
+                in all directions through a network of cells.
+            </p>
+
+            <h3>Interval Arithmetic</h3>
+            <p>
+                Each cell contains an <strong>interval</strong> <span class="math-chirho">[lo, hi]</span> representing
+                a range of possible values. As constraints propagate, these intervals narrow toward exact answers.
+            </p>
+
+            <div class="math-block-chirho">
+                [a, b] + [c, d] = [a+c, b+d]<br>
+                [a, b] × [c, d] = [min(ac, ad, bc, bd), max(ac, ad, bc, bd)]
+            </div>
+
+            <h3>Bidirectional Flow</h3>
+            <p>
+                The magic of propagators is that constraints work <strong>both ways</strong>. If you know
+                <span class="math-chirho">a + b = c</span>, you can compute any variable from the other two.
+            </p>
+
+            <div class="features-chirho">
+                <div class="feature-chirho">
+                    <h4>Monotonic Refinement</h4>
+                    <p>Information only grows—intervals narrow but never widen. This guarantees termination.</p>
+                </div>
+                <div class="feature-chirho">
+                    <h4>Lattice Theory</h4>
+                    <p>Values form a join-semilattice with partial order. ⊥ = no info, ⊤ = contradiction.</p>
+                </div>
+                <div class="feature-chirho">
+                    <h4>SIMD Optimized</h4>
+                    <p>Batch operations use explicit loops for auto-vectorization on modern CPUs.</p>
+                </div>
+                <div class="feature-chirho">
+                    <h4>Formally Verified</h4>
+                    <p>Key properties proven with Kani bounded model checking.</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Interactive Demo</h2>
+
+            <div id="loading-chirho">
+                <div class="spinner-chirho"></div>
+                <p>Loading WebAssembly module...</p>
+            </div>
+
+            <div id="demos-chirho" style="display: none;">
+                <div class="demo-container-chirho">
+                    <div class="demo-panel-chirho">
+                        <h3>Pythagorean Theorem: a² + b² = c²</h3>
+                        <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+                            Enter any two values and the propagator network computes the third!
+                        </p>
+
+                        <div class="control-group-chirho">
+                            <label for="pyth-a-chirho">Side a (leave empty to compute)</label>
+                            <input type="number" id="pyth-a-chirho" placeholder="e.g., 3" step="any">
+                        </div>
+
+                        <div class="control-group-chirho">
+                            <label for="pyth-b-chirho">Side b (leave empty to compute)</label>
+                            <input type="number" id="pyth-b-chirho" placeholder="e.g., 4" step="any">
+                        </div>
+
+                        <div class="control-group-chirho">
+                            <label for="pyth-c-chirho">Hypotenuse c (leave empty to compute)</label>
+                            <input type="number" id="pyth-c-chirho" placeholder="e.g., 5" step="any">
+                        </div>
+
+                        <button onclick="runPythagoreanChirho()">Propagate</button>
+                        <button class="btn-secondary-chirho" onclick="clearPythagoreanChirho()">Clear</button>
+
+                        <div id="pyth-result-chirho" class="result-chirho">
+                            <div class="result-label-chirho">Result</div>
+                            <div id="pyth-result-value-chirho" class="result-value-chirho"></div>
+                        </div>
+                    </div>
+
+                    <div class="demo-panel-chirho">
+                        <h3>Temperature Conversion: °C ↔ °F</h3>
+                        <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+                            The constraint <code>F = C × 9/5 + 32</code> works bidirectionally.
+                        </p>
+
+                        <div class="control-group-chirho">
+                            <label for="temp-c-chirho">Temperature in Celsius</label>
+                            <input type="number" id="temp-c-chirho" placeholder="e.g., 100" step="any">
+                        </div>
+
+                        <div class="control-group-chirho">
+                            <label for="temp-f-chirho">Temperature in Fahrenheit</label>
+                            <input type="number" id="temp-f-chirho" placeholder="e.g., 212" step="any">
+                        </div>
+
+                        <button onclick="runTemperatureChirho()">Propagate</button>
+                        <button class="btn-secondary-chirho" onclick="clearTemperatureChirho()">Clear</button>
+
+                        <div id="temp-result-chirho" class="result-chirho">
+                            <div class="result-label-chirho">Conversion Result</div>
+                            <div id="temp-result-value-chirho" class="result-value-chirho"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="demo-panel-chirho" style="margin-top: 2rem;">
+                    <h3>Interval Arithmetic Demo</h3>
+                    <p style="font-size: 0.9rem; margin-bottom: 1rem;">
+                        See how operations on intervals produce interval results.
+                    </p>
+
+                    <div class="demo-container-chirho">
+                        <div>
+                            <div class="control-group-chirho">
+                                <label>Interval A</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="number" id="iv-a-lo-chirho" placeholder="lo" value="1" step="any">
+                                    <input type="number" id="iv-a-hi-chirho" placeholder="hi" value="5" step="any">
+                                </div>
+                            </div>
+
+                            <div class="control-group-chirho">
+                                <label>Interval B</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="number" id="iv-b-lo-chirho" placeholder="lo" value="2" step="any">
+                                    <input type="number" id="iv-b-hi-chirho" placeholder="hi" value="4" step="any">
+                                </div>
+                            </div>
+
+                            <button onclick="runIntervalDemoChirho()">Calculate</button>
+                        </div>
+
+                        <div id="interval-results-chirho" class="network-viz-chirho">
+                            Click "Calculate" to see interval arithmetic in action.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Usage</h2>
+
+            <h3>Rust</h3>
+            <pre><code>use propagators_chirho::prelude_chirho::*;
+
+let mut network_chirho = PropagatorNetworkChirho::new_chirho();
+
+let a_chirho = network_chirho.make_cell_chirho();
+let b_chirho = network_chirho.make_cell_chirho();
+let c_chirho = network_chirho.make_cell_chirho();
+
+network_chirho.add_adder_chirho(a_chirho, b_chirho, c_chirho);
+network_chirho.set_exact_chirho(a_chirho, 3.0);
+network_chirho.set_exact_chirho(b_chirho, 4.0);
+network_chirho.propagate_chirho();
+
+// c_chirho = 7.0</code></pre>
+
+            <h3>JavaScript (via WASM)</h3>
+            <pre><code>import init, { WasmNetworkChirho } from './propagators_chirho.js';
+
+await init();
+
+const networkChirho = new WasmNetworkChirho();
+const aChirho = networkChirho.makeCell();
+const bChirho = networkChirho.makeCell();
+const cChirho = networkChirho.makeCell();
+
+networkChirho.addAdder(aChirho, bChirho, cChirho);
+networkChirho.setExact(aChirho, 3.0);
+networkChirho.setExact(bChirho, 4.0);
+networkChirho.propagate();
+
+console.log(networkChirho.getExact(cChirho)); // 7.0</code></pre>
+        </section>
+
+        <section>
+            <h2>Installation</h2>
+            <h3>Cargo</h3>
+            <pre><code>[dependencies]
+propagators-chirho = "0.1"</code></pre>
+        </section>
+    </main>
+
+    <footer>
+        <p>
+            <a href="https://github.com/loveJesus/propagators-chirho">GitHub</a> •
+            <a href="https://docs.rs/propagators-chirho">Documentation</a> •
+            <a href="https://crates.io/crates/propagators-chirho">crates.io</a>
+        </p>
+        <p style="margin-top: 0.5rem; font-size: 0.9rem;">Made with love for Jesus Christ ☧</p>
+    </footer>
+
+    <script type="module">
+        import init, { WasmNetworkChirho, WasmIntervalChirho } from './propagators_chirho.js';
+
+        let wasmReadyChirho = false;
+
+        async function initWasmChirho() {
+            try {
+                await init();
+                wasmReadyChirho = true;
+                document.getElementById('loading-chirho').style.display = 'none';
+                document.getElementById('demos-chirho').style.display = 'block';
+            } catch (errorChirho) {
+                document.getElementById('loading-chirho').textContent =
+                    'Failed to load WASM: ' + errorChirho.message;
+            }
+        }
+
+        window.runPythagoreanChirho = function() {
+            if (!wasmReadyChirho) return;
+
+            const aInputChirho = document.getElementById('pyth-a-chirho').value;
+            const bInputChirho = document.getElementById('pyth-b-chirho').value;
+            const cInputChirho = document.getElementById('pyth-c-chirho').value;
+
+            const networkChirho = new WasmNetworkChirho();
+            const aChirho = networkChirho.makeCell();
+            const bChirho = networkChirho.makeCell();
+            const cChirho = networkChirho.makeCell();
+            const a2Chirho = networkChirho.makeCell();
+            const b2Chirho = networkChirho.makeCell();
+            const c2Chirho = networkChirho.makeCell();
+
+            networkChirho.addSquarer(aChirho, a2Chirho);
+            networkChirho.addSquarer(bChirho, b2Chirho);
+            networkChirho.addSquarer(cChirho, c2Chirho);
+            networkChirho.addAdder(a2Chirho, b2Chirho, c2Chirho);
+
+            if (aInputChirho) networkChirho.setExact(aChirho, parseFloat(aInputChirho));
+            if (bInputChirho) networkChirho.setExact(bChirho, parseFloat(bInputChirho));
+            if (cInputChirho) networkChirho.setExact(cChirho, parseFloat(cInputChirho));
+
+            networkChirho.propagate();
+
+            const resultDivChirho = document.getElementById('pyth-result-chirho');
+            const resultValueChirho = document.getElementById('pyth-result-value-chirho');
+            resultDivChirho.style.display = 'block';
+
+            if (networkChirho.hasContradiction()) {
+                resultValueChirho.textContent = 'Contradiction! Values are inconsistent.';
+                resultValueChirho.style.color = 'var(--accent-red-chirho)';
+            } else {
+                const aValChirho = networkChirho.getExact(aChirho);
+                const bValChirho = networkChirho.getExact(bChirho);
+                const cValChirho = networkChirho.getExact(cChirho);
+
+                let resultsChirho = [];
+                if (aValChirho !== undefined) resultsChirho.push('a = ' + aValChirho.toFixed(4));
+                if (bValChirho !== undefined) resultsChirho.push('b = ' + bValChirho.toFixed(4));
+                if (cValChirho !== undefined) resultsChirho.push('c = ' + cValChirho.toFixed(4));
+
+                resultValueChirho.textContent = resultsChirho.join(', ') || 'Need more information';
+                resultValueChirho.style.color = 'var(--accent-green-chirho)';
+            }
+        };
+
+        window.clearPythagoreanChirho = function() {
+            document.getElementById('pyth-a-chirho').value = '';
+            document.getElementById('pyth-b-chirho').value = '';
+            document.getElementById('pyth-c-chirho').value = '';
+            document.getElementById('pyth-result-chirho').style.display = 'none';
+        };
+
+        window.runTemperatureChirho = function() {
+            if (!wasmReadyChirho) return;
+
+            const cInputChirho = document.getElementById('temp-c-chirho').value;
+            const fInputChirho = document.getElementById('temp-f-chirho').value;
+
+            const networkChirho = new WasmNetworkChirho();
+            const celsiusChirho = networkChirho.makeCell();
+            const fahrenheitChirho = networkChirho.makeCell();
+            const ratioChirho = networkChirho.makeCell();
+            const scaledChirho = networkChirho.makeCell();
+            const thirtyTwoChirho = networkChirho.makeCell();
+
+            networkChirho.setExact(ratioChirho, 1.8);
+            networkChirho.setExact(thirtyTwoChirho, 32.0);
+            networkChirho.addMultiplier(celsiusChirho, ratioChirho, scaledChirho);
+            networkChirho.addAdder(scaledChirho, thirtyTwoChirho, fahrenheitChirho);
+
+            if (cInputChirho) networkChirho.setExact(celsiusChirho, parseFloat(cInputChirho));
+            if (fInputChirho) networkChirho.setExact(fahrenheitChirho, parseFloat(fInputChirho));
+
+            networkChirho.propagate();
+
+            const resultDivChirho = document.getElementById('temp-result-chirho');
+            const resultValueChirho = document.getElementById('temp-result-value-chirho');
+            resultDivChirho.style.display = 'block';
+
+            const cValChirho = networkChirho.getExact(celsiusChirho);
+            const fValChirho = networkChirho.getExact(fahrenheitChirho);
+
+            if (cValChirho !== undefined && fValChirho !== undefined) {
+                resultValueChirho.textContent = cValChirho.toFixed(2) + '°C = ' + fValChirho.toFixed(2) + '°F';
+            } else {
+                resultValueChirho.textContent = 'Enter a temperature value';
+            }
+        };
+
+        window.clearTemperatureChirho = function() {
+            document.getElementById('temp-c-chirho').value = '';
+            document.getElementById('temp-f-chirho').value = '';
+            document.getElementById('temp-result-chirho').style.display = 'none';
+        };
+
+        window.runIntervalDemoChirho = function() {
+            if (!wasmReadyChirho) return;
+
+            const aLoChirho = parseFloat(document.getElementById('iv-a-lo-chirho').value) || 0;
+            const aHiChirho = parseFloat(document.getElementById('iv-a-hi-chirho').value) || 0;
+            const bLoChirho = parseFloat(document.getElementById('iv-b-lo-chirho').value) || 0;
+            const bHiChirho = parseFloat(document.getElementById('iv-b-hi-chirho').value) || 0;
+
+            const aChirho = new WasmIntervalChirho(aLoChirho, aHiChirho);
+            const bChirho = new WasmIntervalChirho(bLoChirho, bHiChirho);
+
+            const sumChirho = aChirho.add(bChirho);
+            const diffChirho = aChirho.sub(bChirho);
+            const prodChirho = aChirho.mul(bChirho);
+            const interChirho = aChirho.intersect(bChirho);
+
+            const fmtChirho = (ivChirho) => '[' + ivChirho.lo.toFixed(2) + ', ' + ivChirho.hi.toFixed(2) + ']';
+
+            document.getElementById('interval-results-chirho').textContent =
+                'A = [' + aLoChirho + ', ' + aHiChirho + ']\n' +
+                'B = [' + bLoChirho + ', ' + bHiChirho + ']\n\n' +
+                'A + B = ' + fmtChirho(sumChirho) + '\n' +
+                'A - B = ' + fmtChirho(diffChirho) + '\n' +
+                'A × B = ' + fmtChirho(prodChirho) + '\n' +
+                'A ∩ B = ' + (interChirho.isEmpty() ? '∅ (empty)' : fmtChirho(interChirho));
+        };
+
+        initWasmChirho();
+    </script>
+</body>
+</html>

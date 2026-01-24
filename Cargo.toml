@@ -28,6 +28,7 @@ include = [
 [lib]
 name = "propagators_chirho"
 path = "src/lib.rs"
+crate-type = ["cdylib", "rlib"]
 
 [[example]]
 name = "temperature_chirho"

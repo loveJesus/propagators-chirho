@@ -1286,6 +1286,7 @@ impl PowerChirho {
     }
 
     /// Compute interval power a^n for positive integer n.
+    #[allow(clippy::cast_possible_wrap)] // abs_n_chirho is always <= i32::MAX since we use unsigned_abs
     fn interval_pow_chirho(interval_chirho: &IntervalChirho, n_chirho: i32) -> IntervalChirho {
         if n_chirho == 0 {
             return IntervalChirho::exact_chirho(1.0);
@@ -1341,9 +1342,10 @@ impl PowerChirho {
             return None;
         }
 
-        let abs_n_chirho = n_chirho.unsigned_abs() as f64;
+        let abs_n_u32_chirho = n_chirho.unsigned_abs();
+        let abs_n_chirho = f64::from(abs_n_u32_chirho);
 
-        if abs_n_chirho as u32 % 2 == 0 {
+        if abs_n_u32_chirho % 2 == 0 {
             // Even root: only valid for non-negative
             if interval_chirho.lo_chirho < 0.0 {
                 if interval_chirho.hi_chirho < 0.0 {

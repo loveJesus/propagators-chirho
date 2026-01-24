@@ -279,7 +279,7 @@ impl PropagatorFnChirho<NumericInfoChirho> for AddPropagatorChirho {
             (a_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
         {
             results_chirho[2] =
-                NumericInfoChirho::IntervalChirho(a_iv_chirho.add_chirho(&b_iv_chirho));
+                NumericInfoChirho::IntervalChirho(a_iv_chirho.add_chirho(b_iv_chirho));
         }
 
         // Backward: a = c - b
@@ -287,7 +287,7 @@ impl PropagatorFnChirho<NumericInfoChirho> for AddPropagatorChirho {
             (c_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
         {
             results_chirho[0] =
-                NumericInfoChirho::IntervalChirho(c_iv_chirho.sub_chirho(&b_iv_chirho));
+                NumericInfoChirho::IntervalChirho(c_iv_chirho.sub_chirho(b_iv_chirho));
         }
 
         // Backward: b = c - a
@@ -295,7 +295,7 @@ impl PropagatorFnChirho<NumericInfoChirho> for AddPropagatorChirho {
             (c_chirho.as_interval_chirho(), a_chirho.as_interval_chirho())
         {
             results_chirho[1] =
-                NumericInfoChirho::IntervalChirho(c_iv_chirho.sub_chirho(&a_iv_chirho));
+                NumericInfoChirho::IntervalChirho(c_iv_chirho.sub_chirho(a_iv_chirho));
         }
 
         results_chirho
@@ -323,14 +323,14 @@ impl PropagatorFnChirho<NumericInfoChirho> for MulPropagatorChirho {
             (a_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
         {
             results_chirho[2] =
-                NumericInfoChirho::IntervalChirho(a_iv_chirho.mul_chirho(&b_iv_chirho));
+                NumericInfoChirho::IntervalChirho(a_iv_chirho.mul_chirho(b_iv_chirho));
         }
 
         // Backward: a = c / b
         if let (Some(c_iv_chirho), Some(b_iv_chirho)) =
             (c_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
         {
-            let div_result_chirho = c_iv_chirho.div_chirho(&b_iv_chirho);
+            let div_result_chirho = c_iv_chirho.div_chirho(b_iv_chirho);
             if !div_result_chirho.is_empty_chirho() {
                 results_chirho[0] = NumericInfoChirho::IntervalChirho(div_result_chirho);
             }
@@ -340,7 +340,7 @@ impl PropagatorFnChirho<NumericInfoChirho> for MulPropagatorChirho {
         if let (Some(c_iv_chirho), Some(a_iv_chirho)) =
             (c_chirho.as_interval_chirho(), a_chirho.as_interval_chirho())
         {
-            let div_result_chirho = c_iv_chirho.div_chirho(&a_iv_chirho);
+            let div_result_chirho = c_iv_chirho.div_chirho(a_iv_chirho);
             if !div_result_chirho.is_empty_chirho() {
                 results_chirho[1] = NumericInfoChirho::IntervalChirho(div_result_chirho);
             }

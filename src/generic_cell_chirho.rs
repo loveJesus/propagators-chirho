@@ -33,6 +33,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 static CELL_ID_COUNTER_CHIRHO: AtomicUsize = AtomicUsize::new(0);
 
 /// A generic cell that can hold any lattice type.
+#[allow(clippy::type_complexity)] // Watcher callbacks require this signature
 pub struct GenericCellChirho<L: BoundedLatticeChirho> {
     id_chirho: usize,
     name_chirho: String,
@@ -96,7 +97,9 @@ impl<L: BoundedLatticeChirho> GenericCellChirho<L> {
         let old_chirho = self.content_chirho.borrow().clone();
         let new_chirho = old_chirho.join_chirho(&info_chirho);
 
-        if new_chirho != old_chirho {
+        if new_chirho == old_chirho {
+            false
+        } else {
             *self.content_chirho.borrow_mut() = new_chirho.clone();
 
             // Notify watchers
@@ -105,8 +108,6 @@ impl<L: BoundedLatticeChirho> GenericCellChirho<L> {
             }
 
             true
-        } else {
-            false
         }
     }
 
@@ -285,9 +286,8 @@ impl<L: BoundedLatticeChirho + 'static> GenericNetworkChirho<L> {
             // Pop from queue in its own scope to release borrow
             let prop_idx_opt_chirho = self.queue_chirho.borrow_mut().pop_front();
 
-            let prop_idx_chirho = match prop_idx_opt_chirho {
-                Some(idx_chirho) => idx_chirho,
-                None => break,
+            let Some(prop_idx_chirho) = prop_idx_opt_chirho else {
+                break;
             };
 
             *self.propagation_count_chirho.borrow_mut() += 1;
