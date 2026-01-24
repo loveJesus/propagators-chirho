@@ -12,9 +12,9 @@
 //! - Soundness: propagated values are correct
 
 use propagators_chirho::{
-    ConstraintSystemChirho, IntervalChirho, NumericInfoChirho, FiniteDomainChirho,
-    simd_chirho::{batch_add_chirho, batch_mul_chirho, batch_intersect_chirho, IntervalVecChirho},
     lattice_chirho::{BoundedLatticeChirho, LatticeChirho},
+    simd_chirho::{batch_add_chirho, batch_intersect_chirho, batch_mul_chirho, IntervalVecChirho},
+    ConstraintSystemChirho, FiniteDomainChirho, IntervalChirho, NumericInfoChirho,
 };
 use proptest::prelude::*;
 

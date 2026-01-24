@@ -157,17 +157,28 @@ impl fmt::Debug for FiniteDomainChirho {
         if self.values_chirho.is_empty() {
             write!(f_chirho, "∅")
         } else if self.is_singleton_chirho() {
-            write!(f_chirho, "{{{}}}", self.values_chirho.iter().next().unwrap())
+            write!(
+                f_chirho,
+                "{{{}}}",
+                self.values_chirho.iter().next().unwrap()
+            )
         } else if self.values_chirho.len() <= 5 {
-            write!(f_chirho, "{{{}}}",
-                self.values_chirho.iter()
+            write!(
+                f_chirho,
+                "{{{}}}",
+                self.values_chirho
+                    .iter()
                     .map(std::string::ToString::to_string)
                     .collect::<Vec<_>>()
-                    .join(", "))
+                    .join(", ")
+            )
         } else {
-            write!(f_chirho, "{{{}..{}}}",
+            write!(
+                f_chirho,
+                "{{{}..{}}}",
                 self.values_chirho.iter().next().unwrap(),
-                self.values_chirho.iter().next_back().unwrap())
+                self.values_chirho.iter().next_back().unwrap()
+            )
         }
     }
 }

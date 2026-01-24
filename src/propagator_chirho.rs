@@ -1072,7 +1072,8 @@ impl PropagatorChirho for NegaterChirho {
 
         // Forward: b = -a
         if let NumericInfoChirho::IntervalChirho(a_int_chirho) = &a_chirho {
-            let neg_a_chirho = IntervalChirho::new_chirho(-a_int_chirho.hi_chirho, -a_int_chirho.lo_chirho);
+            let neg_a_chirho =
+                IntervalChirho::new_chirho(-a_int_chirho.hi_chirho, -a_int_chirho.lo_chirho);
             self.b_chirho.add_content_chirho(
                 NumericInfoChirho::IntervalChirho(neg_a_chirho),
                 scheduler_chirho,
@@ -1081,7 +1082,8 @@ impl PropagatorChirho for NegaterChirho {
 
         // Backward: a = -b
         if let NumericInfoChirho::IntervalChirho(b_int_chirho) = &b_chirho {
-            let neg_b_chirho = IntervalChirho::new_chirho(-b_int_chirho.hi_chirho, -b_int_chirho.lo_chirho);
+            let neg_b_chirho =
+                IntervalChirho::new_chirho(-b_int_chirho.hi_chirho, -b_int_chirho.lo_chirho);
             self.a_chirho.add_content_chirho(
                 NumericInfoChirho::IntervalChirho(neg_b_chirho),
                 scheduler_chirho,
@@ -1337,7 +1339,10 @@ impl PowerChirho {
     }
 
     /// Compute interval nth root.
-    fn interval_root_chirho(interval_chirho: &IntervalChirho, n_chirho: i32) -> Option<IntervalChirho> {
+    fn interval_root_chirho(
+        interval_chirho: &IntervalChirho,
+        n_chirho: i32,
+    ) -> Option<IntervalChirho> {
         if n_chirho == 0 {
             return None;
         }
@@ -1396,7 +1401,9 @@ impl PropagatorChirho for PowerChirho {
 
         // Backward: a = b^(1/n)
         if let NumericInfoChirho::IntervalChirho(b_int_chirho) = &b_chirho {
-            if let Some(root_interval_chirho) = Self::interval_root_chirho(b_int_chirho, self.n_chirho) {
+            if let Some(root_interval_chirho) =
+                Self::interval_root_chirho(b_int_chirho, self.n_chirho)
+            {
                 self.a_chirho.add_content_chirho(
                     NumericInfoChirho::IntervalChirho(root_interval_chirho),
                     scheduler_chirho,
@@ -1460,9 +1467,16 @@ impl PropagatorChirho for ClampChirho {
 
         if let NumericInfoChirho::IntervalChirho(a_int_chirho) = &a_chirho {
             // Clamp the interval to [lo, hi]
-            let clamped_lo_chirho = a_int_chirho.lo_chirho.max(self.lo_chirho).min(self.hi_chirho);
-            let clamped_hi_chirho = a_int_chirho.hi_chirho.max(self.lo_chirho).min(self.hi_chirho);
-            let clamped_interval_chirho = IntervalChirho::new_chirho(clamped_lo_chirho, clamped_hi_chirho);
+            let clamped_lo_chirho = a_int_chirho
+                .lo_chirho
+                .max(self.lo_chirho)
+                .min(self.hi_chirho);
+            let clamped_hi_chirho = a_int_chirho
+                .hi_chirho
+                .max(self.lo_chirho)
+                .min(self.hi_chirho);
+            let clamped_interval_chirho =
+                IntervalChirho::new_chirho(clamped_lo_chirho, clamped_hi_chirho);
             self.b_chirho.add_content_chirho(
                 NumericInfoChirho::IntervalChirho(clamped_interval_chirho),
                 scheduler_chirho,
@@ -1637,7 +1651,10 @@ mod tests_chirho {
         LnChirho::install_chirho(a_chirho.clone(), b_chirho.clone(), &scheduler_chirho);
 
         // ln(e) = 1
-        a_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(std::f64::consts::E), &scheduler_chirho);
+        a_chirho.add_content_chirho(
+            NumericInfoChirho::exact_chirho(std::f64::consts::E),
+            &scheduler_chirho,
+        );
         scheduler_chirho.run_chirho();
 
         let b_content_chirho = b_chirho.content_chirho();
@@ -1686,7 +1703,13 @@ mod tests_chirho {
         let b_chirho = CellChirho::new_chirho("b");
 
         // clamp(a, 0, 10) = b
-        ClampChirho::install_chirho(0.0, 10.0, a_chirho.clone(), b_chirho.clone(), &scheduler_chirho);
+        ClampChirho::install_chirho(
+            0.0,
+            10.0,
+            a_chirho.clone(),
+            b_chirho.clone(),
+            &scheduler_chirho,
+        );
 
         // Value exceeds clamp range
         a_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(15.0), &scheduler_chirho);

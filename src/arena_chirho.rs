@@ -188,7 +188,7 @@ impl ArenaNetworkChirho {
         self.propagators_chirho.push(PropagatorEntryChirho {
             type_chirho: PropagatorTypeChirho::AdderChirho,
             cells_chirho: vec![a_chirho, b_chirho, c_chirho],
-                    });
+        });
 
         // Register with all cells (bidirectional)
         self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
@@ -207,7 +207,7 @@ impl ArenaNetworkChirho {
         self.propagators_chirho.push(PropagatorEntryChirho {
             type_chirho: PropagatorTypeChirho::MultiplierChirho,
             cells_chirho: vec![a_chirho, b_chirho, c_chirho],
-                    });
+        });
 
         self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
         self.cell_to_propagators_chirho[b_chirho.0].push(idx_chirho);
@@ -220,7 +220,7 @@ impl ArenaNetworkChirho {
         self.propagators_chirho.push(PropagatorEntryChirho {
             type_chirho: PropagatorTypeChirho::SquarerChirho,
             cells_chirho: vec![a_chirho, b_chirho],
-                    });
+        });
 
         self.cell_to_propagators_chirho[a_chirho.0].push(idx_chirho);
         self.cell_to_propagators_chirho[b_chirho.0].push(idx_chirho);
@@ -252,7 +252,9 @@ impl ArenaNetworkChirho {
     fn run_propagator_chirho(&mut self, prop_idx_chirho: usize) {
         // Copy propagator data to avoid borrow conflicts
         let type_chirho = self.propagators_chirho[prop_idx_chirho].type_chirho;
-        let cells_chirho = self.propagators_chirho[prop_idx_chirho].cells_chirho.clone();
+        let cells_chirho = self.propagators_chirho[prop_idx_chirho]
+            .cells_chirho
+            .clone();
 
         match type_chirho {
             PropagatorTypeChirho::AdderChirho => {

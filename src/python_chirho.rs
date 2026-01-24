@@ -51,8 +51,8 @@
 //! print(net.get_exact(c))  # 7.0
 //! ```
 
-use pyo3::prelude::*;
 use pyo3::exceptions::PyValueError;
+use pyo3::prelude::*;
 
 use crate::arena_chirho::{ArenaNetworkChirho, CellIdChirho};
 use crate::interval_chirho::NumericInfoChirho;
@@ -90,7 +90,8 @@ impl PyNetworkChirho {
     ///     value: The exact value to set
     pub fn set_exact_chirho(&mut self, cell_id_chirho: usize, value_chirho: f64) {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
-        self.network_chirho.set_exact_chirho(cell_chirho, value_chirho);
+        self.network_chirho
+            .set_exact_chirho(cell_chirho, value_chirho);
     }
 
     /// Sets a cell to an interval [lo, hi].
@@ -101,7 +102,8 @@ impl PyNetworkChirho {
     ///     hi: Upper bound
     pub fn set_interval_chirho(&mut self, cell_id_chirho: usize, lo_chirho: f64, hi_chirho: f64) {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
-        self.network_chirho.set_interval_chirho(cell_chirho, lo_chirho, hi_chirho);
+        self.network_chirho
+            .set_interval_chirho(cell_chirho, lo_chirho, hi_chirho);
     }
 
     /// Adds an addition constraint: a + b = c
@@ -114,7 +116,8 @@ impl PyNetworkChirho {
         let a_cell_chirho = CellIdChirho::from_index_chirho(a_chirho);
         let b_cell_chirho = CellIdChirho::from_index_chirho(b_chirho);
         let c_cell_chirho = CellIdChirho::from_index_chirho(c_chirho);
-        self.network_chirho.add_adder_chirho(a_cell_chirho, b_cell_chirho, c_cell_chirho);
+        self.network_chirho
+            .add_adder_chirho(a_cell_chirho, b_cell_chirho, c_cell_chirho);
     }
 
     /// Adds a subtraction constraint via addition: a - b = c means a = b + c
@@ -128,7 +131,8 @@ impl PyNetworkChirho {
         let a_cell_chirho = CellIdChirho::from_index_chirho(a_chirho);
         let b_cell_chirho = CellIdChirho::from_index_chirho(b_chirho);
         let c_cell_chirho = CellIdChirho::from_index_chirho(c_chirho);
-        self.network_chirho.add_adder_chirho(b_cell_chirho, c_cell_chirho, a_cell_chirho);
+        self.network_chirho
+            .add_adder_chirho(b_cell_chirho, c_cell_chirho, a_cell_chirho);
     }
 
     /// Adds a multiplication constraint: a * b = c
@@ -141,7 +145,8 @@ impl PyNetworkChirho {
         let a_cell_chirho = CellIdChirho::from_index_chirho(a_chirho);
         let b_cell_chirho = CellIdChirho::from_index_chirho(b_chirho);
         let c_cell_chirho = CellIdChirho::from_index_chirho(c_chirho);
-        self.network_chirho.add_multiplier_chirho(a_cell_chirho, b_cell_chirho, c_cell_chirho);
+        self.network_chirho
+            .add_multiplier_chirho(a_cell_chirho, b_cell_chirho, c_cell_chirho);
     }
 
     /// Adds a square constraint: a² = b
@@ -152,7 +157,8 @@ impl PyNetworkChirho {
     pub fn add_squarer_chirho(&mut self, a_chirho: usize, b_chirho: usize) {
         let a_cell_chirho = CellIdChirho::from_index_chirho(a_chirho);
         let b_cell_chirho = CellIdChirho::from_index_chirho(b_chirho);
-        self.network_chirho.add_squarer_chirho(a_cell_chirho, b_cell_chirho);
+        self.network_chirho
+            .add_squarer_chirho(a_cell_chirho, b_cell_chirho);
     }
 
     /// Runs propagation until fixpoint.
@@ -181,7 +187,8 @@ impl PyNetworkChirho {
     ///     tuple[float, float] | None: (lo, hi) bounds, or None if no interval
     pub fn get_interval_chirho(&self, cell_id_chirho: usize) -> Option<(f64, f64)> {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
-        self.network_chirho.get_interval_chirho(cell_chirho)
+        self.network_chirho
+            .get_interval_chirho(cell_chirho)
             .map(|iv_chirho| (iv_chirho.lo_chirho, iv_chirho.hi_chirho))
     }
 
@@ -273,7 +280,10 @@ impl PyIntervalChirho {
         if lo_chirho > hi_chirho {
             return Err(PyValueError::new_err("lo must be <= hi"));
         }
-        Ok(Self { lo_chirho, hi_chirho })
+        Ok(Self {
+            lo_chirho,
+            hi_chirho,
+        })
     }
 
     /// Creates an exact value interval.
@@ -341,10 +351,19 @@ impl PyIntervalChirho {
             self.hi_chirho * other_chirho.hi_chirho,
         ];
 
-        let lo_chirho = products_chirho.iter().cloned().fold(f64::INFINITY, f64::min);
-        let hi_chirho = products_chirho.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let lo_chirho = products_chirho
+            .iter()
+            .cloned()
+            .fold(f64::INFINITY, f64::min);
+        let hi_chirho = products_chirho
+            .iter()
+            .cloned()
+            .fold(f64::NEG_INFINITY, f64::max);
 
-        PyIntervalChirho { lo_chirho, hi_chirho }
+        PyIntervalChirho {
+            lo_chirho,
+            hi_chirho,
+        }
     }
 
     /// Intersects two intervals.

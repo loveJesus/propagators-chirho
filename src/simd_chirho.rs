@@ -45,8 +45,15 @@ use crate::interval_chirho::IntervalChirho;
 ///
 /// Uses SIMD acceleration when available.
 #[inline]
-pub fn batch_add_chirho(a_chirho: &[IntervalChirho], b_chirho: &[IntervalChirho]) -> Vec<IntervalChirho> {
-    assert_eq!(a_chirho.len(), b_chirho.len(), "slices must have same length");
+pub fn batch_add_chirho(
+    a_chirho: &[IntervalChirho],
+    b_chirho: &[IntervalChirho],
+) -> Vec<IntervalChirho> {
+    assert_eq!(
+        a_chirho.len(),
+        b_chirho.len(),
+        "slices must have same length"
+    );
 
     let len_chirho = a_chirho.len();
     let mut result_chirho = Vec::with_capacity(len_chirho);
@@ -74,7 +81,8 @@ pub fn batch_add_chirho(a_chirho: &[IntervalChirho], b_chirho: &[IntervalChirho]
     // Handle remainder
     let base_chirho = chunks_chirho * 4;
     for i_chirho in 0..remainder_chirho {
-        result_chirho.push(a_chirho[base_chirho + i_chirho].add_chirho(&b_chirho[base_chirho + i_chirho]));
+        result_chirho
+            .push(a_chirho[base_chirho + i_chirho].add_chirho(&b_chirho[base_chirho + i_chirho]));
     }
 
     result_chirho
@@ -84,8 +92,15 @@ pub fn batch_add_chirho(a_chirho: &[IntervalChirho], b_chirho: &[IntervalChirho]
 ///
 /// Returns a vector where each element is `a[i] - b[i]`.
 #[inline]
-pub fn batch_sub_chirho(a_chirho: &[IntervalChirho], b_chirho: &[IntervalChirho]) -> Vec<IntervalChirho> {
-    assert_eq!(a_chirho.len(), b_chirho.len(), "slices must have same length");
+pub fn batch_sub_chirho(
+    a_chirho: &[IntervalChirho],
+    b_chirho: &[IntervalChirho],
+) -> Vec<IntervalChirho> {
+    assert_eq!(
+        a_chirho.len(),
+        b_chirho.len(),
+        "slices must have same length"
+    );
 
     let len_chirho = a_chirho.len();
     let mut result_chirho = Vec::with_capacity(len_chirho);
@@ -109,7 +124,8 @@ pub fn batch_sub_chirho(a_chirho: &[IntervalChirho], b_chirho: &[IntervalChirho]
 
     let base_chirho = chunks_chirho * 4;
     for i_chirho in 0..remainder_chirho {
-        result_chirho.push(a_chirho[base_chirho + i_chirho].sub_chirho(&b_chirho[base_chirho + i_chirho]));
+        result_chirho
+            .push(a_chirho[base_chirho + i_chirho].sub_chirho(&b_chirho[base_chirho + i_chirho]));
     }
 
     result_chirho
@@ -119,8 +135,15 @@ pub fn batch_sub_chirho(a_chirho: &[IntervalChirho], b_chirho: &[IntervalChirho]
 ///
 /// Returns a vector where each element is `a[i] * b[i]`.
 #[inline]
-pub fn batch_mul_chirho(a_chirho: &[IntervalChirho], b_chirho: &[IntervalChirho]) -> Vec<IntervalChirho> {
-    assert_eq!(a_chirho.len(), b_chirho.len(), "slices must have same length");
+pub fn batch_mul_chirho(
+    a_chirho: &[IntervalChirho],
+    b_chirho: &[IntervalChirho],
+) -> Vec<IntervalChirho> {
+    assert_eq!(
+        a_chirho.len(),
+        b_chirho.len(),
+        "slices must have same length"
+    );
 
     let len_chirho = a_chirho.len();
     let mut result_chirho = Vec::with_capacity(len_chirho);
@@ -144,7 +167,8 @@ pub fn batch_mul_chirho(a_chirho: &[IntervalChirho], b_chirho: &[IntervalChirho]
 
     let base_chirho = chunks_chirho * 4;
     for i_chirho in 0..remainder_chirho {
-        result_chirho.push(a_chirho[base_chirho + i_chirho].mul_chirho(&b_chirho[base_chirho + i_chirho]));
+        result_chirho
+            .push(a_chirho[base_chirho + i_chirho].mul_chirho(&b_chirho[base_chirho + i_chirho]));
     }
 
     result_chirho
@@ -159,7 +183,11 @@ pub fn batch_intersect_chirho(
     a_chirho: &[IntervalChirho],
     b_chirho: &[IntervalChirho],
 ) -> Vec<IntervalChirho> {
-    assert_eq!(a_chirho.len(), b_chirho.len(), "slices must have same length");
+    assert_eq!(
+        a_chirho.len(),
+        b_chirho.len(),
+        "slices must have same length"
+    );
 
     let len_chirho = a_chirho.len();
     let mut result_chirho = Vec::with_capacity(len_chirho);
@@ -183,7 +211,9 @@ pub fn batch_intersect_chirho(
 
     let base_chirho = chunks_chirho * 4;
     for i_chirho in 0..remainder_chirho {
-        result_chirho.push(a_chirho[base_chirho + i_chirho].intersect_chirho(&b_chirho[base_chirho + i_chirho]));
+        result_chirho.push(
+            a_chirho[base_chirho + i_chirho].intersect_chirho(&b_chirho[base_chirho + i_chirho]),
+        );
     }
 
     result_chirho
@@ -298,7 +328,10 @@ impl IntervalVecChirho {
             hi_chirho.push(iv_chirho.hi_chirho);
         }
 
-        Self { lo_chirho, hi_chirho }
+        Self {
+            lo_chirho,
+            hi_chirho,
+        }
     }
 
     /// Converts back to a vector of intervals.
@@ -358,11 +391,13 @@ impl IntervalVecChirho {
 
         // These loops should auto-vectorize on modern compilers
         for i_chirho in 0..len_chirho {
-            result_lo_chirho[i_chirho] = self.lo_chirho[i_chirho] + other_chirho.lo_chirho[i_chirho];
+            result_lo_chirho[i_chirho] =
+                self.lo_chirho[i_chirho] + other_chirho.lo_chirho[i_chirho];
         }
 
         for i_chirho in 0..len_chirho {
-            result_hi_chirho[i_chirho] = self.hi_chirho[i_chirho] + other_chirho.hi_chirho[i_chirho];
+            result_hi_chirho[i_chirho] =
+                self.hi_chirho[i_chirho] + other_chirho.hi_chirho[i_chirho];
         }
 
         Self {
@@ -382,11 +417,13 @@ impl IntervalVecChirho {
         let mut result_hi_chirho = vec![0.0; len_chirho];
 
         for i_chirho in 0..len_chirho {
-            result_lo_chirho[i_chirho] = self.lo_chirho[i_chirho] - other_chirho.hi_chirho[i_chirho];
+            result_lo_chirho[i_chirho] =
+                self.lo_chirho[i_chirho] - other_chirho.hi_chirho[i_chirho];
         }
 
         for i_chirho in 0..len_chirho {
-            result_hi_chirho[i_chirho] = self.hi_chirho[i_chirho] - other_chirho.lo_chirho[i_chirho];
+            result_hi_chirho[i_chirho] =
+                self.hi_chirho[i_chirho] - other_chirho.lo_chirho[i_chirho];
         }
 
         Self {
@@ -408,11 +445,13 @@ impl IntervalVecChirho {
         let mut result_hi_chirho = vec![0.0; len_chirho];
 
         for i_chirho in 0..len_chirho {
-            result_lo_chirho[i_chirho] = self.lo_chirho[i_chirho].max(other_chirho.lo_chirho[i_chirho]);
+            result_lo_chirho[i_chirho] =
+                self.lo_chirho[i_chirho].max(other_chirho.lo_chirho[i_chirho]);
         }
 
         for i_chirho in 0..len_chirho {
-            result_hi_chirho[i_chirho] = self.hi_chirho[i_chirho].min(other_chirho.hi_chirho[i_chirho]);
+            result_hi_chirho[i_chirho] =
+                self.hi_chirho[i_chirho].min(other_chirho.hi_chirho[i_chirho]);
         }
 
         Self {
@@ -483,7 +522,7 @@ mod tests_chirho {
         let a_chirho = vec![
             IntervalChirho::new_chirho(1.0, 10.0),
             IntervalChirho::new_chirho(5.0, 15.0),
-            IntervalChirho::new_chirho(1.0, 5.0),  // No intersection with b[2]
+            IntervalChirho::new_chirho(1.0, 5.0), // No intersection with b[2]
         ];
         let b_chirho = vec![
             IntervalChirho::new_chirho(5.0, 20.0),
@@ -561,7 +600,7 @@ mod tests_chirho {
         let result_chirho = a_chirho.intersect_chirho(&b_chirho);
         let mask_chirho = result_chirho.valid_mask_chirho();
 
-        assert!(mask_chirho[0]);  // [5, 10] is valid
+        assert!(mask_chirho[0]); // [5, 10] is valid
         assert!(!mask_chirho[1]); // [10, 5] is invalid (empty)
     }
 

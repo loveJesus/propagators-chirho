@@ -66,7 +66,7 @@ fn proof_interval_intersect_commutative_chirho() {
 
     kani::assert(
         ab_chirho.lo_chirho == ba_chirho.lo_chirho && ab_chirho.hi_chirho == ba_chirho.hi_chirho,
-        "Intersection must be commutative: a ∩ b = b ∩ a"
+        "Intersection must be commutative: a ∩ b = b ∩ a",
     );
 }
 
@@ -85,7 +85,7 @@ fn proof_interval_intersect_idempotent_chirho() {
 
     kani::assert(
         result_chirho.lo_chirho == lo_chirho && result_chirho.hi_chirho == hi_chirho,
-        "Intersection must be idempotent: a ∩ a = a"
+        "Intersection must be idempotent: a ∩ a = a",
     );
 }
 
@@ -112,7 +112,7 @@ fn proof_interval_intersect_valid_chirho() {
     // Both are acceptable states
     kani::assert(
         result_chirho.lo_chirho.is_finite() && result_chirho.hi_chirho.is_finite(),
-        "Intersection must produce finite bounds"
+        "Intersection must produce finite bounds",
     );
 }
 
@@ -141,12 +141,15 @@ fn proof_numeric_info_merge_commutative_chirho() {
     let ba_chirho = b_chirho.merge_chirho(&a_chirho);
 
     // Compare using direct interval access (avoiding format! which pulls in bignum)
-    match (ab_chirho.as_interval_chirho(), ba_chirho.as_interval_chirho()) {
+    match (
+        ab_chirho.as_interval_chirho(),
+        ba_chirho.as_interval_chirho(),
+    ) {
         (Some(ab_iv_chirho), Some(ba_iv_chirho)) => {
             kani::assert(
                 ab_iv_chirho.lo_chirho == ba_iv_chirho.lo_chirho
                     && ab_iv_chirho.hi_chirho == ba_iv_chirho.hi_chirho,
-                "Merge must be commutative: a ⊔ b = b ⊔ a"
+                "Merge must be commutative: a ⊔ b = b ⊔ a",
             );
         }
         (None, None) => {
@@ -177,12 +180,12 @@ fn proof_nothing_is_identity_chirho() {
     let result_iv_chirho = result_chirho.as_interval_chirho();
     kani::assert(
         result_iv_chirho.is_some(),
-        "Merge with nothing should preserve interval"
+        "Merge with nothing should preserve interval",
     );
     if let Some(iv_chirho) = result_iv_chirho {
         kani::assert(
             iv_chirho.lo_chirho == lo_chirho && iv_chirho.hi_chirho == hi_chirho,
-            "Nothing must be identity: a ⊔ ⊥ = a"
+            "Nothing must be identity: a ⊔ ⊥ = a",
         );
     }
 }
@@ -204,12 +207,12 @@ fn proof_merge_idempotent_chirho() {
     let result_iv_chirho = result_chirho.as_interval_chirho();
     kani::assert(
         result_iv_chirho.is_some(),
-        "Merge with self should preserve interval"
+        "Merge with self should preserve interval",
     );
     if let Some(iv_chirho) = result_iv_chirho {
         kani::assert(
             iv_chirho.lo_chirho == lo_chirho && iv_chirho.hi_chirho == hi_chirho,
-            "Merge must be idempotent: a ⊔ a = a"
+            "Merge must be idempotent: a ⊔ a = a",
         );
     }
 }
@@ -238,11 +241,11 @@ fn proof_merge_monotonic_chirho() {
     if let Some(merged_iv_chirho) = merged_chirho.as_interval_chirho() {
         kani::assert(
             merged_iv_chirho.lo_chirho >= a_lo_chirho && merged_iv_chirho.lo_chirho >= b_lo_chirho,
-            "Merged lower bound must be >= both inputs"
+            "Merged lower bound must be >= both inputs",
         );
         kani::assert(
             merged_iv_chirho.hi_chirho <= a_hi_chirho && merged_iv_chirho.hi_chirho <= b_hi_chirho,
-            "Merged upper bound must be <= both inputs"
+            "Merged upper bound must be <= both inputs",
         );
     }
     // If merged is contradiction, that's fine (intervals didn't overlap)
@@ -259,11 +262,11 @@ fn proof_exact_contains_value_chirho() {
 
     kani::assert(
         interval_chirho.contains_chirho(value_chirho),
-        "Exact interval must contain its value"
+        "Exact interval must contain its value",
     );
     kani::assert(
         interval_chirho.lo_chirho == value_chirho && interval_chirho.hi_chirho == value_chirho,
-        "Exact interval has lo == hi == value"
+        "Exact interval has lo == hi == value",
     );
 }
 
@@ -280,10 +283,7 @@ fn proof_interval_width_nonnegative_chirho() {
     let interval_chirho = IntervalChirho::new_chirho(lo_chirho, hi_chirho);
     let width_chirho = interval_chirho.width_chirho();
 
-    kani::assert(
-        width_chirho >= 0.0,
-        "Interval width must be non-negative"
-    );
+    kani::assert(width_chirho >= 0.0, "Interval width must be non-negative");
 }
 
 /// Proof: Intersection result is contained in both operands.
@@ -308,11 +308,11 @@ fn proof_intersection_containment_chirho() {
     if !result_chirho.is_empty_chirho() {
         kani::assert(
             result_chirho.lo_chirho >= a_lo_chirho && result_chirho.hi_chirho <= a_hi_chirho,
-            "Intersection must be subset of first operand"
+            "Intersection must be subset of first operand",
         );
         kani::assert(
             result_chirho.lo_chirho >= b_lo_chirho && result_chirho.hi_chirho <= b_hi_chirho,
-            "Intersection must be subset of second operand"
+            "Intersection must be subset of second operand",
         );
     }
 }
@@ -334,7 +334,7 @@ fn proof_contradiction_absorbs_chirho() {
 
     kani::assert(
         result_chirho.is_contradiction_chirho(),
-        "Contradiction must absorb: a ⊔ ⊤ = ⊤"
+        "Contradiction must absorb: a ⊔ ⊤ = ⊤",
     );
 }
 

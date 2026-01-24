@@ -6,9 +6,9 @@
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use propagators_chirho::{
+    simd_chirho::{batch_add_chirho, batch_intersect_chirho, batch_mul_chirho, IntervalVecChirho},
     CellChirho, ConstraintSystemChirho, IntervalAdderChirho, IntervalChirho, NumericInfoChirho,
     SchedulerChirho,
-    simd_chirho::{batch_add_chirho, batch_mul_chirho, batch_intersect_chirho, IntervalVecChirho},
 };
 
 fn benchmark_interval_operations_chirho(c_chirho: &mut Criterion) {
@@ -48,7 +48,9 @@ fn benchmark_simd_operations_chirho(c_chirho: &mut Criterion) {
         .map(|i_chirho| IntervalChirho::new_chirho(i_chirho as f64, (i_chirho + 10) as f64))
         .collect();
     let b_intervals_chirho: Vec<IntervalChirho> = (0..size_chirho)
-        .map(|i_chirho| IntervalChirho::new_chirho((i_chirho * 2) as f64, (i_chirho * 2 + 5) as f64))
+        .map(|i_chirho| {
+            IntervalChirho::new_chirho((i_chirho * 2) as f64, (i_chirho * 2 + 5) as f64)
+        })
         .collect();
 
     // Benchmark scalar vs batch add
@@ -64,9 +66,7 @@ fn benchmark_simd_operations_chirho(c_chirho: &mut Criterion) {
     });
 
     c_chirho.bench_function("simd_batch_add_1000", |bench_chirho| {
-        bench_chirho.iter(|| {
-            black_box(batch_add_chirho(&a_intervals_chirho, &b_intervals_chirho))
-        })
+        bench_chirho.iter(|| black_box(batch_add_chirho(&a_intervals_chirho, &b_intervals_chirho)))
     });
 
     // Benchmark scalar vs batch multiply
@@ -82,9 +82,7 @@ fn benchmark_simd_operations_chirho(c_chirho: &mut Criterion) {
     });
 
     c_chirho.bench_function("simd_batch_mul_1000", |bench_chirho| {
-        bench_chirho.iter(|| {
-            black_box(batch_mul_chirho(&a_intervals_chirho, &b_intervals_chirho))
-        })
+        bench_chirho.iter(|| black_box(batch_mul_chirho(&a_intervals_chirho, &b_intervals_chirho)))
     });
 
     // Benchmark scalar vs batch intersect
@@ -101,7 +99,10 @@ fn benchmark_simd_operations_chirho(c_chirho: &mut Criterion) {
 
     c_chirho.bench_function("simd_batch_intersect_1000", |bench_chirho| {
         bench_chirho.iter(|| {
-            black_box(batch_intersect_chirho(&a_intervals_chirho, &b_intervals_chirho))
+            black_box(batch_intersect_chirho(
+                &a_intervals_chirho,
+                &b_intervals_chirho,
+            ))
         })
     });
 
@@ -110,15 +111,11 @@ fn benchmark_simd_operations_chirho(c_chirho: &mut Criterion) {
     let b_soa_chirho = IntervalVecChirho::from_intervals_chirho(&b_intervals_chirho);
 
     c_chirho.bench_function("simd_soa_add_1000", |bench_chirho| {
-        bench_chirho.iter(|| {
-            black_box(a_soa_chirho.add_chirho(&b_soa_chirho))
-        })
+        bench_chirho.iter(|| black_box(a_soa_chirho.add_chirho(&b_soa_chirho)))
     });
 
     c_chirho.bench_function("simd_soa_intersect_1000", |bench_chirho| {
-        bench_chirho.iter(|| {
-            black_box(a_soa_chirho.intersect_chirho(&b_soa_chirho))
-        })
+        bench_chirho.iter(|| black_box(a_soa_chirho.intersect_chirho(&b_soa_chirho)))
     });
 }
 
@@ -238,8 +235,12 @@ fn benchmark_parallel_chirho(c_chirho: &mut Criterion) {
                 let b_chirho = network_chirho.make_cell_chirho();
                 let c_chirho = network_chirho.make_cell_chirho();
                 network_chirho.add_adder_chirho(a_chirho, b_chirho, c_chirho);
-                network_chirho.set_cell_chirho(a_chirho, NumericInfoChirho::exact_chirho(i_chirho as f64));
-                network_chirho.set_cell_chirho(b_chirho, NumericInfoChirho::exact_chirho(i_chirho as f64 * 2.0));
+                network_chirho
+                    .set_cell_chirho(a_chirho, NumericInfoChirho::exact_chirho(i_chirho as f64));
+                network_chirho.set_cell_chirho(
+                    b_chirho,
+                    NumericInfoChirho::exact_chirho(i_chirho as f64 * 2.0),
+                );
                 c_cells_chirho.push(c_chirho);
             }
 
@@ -259,8 +260,12 @@ fn benchmark_parallel_chirho(c_chirho: &mut Criterion) {
                 let b_chirho = network_chirho.make_cell_chirho();
                 let c_chirho = network_chirho.make_cell_chirho();
                 network_chirho.add_adder_chirho(a_chirho, b_chirho, c_chirho);
-                network_chirho.set_cell_chirho(a_chirho, NumericInfoChirho::exact_chirho(i_chirho as f64));
-                network_chirho.set_cell_chirho(b_chirho, NumericInfoChirho::exact_chirho(i_chirho as f64 * 2.0));
+                network_chirho
+                    .set_cell_chirho(a_chirho, NumericInfoChirho::exact_chirho(i_chirho as f64));
+                network_chirho.set_cell_chirho(
+                    b_chirho,
+                    NumericInfoChirho::exact_chirho(i_chirho as f64 * 2.0),
+                );
                 c_cells_chirho.push(c_chirho);
             }
 

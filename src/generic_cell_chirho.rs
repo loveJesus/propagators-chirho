@@ -269,7 +269,8 @@ impl<L: BoundedLatticeChirho + 'static> GenericNetworkChirho<L> {
     }
 
     fn queue_affected_chirho(&self, cell_idx_chirho: usize) {
-        for (prop_idx_chirho, (_, cell_indices_chirho)) in self.propagators_chirho.iter().enumerate()
+        for (prop_idx_chirho, (_, cell_indices_chirho)) in
+            self.propagators_chirho.iter().enumerate()
         {
             if cell_indices_chirho.contains(&cell_idx_chirho) {
                 let mut queue_chirho = self.queue_chirho.borrow_mut();
@@ -362,7 +363,8 @@ mod tests_chirho {
 
     #[test]
     fn test_generic_cell_add_info_chirho() {
-        let cell_chirho = GenericCellChirho::new_chirho(NumericInfoChirho::interval_chirho(0.0, 100.0));
+        let cell_chirho =
+            GenericCellChirho::new_chirho(NumericInfoChirho::interval_chirho(0.0, 100.0));
 
         let changed_chirho =
             cell_chirho.add_info_chirho(NumericInfoChirho::interval_chirho(50.0, 150.0));
@@ -377,8 +379,7 @@ mod tests_chirho {
 
     #[test]
     fn test_generic_cell_finite_domain_chirho() {
-        let cell_chirho =
-            GenericCellChirho::new_chirho(FiniteDomainChirho::range_chirho(1, 9));
+        let cell_chirho = GenericCellChirho::new_chirho(FiniteDomainChirho::range_chirho(1, 9));
 
         cell_chirho.add_info_chirho(FiniteDomainChirho::all_except_chirho(5, 1, 9));
 
@@ -396,10 +397,8 @@ mod tests_chirho {
         let b_chirho = network_chirho.make_cell_chirho();
         let c_chirho = network_chirho.make_cell_chirho();
 
-        network_chirho.add_propagator_chirho(
-            AddPropagatorChirho,
-            vec![a_chirho, b_chirho, c_chirho],
-        );
+        network_chirho
+            .add_propagator_chirho(AddPropagatorChirho, vec![a_chirho, b_chirho, c_chirho]);
 
         network_chirho.set_cell_chirho(a_chirho, NumericInfoChirho::exact_chirho(3.0));
         network_chirho.set_cell_chirho(b_chirho, NumericInfoChirho::exact_chirho(4.0));
@@ -432,18 +431,9 @@ mod tests_chirho {
         network_chirho.set_cell_chirho(cell_c_chirho, FiniteDomainChirho::range_chirho(1, 3));
 
         // Add not-equals constraints
-        network_chirho.add_propagator_chirho(
-            NotEqualsChirho,
-            vec![cell_a_chirho, cell_b_chirho],
-        );
-        network_chirho.add_propagator_chirho(
-            NotEqualsChirho,
-            vec![cell_b_chirho, cell_c_chirho],
-        );
-        network_chirho.add_propagator_chirho(
-            NotEqualsChirho,
-            vec![cell_a_chirho, cell_c_chirho],
-        );
+        network_chirho.add_propagator_chirho(NotEqualsChirho, vec![cell_a_chirho, cell_b_chirho]);
+        network_chirho.add_propagator_chirho(NotEqualsChirho, vec![cell_b_chirho, cell_c_chirho]);
+        network_chirho.add_propagator_chirho(NotEqualsChirho, vec![cell_a_chirho, cell_c_chirho]);
 
         // Fix cell_a to 1
         network_chirho.set_cell_chirho(cell_a_chirho, FiniteDomainChirho::singleton_chirho(1));

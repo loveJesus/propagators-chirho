@@ -209,8 +209,11 @@ impl<L: BoundedLatticeChirho + Send + Sync + 'static> ParallelNetworkChirho<L> {
     }
 
     /// Adds a propagator to the network.
-    pub fn add_propagator_chirho<F>(&mut self, propagator_fn_chirho: F, cell_indices_chirho: Vec<usize>)
-    where
+    pub fn add_propagator_chirho<F>(
+        &mut self,
+        propagator_fn_chirho: F,
+        cell_indices_chirho: Vec<usize>,
+    ) where
         F: Fn(&[L]) -> Vec<L> + Send + Sync + 'static,
     {
         let prop_idx_chirho = self.propagators_chirho.len();
@@ -225,8 +228,11 @@ impl<L: BoundedLatticeChirho + Send + Sync + 'static> ParallelNetworkChirho<L> {
     }
 
     /// Adds a trait-based propagator.
-    pub fn add_trait_propagator_chirho<P>(&mut self, propagator_chirho: P, cell_indices_chirho: Vec<usize>)
-    where
+    pub fn add_trait_propagator_chirho<P>(
+        &mut self,
+        propagator_chirho: P,
+        cell_indices_chirho: Vec<usize>,
+    ) where
         P: PropagatorFnChirho<L> + Send + Sync + 'static,
     {
         self.add_propagator_chirho(
@@ -249,7 +255,9 @@ impl<L: BoundedLatticeChirho + Send + Sync + 'static> ParallelNetworkChirho<L> {
         let mut queue_chirho = self.queue_chirho.lock().unwrap();
         for (prop_idx_chirho, prop_chirho) in self.propagators_chirho.iter().enumerate() {
             if prop_chirho.cell_indices_chirho.contains(&cell_idx_chirho)
-                && !queue_chirho.iter().any(|&idx_chirho| idx_chirho == prop_idx_chirho)
+                && !queue_chirho
+                    .iter()
+                    .any(|&idx_chirho| idx_chirho == prop_idx_chirho)
             {
                 queue_chirho.push_back(prop_idx_chirho);
             }
@@ -283,7 +291,8 @@ impl<L: BoundedLatticeChirho + Send + Sync + 'static> ParallelNetworkChirho<L> {
             for (i_chirho, output_chirho) in outputs_chirho.into_iter().enumerate() {
                 if !output_chirho.is_bottom_chirho() {
                     let cell_idx_chirho = prop_chirho.cell_indices_chirho[i_chirho];
-                    let changed_chirho = self.cells_chirho[cell_idx_chirho].add_info_chirho(output_chirho);
+                    let changed_chirho =
+                        self.cells_chirho[cell_idx_chirho].add_info_chirho(output_chirho);
                     if changed_chirho {
                         self.queue_affected_chirho(cell_idx_chirho);
                     }
@@ -334,7 +343,8 @@ impl<L: BoundedLatticeChirho + Send + Sync + 'static> ParallelNetworkChirho<L> {
                 for (i_chirho, output_chirho) in outputs_chirho.into_iter().enumerate() {
                     if !output_chirho.is_bottom_chirho() {
                         let cell_idx_chirho = prop_chirho.cell_indices_chirho[i_chirho];
-                        let changed_chirho = self.cells_chirho[cell_idx_chirho].add_info_chirho(output_chirho);
+                        let changed_chirho =
+                            self.cells_chirho[cell_idx_chirho].add_info_chirho(output_chirho);
                         if changed_chirho {
                             self.queue_affected_chirho(cell_idx_chirho);
                         }
@@ -493,7 +503,8 @@ mod tests_chirho {
 
     #[test]
     fn test_parallel_cell_chirho() {
-        let cell_chirho: ParallelCellChirho<NumericInfoChirho> = ParallelCellChirho::bottom_chirho();
+        let cell_chirho: ParallelCellChirho<NumericInfoChirho> =
+            ParallelCellChirho::bottom_chirho();
         assert!(cell_chirho.is_bottom_chirho());
 
         let changed_chirho = cell_chirho.add_info_chirho(NumericInfoChirho::exact_chirho(5.0));

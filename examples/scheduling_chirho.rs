@@ -12,7 +12,9 @@
 //! - Jobs on the same machine cannot overlap
 //! - Some jobs depend on others (must complete first)
 
-use propagators_chirho::finite_domain_chirho::{FiniteDomainChirho, LessThanChirho, NotEqualsChirho};
+use propagators_chirho::finite_domain_chirho::{
+    FiniteDomainChirho, LessThanChirho, NotEqualsChirho,
+};
 use propagators_chirho::generic_cell_chirho::GenericNetworkChirho;
 use propagators_chirho::lattice_chirho::BoundedLatticeChirho;
 
@@ -56,7 +58,8 @@ fn main_chirho() {
 
     // For simplicity, we'll add a "less than" constraint
     // A < B (A's domain values must be less than B's minimum)
-    network_chirho.add_propagator_chirho(LessThanChirho, vec![job_a_start_chirho, job_b_start_chirho]);
+    network_chirho
+        .add_propagator_chirho(LessThanChirho, vec![job_a_start_chirho, job_b_start_chirho]);
 
     network_chirho.propagate_chirho();
 
@@ -67,7 +70,10 @@ fn main_chirho() {
     // Constraint 2: Jobs A and B are on the same machine - they can't have the same start time
     // (In reality, we'd need to check for overlap, but != is a simple approximation)
     println!("\nAdding constraint: Jobs A and B cannot have same start time...");
-    network_chirho.add_propagator_chirho(NotEqualsChirho, vec![job_a_start_chirho, job_b_start_chirho]);
+    network_chirho.add_propagator_chirho(
+        NotEqualsChirho,
+        vec![job_a_start_chirho, job_b_start_chirho],
+    );
 
     network_chirho.propagate_chirho();
 
@@ -93,7 +99,10 @@ fn main_chirho() {
         println!("\n✓ Valid schedule found!");
     }
 
-    println!("\nPropagation steps: {}", network_chirho.propagation_count_chirho());
+    println!(
+        "\nPropagation steps: {}",
+        network_chirho.propagation_count_chirho()
+    );
 }
 
 fn print_domain_chirho(

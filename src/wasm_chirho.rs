@@ -75,14 +75,16 @@ impl WasmNetworkChirho {
     #[wasm_bindgen(js_name = "setExact")]
     pub fn set_exact_chirho(&mut self, cell_id_chirho: usize, value_chirho: f64) {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
-        self.network_chirho.set_exact_chirho(cell_chirho, value_chirho);
+        self.network_chirho
+            .set_exact_chirho(cell_chirho, value_chirho);
     }
 
     /// Sets a cell to an interval.
     #[wasm_bindgen(js_name = "setInterval")]
     pub fn set_interval_chirho(&mut self, cell_id_chirho: usize, lo_chirho: f64, hi_chirho: f64) {
         let cell_chirho = CellIdChirho::from_index_chirho(cell_id_chirho);
-        self.network_chirho.set_interval_chirho(cell_chirho, lo_chirho, hi_chirho);
+        self.network_chirho
+            .set_interval_chirho(cell_chirho, lo_chirho, hi_chirho);
     }
 
     /// Adds an addition constraint: a + b = c
@@ -91,7 +93,8 @@ impl WasmNetworkChirho {
         let a_cell_chirho = CellIdChirho::from_index_chirho(a_chirho);
         let b_cell_chirho = CellIdChirho::from_index_chirho(b_chirho);
         let c_cell_chirho = CellIdChirho::from_index_chirho(c_chirho);
-        self.network_chirho.add_adder_chirho(a_cell_chirho, b_cell_chirho, c_cell_chirho);
+        self.network_chirho
+            .add_adder_chirho(a_cell_chirho, b_cell_chirho, c_cell_chirho);
     }
 
     /// Adds a multiplication constraint: a * b = c
@@ -100,7 +103,8 @@ impl WasmNetworkChirho {
         let a_cell_chirho = CellIdChirho::from_index_chirho(a_chirho);
         let b_cell_chirho = CellIdChirho::from_index_chirho(b_chirho);
         let c_cell_chirho = CellIdChirho::from_index_chirho(c_chirho);
-        self.network_chirho.add_multiplier_chirho(a_cell_chirho, b_cell_chirho, c_cell_chirho);
+        self.network_chirho
+            .add_multiplier_chirho(a_cell_chirho, b_cell_chirho, c_cell_chirho);
     }
 
     /// Adds a square constraint: a² = b
@@ -108,7 +112,8 @@ impl WasmNetworkChirho {
     pub fn add_squarer_chirho(&mut self, a_chirho: usize, b_chirho: usize) {
         let a_cell_chirho = CellIdChirho::from_index_chirho(a_chirho);
         let b_cell_chirho = CellIdChirho::from_index_chirho(b_chirho);
-        self.network_chirho.add_squarer_chirho(a_cell_chirho, b_cell_chirho);
+        self.network_chirho
+            .add_squarer_chirho(a_cell_chirho, b_cell_chirho);
     }
 
     /// Runs propagation until fixpoint.
@@ -191,7 +196,10 @@ impl WasmIntervalChirho {
     /// Creates a new interval.
     #[wasm_bindgen(constructor)]
     pub fn new_chirho(lo_chirho: f64, hi_chirho: f64) -> Self {
-        Self { lo_chirho, hi_chirho }
+        Self {
+            lo_chirho,
+            hi_chirho,
+        }
     }
 
     /// Creates an exact value interval.
@@ -255,10 +263,19 @@ impl WasmIntervalChirho {
             self.hi_chirho * other_chirho.hi_chirho,
         ];
 
-        let lo_chirho = products_chirho.iter().cloned().fold(f64::INFINITY, f64::min);
-        let hi_chirho = products_chirho.iter().cloned().fold(f64::NEG_INFINITY, f64::max);
+        let lo_chirho = products_chirho
+            .iter()
+            .cloned()
+            .fold(f64::INFINITY, f64::min);
+        let hi_chirho = products_chirho
+            .iter()
+            .cloned()
+            .fold(f64::NEG_INFINITY, f64::max);
 
-        WasmIntervalChirho { lo_chirho, hi_chirho }
+        WasmIntervalChirho {
+            lo_chirho,
+            hi_chirho,
+        }
     }
 
     /// Intersects two intervals.

@@ -197,35 +197,37 @@ pub mod kani_proofs_chirho;
 pub use amb_chirho::{AmbChirho, BacktrackingSearchChirho, SearchResultChirho};
 pub use cell_chirho::{CellChirho, MergeableChirho};
 pub use constraint_system_chirho::ConstraintSystemChirho;
+pub use finite_domain_chirho::{
+    AllDifferentChirho, EqualsChirho, FiniteDomainChirho, LessThanChirho, NotEqualsChirho,
+};
+pub use generic_cell_chirho::{GenericCellChirho, GenericNetworkChirho};
 pub use interval_chirho::{IntervalChirho, NumericInfoChirho};
+pub use lattice_chirho::{
+    AddPropagatorChirho, BoundedLatticeChirho, LatticeChirho, MulPropagatorChirho,
+    PropagatorComposeChirho, PropagatorFnChirho, SquarePropagatorChirho, SupportedValueChirho,
+};
 pub use propagator_chirho::{
     AbsoluterChirho, ClampChirho, ConditionalChirho, ConstantChirho, ExpChirho,
     IntervalAdderChirho, IntervalDividerChirho, IntervalMultiplierChirho, IntervalSubtractorChirho,
-    LnChirho, MaxChirho, MinChirho, NegaterChirho, PowerChirho, PropagatorChirho,
-    SqrterChirho, SquarerChirho,
+    LnChirho, MaxChirho, MinChirho, NegaterChirho, PowerChirho, PropagatorChirho, SqrterChirho,
+    SquarerChirho,
 };
 pub use scheduler_chirho::SchedulerChirho;
+pub use simd_chirho::{
+    batch_add_chirho, batch_intersect_chirho, batch_mul_chirho, batch_sqrt_chirho,
+    batch_square_chirho, batch_sub_chirho, IntervalVecChirho,
+};
 pub use tms_chirho::{BeliefChirho, PremiseSetChirho, SupportedChirho, TmsCellChirho};
 pub use worldview_chirho::WorldviewChirho;
-pub use lattice_chirho::{
-    LatticeChirho, BoundedLatticeChirho, PropagatorFnChirho, PropagatorComposeChirho,
-    SupportedValueChirho, AddPropagatorChirho, MulPropagatorChirho, SquarePropagatorChirho,
-};
-pub use finite_domain_chirho::{
-    FiniteDomainChirho, AllDifferentChirho, LessThanChirho, EqualsChirho, NotEqualsChirho,
-};
-pub use generic_cell_chirho::{GenericCellChirho, GenericNetworkChirho};
-pub use simd_chirho::{
-    batch_add_chirho, batch_sub_chirho, batch_mul_chirho, batch_intersect_chirho,
-    batch_square_chirho, batch_sqrt_chirho, IntervalVecChirho,
-};
 
 // Feature-gated re-exports
 #[cfg(feature = "arena")]
 pub use arena_chirho::{ArenaNetworkChirho, CellIdChirho};
 
 #[cfg(feature = "parallel")]
-pub use parallel_chirho::{ParallelCellChirho, ParallelNetworkChirho, NumericParallelNetworkChirho};
+pub use parallel_chirho::{
+    NumericParallelNetworkChirho, ParallelCellChirho, ParallelNetworkChirho,
+};
 
 /// Prelude module for convenient imports.
 ///
