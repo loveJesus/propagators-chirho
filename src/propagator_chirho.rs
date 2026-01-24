@@ -1000,6 +1000,475 @@ impl PropagatorChirho for ConditionalChirho {
     }
 }
 
+// ============================================================================
+// NEGATION PROPAGATOR
+// ============================================================================
+
+/// Bidirectional negation propagator: -a = b.
+///
+/// Propagates in both directions:
+/// - If we know a, compute b = -a
+/// - If we know b, compute a = -b
+///
+/// # Example
+///
+/// ```
+/// use propagators_chirho::{CellChirho, NegaterChirho, NumericInfoChirho, SchedulerChirho};
+///
+/// let scheduler_chirho = SchedulerChirho::new_chirho();
+/// let a_chirho = CellChirho::new_chirho("a");
+/// let b_chirho = CellChirho::new_chirho("b");
+///
+/// NegaterChirho::install_chirho(a_chirho.clone(), b_chirho.clone(), &scheduler_chirho);
+///
+/// a_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(5.0), &scheduler_chirho);
+/// scheduler_chirho.run_chirho();
+///
+/// // b = -5
+/// let b_content_chirho = b_chirho.content_chirho();
+/// let b_val_chirho = b_content_chirho.as_interval_chirho().unwrap();
+/// assert!((b_val_chirho.lo_chirho - (-5.0)).abs() < 1e-10);
+/// ```
+pub struct NegaterChirho {
+    id_chirho: usize,
+    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+}
+
+impl NegaterChirho {
+    /// Creates and installs a negation propagator: -a = b.
+    pub fn install_chirho(
+        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        scheduler_chirho: &SchedulerChirho,
+    ) -> Rc<Self> {
+        let propagator_chirho = Rc::new(Self {
+            id_chirho: next_id_chirho(),
+            a_chirho: a_chirho.clone(),
+            b_chirho: b_chirho.clone(),
+        });
+
+        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
+        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
+
+        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
+
+        propagator_chirho
+    }
+}
+
+impl PropagatorChirho for NegaterChirho {
+    fn id_chirho(&self) -> usize {
+        self.id_chirho
+    }
+
+    fn name_chirho(&self) -> &str {
+        "negater"
+    }
+
+    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
+        let a_chirho = self.a_chirho.content_chirho();
+        let b_chirho = self.b_chirho.content_chirho();
+
+        // Forward: b = -a
+        if let NumericInfoChirho::IntervalChirho(a_int_chirho) = &a_chirho {
+            let neg_a_chirho = IntervalChirho::new_chirho(-a_int_chirho.hi_chirho, -a_int_chirho.lo_chirho);
+            self.b_chirho.add_content_chirho(
+                NumericInfoChirho::IntervalChirho(neg_a_chirho),
+                scheduler_chirho,
+            );
+        }
+
+        // Backward: a = -b
+        if let NumericInfoChirho::IntervalChirho(b_int_chirho) = &b_chirho {
+            let neg_b_chirho = IntervalChirho::new_chirho(-b_int_chirho.hi_chirho, -b_int_chirho.lo_chirho);
+            self.a_chirho.add_content_chirho(
+                NumericInfoChirho::IntervalChirho(neg_b_chirho),
+                scheduler_chirho,
+            );
+        }
+    }
+}
+
+// ============================================================================
+// EXPONENTIAL AND LOGARITHM PROPAGATORS
+// ============================================================================
+
+/// Bidirectional exponential propagator: e^a = b.
+///
+/// Propagates in both directions:
+/// - If we know a, compute b = e^a
+/// - If we know b (and b > 0), compute a = ln(b)
+pub struct ExpChirho {
+    id_chirho: usize,
+    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+}
+
+impl ExpChirho {
+    /// Creates and installs an exponential propagator: e^a = b.
+    pub fn install_chirho(
+        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        scheduler_chirho: &SchedulerChirho,
+    ) -> Rc<Self> {
+        let propagator_chirho = Rc::new(Self {
+            id_chirho: next_id_chirho(),
+            a_chirho: a_chirho.clone(),
+            b_chirho: b_chirho.clone(),
+        });
+
+        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
+        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
+
+        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
+
+        propagator_chirho
+    }
+}
+
+impl PropagatorChirho for ExpChirho {
+    fn id_chirho(&self) -> usize {
+        self.id_chirho
+    }
+
+    fn name_chirho(&self) -> &str {
+        "exp"
+    }
+
+    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
+        let a_chirho = self.a_chirho.content_chirho();
+        let b_chirho = self.b_chirho.content_chirho();
+
+        // Forward: b = e^a
+        if let NumericInfoChirho::IntervalChirho(a_int_chirho) = &a_chirho {
+            let exp_lo_chirho = a_int_chirho.lo_chirho.exp();
+            let exp_hi_chirho = a_int_chirho.hi_chirho.exp();
+            let exp_interval_chirho = IntervalChirho::new_chirho(exp_lo_chirho, exp_hi_chirho);
+            self.b_chirho.add_content_chirho(
+                NumericInfoChirho::IntervalChirho(exp_interval_chirho),
+                scheduler_chirho,
+            );
+        }
+
+        // Backward: a = ln(b) (only valid for b > 0)
+        if let NumericInfoChirho::IntervalChirho(b_int_chirho) = &b_chirho {
+            if b_int_chirho.lo_chirho > 0.0 {
+                let ln_lo_chirho = b_int_chirho.lo_chirho.ln();
+                let ln_hi_chirho = b_int_chirho.hi_chirho.ln();
+                let ln_interval_chirho = IntervalChirho::new_chirho(ln_lo_chirho, ln_hi_chirho);
+                self.a_chirho.add_content_chirho(
+                    NumericInfoChirho::IntervalChirho(ln_interval_chirho),
+                    scheduler_chirho,
+                );
+            }
+        }
+    }
+}
+
+/// Bidirectional natural logarithm propagator: ln(a) = b.
+///
+/// Propagates in both directions:
+/// - If we know a (and a > 0), compute b = ln(a)
+/// - If we know b, compute a = e^b
+pub struct LnChirho {
+    id_chirho: usize,
+    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+}
+
+impl LnChirho {
+    /// Creates and installs a natural logarithm propagator: ln(a) = b.
+    pub fn install_chirho(
+        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        scheduler_chirho: &SchedulerChirho,
+    ) -> Rc<Self> {
+        let propagator_chirho = Rc::new(Self {
+            id_chirho: next_id_chirho(),
+            a_chirho: a_chirho.clone(),
+            b_chirho: b_chirho.clone(),
+        });
+
+        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
+        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
+
+        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
+
+        propagator_chirho
+    }
+}
+
+impl PropagatorChirho for LnChirho {
+    fn id_chirho(&self) -> usize {
+        self.id_chirho
+    }
+
+    fn name_chirho(&self) -> &str {
+        "ln"
+    }
+
+    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
+        let a_chirho = self.a_chirho.content_chirho();
+        let b_chirho = self.b_chirho.content_chirho();
+
+        // Forward: b = ln(a) (only valid for a > 0)
+        if let NumericInfoChirho::IntervalChirho(a_int_chirho) = &a_chirho {
+            if a_int_chirho.lo_chirho > 0.0 {
+                let ln_lo_chirho = a_int_chirho.lo_chirho.ln();
+                let ln_hi_chirho = a_int_chirho.hi_chirho.ln();
+                let ln_interval_chirho = IntervalChirho::new_chirho(ln_lo_chirho, ln_hi_chirho);
+                self.b_chirho.add_content_chirho(
+                    NumericInfoChirho::IntervalChirho(ln_interval_chirho),
+                    scheduler_chirho,
+                );
+            }
+        }
+
+        // Backward: a = e^b
+        if let NumericInfoChirho::IntervalChirho(b_int_chirho) = &b_chirho {
+            let exp_lo_chirho = b_int_chirho.lo_chirho.exp();
+            let exp_hi_chirho = b_int_chirho.hi_chirho.exp();
+            let exp_interval_chirho = IntervalChirho::new_chirho(exp_lo_chirho, exp_hi_chirho);
+            self.a_chirho.add_content_chirho(
+                NumericInfoChirho::IntervalChirho(exp_interval_chirho),
+                scheduler_chirho,
+            );
+        }
+    }
+}
+
+// ============================================================================
+// POWER PROPAGATOR
+// ============================================================================
+
+/// Bidirectional integer power propagator: a^n = b.
+///
+/// Propagates in both directions:
+/// - If we know a, compute b = a^n
+/// - If we know b (with appropriate conditions), compute a = b^(1/n)
+pub struct PowerChirho {
+    id_chirho: usize,
+    n_chirho: i32,
+    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+}
+
+impl PowerChirho {
+    /// Creates and installs a power propagator: a^n = b.
+    ///
+    /// # Arguments
+    ///
+    /// * `n_chirho` - The exponent (must be non-zero)
+    /// * `a_chirho` - The base cell
+    /// * `b_chirho` - The result cell
+    pub fn install_chirho(
+        n_chirho: i32,
+        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        scheduler_chirho: &SchedulerChirho,
+    ) -> Rc<Self> {
+        assert!(n_chirho != 0, "Exponent cannot be zero");
+
+        let propagator_chirho = Rc::new(Self {
+            id_chirho: next_id_chirho(),
+            n_chirho,
+            a_chirho: a_chirho.clone(),
+            b_chirho: b_chirho.clone(),
+        });
+
+        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
+        b_chirho.add_neighbor_chirho(propagator_chirho.clone());
+
+        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
+
+        propagator_chirho
+    }
+
+    /// Compute interval power a^n for positive integer n.
+    fn interval_pow_chirho(interval_chirho: &IntervalChirho, n_chirho: i32) -> IntervalChirho {
+        if n_chirho == 0 {
+            return IntervalChirho::exact_chirho(1.0);
+        }
+
+        let abs_n_chirho = n_chirho.unsigned_abs();
+
+        // Compute the power
+        let (lo_chirho, hi_chirho) = if abs_n_chirho % 2 == 0 {
+            // Even power: result is non-negative, need to handle sign crossing
+            if interval_chirho.lo_chirho >= 0.0 {
+                // All positive
+                (
+                    interval_chirho.lo_chirho.powi(abs_n_chirho as i32),
+                    interval_chirho.hi_chirho.powi(abs_n_chirho as i32),
+                )
+            } else if interval_chirho.hi_chirho <= 0.0 {
+                // All negative - order reverses
+                (
+                    interval_chirho.hi_chirho.powi(abs_n_chirho as i32),
+                    interval_chirho.lo_chirho.powi(abs_n_chirho as i32),
+                )
+            } else {
+                // Crosses zero
+                let lo_pow_chirho = interval_chirho.lo_chirho.powi(abs_n_chirho as i32);
+                let hi_pow_chirho = interval_chirho.hi_chirho.powi(abs_n_chirho as i32);
+                (0.0, lo_pow_chirho.max(hi_pow_chirho))
+            }
+        } else {
+            // Odd power: preserves sign, monotonic
+            (
+                interval_chirho.lo_chirho.powi(abs_n_chirho as i32),
+                interval_chirho.hi_chirho.powi(abs_n_chirho as i32),
+            )
+        };
+
+        if n_chirho > 0 {
+            IntervalChirho::new_chirho(lo_chirho, hi_chirho)
+        } else {
+            // Negative exponent: reciprocal
+            if lo_chirho > 0.0 || hi_chirho < 0.0 {
+                IntervalChirho::new_chirho(1.0 / hi_chirho, 1.0 / lo_chirho)
+            } else {
+                // Contains zero - result is unbounded
+                IntervalChirho::new_chirho(f64::NEG_INFINITY, f64::INFINITY)
+            }
+        }
+    }
+
+    /// Compute interval nth root.
+    fn interval_root_chirho(interval_chirho: &IntervalChirho, n_chirho: i32) -> Option<IntervalChirho> {
+        if n_chirho == 0 {
+            return None;
+        }
+
+        let abs_n_chirho = n_chirho.unsigned_abs() as f64;
+
+        if abs_n_chirho as u32 % 2 == 0 {
+            // Even root: only valid for non-negative
+            if interval_chirho.lo_chirho < 0.0 {
+                if interval_chirho.hi_chirho < 0.0 {
+                    return None; // No real root
+                }
+                // Clamp to non-negative
+                let clamped_lo_chirho: f64 = 0.0;
+                let root_lo_chirho = clamped_lo_chirho.powf(1.0 / abs_n_chirho);
+                let root_hi_chirho = interval_chirho.hi_chirho.powf(1.0 / abs_n_chirho);
+                Some(IntervalChirho::new_chirho(root_lo_chirho, root_hi_chirho))
+            } else {
+                let root_lo_chirho = interval_chirho.lo_chirho.powf(1.0 / abs_n_chirho);
+                let root_hi_chirho = interval_chirho.hi_chirho.powf(1.0 / abs_n_chirho);
+                Some(IntervalChirho::new_chirho(root_lo_chirho, root_hi_chirho))
+            }
+        } else {
+            // Odd root: always exists, preserves sign
+            let root_lo_chirho = interval_chirho.lo_chirho.signum()
+                * interval_chirho.lo_chirho.abs().powf(1.0 / abs_n_chirho);
+            let root_hi_chirho = interval_chirho.hi_chirho.signum()
+                * interval_chirho.hi_chirho.abs().powf(1.0 / abs_n_chirho);
+            Some(IntervalChirho::new_chirho(root_lo_chirho, root_hi_chirho))
+        }
+    }
+}
+
+impl PropagatorChirho for PowerChirho {
+    fn id_chirho(&self) -> usize {
+        self.id_chirho
+    }
+
+    fn name_chirho(&self) -> &str {
+        "power"
+    }
+
+    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
+        let a_chirho = self.a_chirho.content_chirho();
+        let b_chirho = self.b_chirho.content_chirho();
+
+        // Forward: b = a^n
+        if let NumericInfoChirho::IntervalChirho(a_int_chirho) = &a_chirho {
+            let pow_interval_chirho = Self::interval_pow_chirho(a_int_chirho, self.n_chirho);
+            self.b_chirho.add_content_chirho(
+                NumericInfoChirho::IntervalChirho(pow_interval_chirho),
+                scheduler_chirho,
+            );
+        }
+
+        // Backward: a = b^(1/n)
+        if let NumericInfoChirho::IntervalChirho(b_int_chirho) = &b_chirho {
+            if let Some(root_interval_chirho) = Self::interval_root_chirho(b_int_chirho, self.n_chirho) {
+                self.a_chirho.add_content_chirho(
+                    NumericInfoChirho::IntervalChirho(root_interval_chirho),
+                    scheduler_chirho,
+                );
+            }
+        }
+    }
+}
+
+// ============================================================================
+// CLAMP PROPAGATOR
+// ============================================================================
+
+/// Clamp propagator: clamp(a, lo, hi) = b.
+///
+/// This is a forward-only propagator that clamps the input to a range.
+pub struct ClampChirho {
+    id_chirho: usize,
+    lo_chirho: f64,
+    hi_chirho: f64,
+    a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+    b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+}
+
+impl ClampChirho {
+    /// Creates and installs a clamp propagator: clamp(a, lo, hi) = b.
+    pub fn install_chirho(
+        lo_chirho: f64,
+        hi_chirho: f64,
+        a_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        b_chirho: Rc<CellChirho<NumericInfoChirho>>,
+        scheduler_chirho: &SchedulerChirho,
+    ) -> Rc<Self> {
+        let propagator_chirho = Rc::new(Self {
+            id_chirho: next_id_chirho(),
+            lo_chirho,
+            hi_chirho,
+            a_chirho: a_chirho.clone(),
+            b_chirho: b_chirho.clone(),
+        });
+
+        a_chirho.add_neighbor_chirho(propagator_chirho.clone());
+
+        scheduler_chirho.alert_propagator_chirho(propagator_chirho.clone());
+
+        propagator_chirho
+    }
+}
+
+impl PropagatorChirho for ClampChirho {
+    fn id_chirho(&self) -> usize {
+        self.id_chirho
+    }
+
+    fn name_chirho(&self) -> &str {
+        "clamp"
+    }
+
+    fn run_chirho(&self, scheduler_chirho: &SchedulerChirho) {
+        let a_chirho = self.a_chirho.content_chirho();
+
+        if let NumericInfoChirho::IntervalChirho(a_int_chirho) = &a_chirho {
+            // Clamp the interval to [lo, hi]
+            let clamped_lo_chirho = a_int_chirho.lo_chirho.max(self.lo_chirho).min(self.hi_chirho);
+            let clamped_hi_chirho = a_int_chirho.hi_chirho.max(self.lo_chirho).min(self.hi_chirho);
+            let clamped_interval_chirho = IntervalChirho::new_chirho(clamped_lo_chirho, clamped_hi_chirho);
+            self.b_chirho.add_content_chirho(
+                NumericInfoChirho::IntervalChirho(clamped_interval_chirho),
+                scheduler_chirho,
+            );
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests_chirho {
     use super::*;
@@ -1104,5 +1573,126 @@ mod tests_chirho {
         let b_content_chirho = b_chirho.content_chirho();
         let b_interval_chirho = b_content_chirho.as_interval_chirho().unwrap();
         assert!((b_interval_chirho.lo_chirho - 25.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_negater_chirho() {
+        let scheduler_chirho = SchedulerChirho::new_chirho();
+        let a_chirho = CellChirho::new_chirho("a");
+        let b_chirho = CellChirho::new_chirho("b");
+
+        NegaterChirho::install_chirho(a_chirho.clone(), b_chirho.clone(), &scheduler_chirho);
+
+        // Forward: -5 = b
+        a_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(5.0), &scheduler_chirho);
+        scheduler_chirho.run_chirho();
+
+        let b_content_chirho = b_chirho.content_chirho();
+        let b_interval_chirho = b_content_chirho.as_interval_chirho().unwrap();
+        assert!((b_interval_chirho.lo_chirho - (-5.0)).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_negater_backward_chirho() {
+        let scheduler_chirho = SchedulerChirho::new_chirho();
+        let a_chirho = CellChirho::new_chirho("a");
+        let b_chirho = CellChirho::new_chirho("b");
+
+        NegaterChirho::install_chirho(a_chirho.clone(), b_chirho.clone(), &scheduler_chirho);
+
+        // Backward: -a = -3, so a = 3
+        b_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(-3.0), &scheduler_chirho);
+        scheduler_chirho.run_chirho();
+
+        let a_content_chirho = a_chirho.content_chirho();
+        let a_interval_chirho = a_content_chirho.as_interval_chirho().unwrap();
+        assert!((a_interval_chirho.lo_chirho - 3.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_exp_chirho() {
+        let scheduler_chirho = SchedulerChirho::new_chirho();
+        let a_chirho = CellChirho::new_chirho("a");
+        let b_chirho = CellChirho::new_chirho("b");
+
+        ExpChirho::install_chirho(a_chirho.clone(), b_chirho.clone(), &scheduler_chirho);
+
+        // e^0 = 1
+        a_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(0.0), &scheduler_chirho);
+        scheduler_chirho.run_chirho();
+
+        let b_content_chirho = b_chirho.content_chirho();
+        let b_interval_chirho = b_content_chirho.as_interval_chirho().unwrap();
+        assert!((b_interval_chirho.lo_chirho - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_ln_chirho() {
+        let scheduler_chirho = SchedulerChirho::new_chirho();
+        let a_chirho = CellChirho::new_chirho("a");
+        let b_chirho = CellChirho::new_chirho("b");
+
+        LnChirho::install_chirho(a_chirho.clone(), b_chirho.clone(), &scheduler_chirho);
+
+        // ln(e) = 1
+        a_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(std::f64::consts::E), &scheduler_chirho);
+        scheduler_chirho.run_chirho();
+
+        let b_content_chirho = b_chirho.content_chirho();
+        let b_interval_chirho = b_content_chirho.as_interval_chirho().unwrap();
+        assert!((b_interval_chirho.lo_chirho - 1.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_power_chirho() {
+        let scheduler_chirho = SchedulerChirho::new_chirho();
+        let a_chirho = CellChirho::new_chirho("a");
+        let b_chirho = CellChirho::new_chirho("b");
+
+        // 2^3 = 8
+        PowerChirho::install_chirho(3, a_chirho.clone(), b_chirho.clone(), &scheduler_chirho);
+
+        a_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(2.0), &scheduler_chirho);
+        scheduler_chirho.run_chirho();
+
+        let b_content_chirho = b_chirho.content_chirho();
+        let b_interval_chirho = b_content_chirho.as_interval_chirho().unwrap();
+        assert!((b_interval_chirho.lo_chirho - 8.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_power_backward_chirho() {
+        let scheduler_chirho = SchedulerChirho::new_chirho();
+        let a_chirho = CellChirho::new_chirho("a");
+        let b_chirho = CellChirho::new_chirho("b");
+
+        // a^3 = 27, so a = 3
+        PowerChirho::install_chirho(3, a_chirho.clone(), b_chirho.clone(), &scheduler_chirho);
+
+        b_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(27.0), &scheduler_chirho);
+        scheduler_chirho.run_chirho();
+
+        let a_content_chirho = a_chirho.content_chirho();
+        let a_interval_chirho = a_content_chirho.as_interval_chirho().unwrap();
+        assert!((a_interval_chirho.lo_chirho - 3.0).abs() < 1e-10);
+    }
+
+    #[test]
+    fn test_clamp_chirho() {
+        let scheduler_chirho = SchedulerChirho::new_chirho();
+        let a_chirho = CellChirho::new_chirho("a");
+        let b_chirho = CellChirho::new_chirho("b");
+
+        // clamp(a, 0, 10) = b
+        ClampChirho::install_chirho(0.0, 10.0, a_chirho.clone(), b_chirho.clone(), &scheduler_chirho);
+
+        // Value exceeds clamp range
+        a_chirho.add_content_chirho(NumericInfoChirho::exact_chirho(15.0), &scheduler_chirho);
+        scheduler_chirho.run_chirho();
+
+        let b_content_chirho = b_chirho.content_chirho();
+        let b_interval_chirho = b_content_chirho.as_interval_chirho().unwrap();
+        assert!((b_interval_chirho.lo_chirho - 10.0).abs() < 1e-10);
+        assert!((b_interval_chirho.hi_chirho - 10.0).abs() < 1e-10);
     }
 }

@@ -186,14 +186,22 @@ pub mod wasm_chirho;
 #[cfg_attr(docsrs, doc(cfg(feature = "python")))]
 pub mod python_chirho;
 
+/// Kani formal verification proofs.
+///
+/// Enable with the `kani` feature and run with `cargo kani`.
+#[cfg(feature = "kani")]
+#[cfg_attr(docsrs, doc(cfg(feature = "kani")))]
+pub mod kani_proofs_chirho;
+
 // Re-exports for convenience
 pub use amb_chirho::{AmbChirho, BacktrackingSearchChirho, SearchResultChirho};
 pub use cell_chirho::{CellChirho, MergeableChirho};
 pub use constraint_system_chirho::ConstraintSystemChirho;
 pub use interval_chirho::{IntervalChirho, NumericInfoChirho};
 pub use propagator_chirho::{
-    AbsoluterChirho, ConditionalChirho, ConstantChirho, IntervalAdderChirho, IntervalDividerChirho,
-    IntervalMultiplierChirho, IntervalSubtractorChirho, MaxChirho, MinChirho, PropagatorChirho,
+    AbsoluterChirho, ClampChirho, ConditionalChirho, ConstantChirho, ExpChirho,
+    IntervalAdderChirho, IntervalDividerChirho, IntervalMultiplierChirho, IntervalSubtractorChirho,
+    LnChirho, MaxChirho, MinChirho, NegaterChirho, PowerChirho, PropagatorChirho,
     SqrterChirho, SquarerChirho,
 };
 pub use scheduler_chirho::SchedulerChirho;

@@ -174,6 +174,15 @@ impl fmt::Debug for FiniteDomainChirho {
 
 impl LatticeChirho for FiniteDomainChirho {
     fn join_chirho(&self, other_chirho: &Self) -> Self {
+        // Handle bottom (identity element for join)
+        // Bottom means "all values possible", so join with bottom returns the other
+        if self.is_bottom_chirho() {
+            return other_chirho.clone();
+        }
+        if other_chirho.is_bottom_chirho() {
+            return self.clone();
+        }
+
         // Join is intersection (narrowing possibilities)
         let intersection_chirho: BTreeSet<i64> = self
             .values_chirho
@@ -389,6 +398,48 @@ mod tests_chirho {
         assert!(joined_chirho.contains_chirho(5));
         assert!(!joined_chirho.contains_chirho(1));
         assert!(!joined_chirho.contains_chirho(7));
+    }
+
+    #[test]
+    fn test_finite_domain_bottom_identity_chirho() {
+        // bottom is the identity element for join: x ⊔ ⊥ = x
+        let a_chirho = FiniteDomainChirho::range_chirho(1, 5);
+        let bottom_chirho = FiniteDomainChirho::bottom_chirho();
+
+        let result1_chirho = a_chirho.join_chirho(&bottom_chirho);
+        let result2_chirho = bottom_chirho.join_chirho(&a_chirho);
+
+        // Both should equal a
+        assert_eq!(result1_chirho.size_chirho(), a_chirho.size_chirho());
+        assert_eq!(result2_chirho.size_chirho(), a_chirho.size_chirho());
+        for v_chirho in a_chirho.iter_chirho() {
+            assert!(result1_chirho.contains_chirho(v_chirho));
+            assert!(result2_chirho.contains_chirho(v_chirho));
+        }
+    }
+
+    #[test]
+    fn test_finite_domain_top_absorbs_chirho() {
+        // top absorbs everything: x ⊔ ⊤ = ⊤
+        let a_chirho = FiniteDomainChirho::range_chirho(1, 5);
+        let top_chirho = FiniteDomainChirho::top_chirho();
+
+        let result_chirho = a_chirho.join_chirho(&top_chirho);
+
+        // Result should be top (empty/contradiction)
+        assert!(result_chirho.is_top_chirho());
+    }
+
+    #[test]
+    fn test_finite_domain_join_idempotent_chirho() {
+        // x ⊔ x = x
+        let a_chirho = FiniteDomainChirho::range_chirho(1, 5);
+        let result_chirho = a_chirho.join_chirho(&a_chirho);
+
+        assert_eq!(result_chirho.size_chirho(), a_chirho.size_chirho());
+        for v_chirho in a_chirho.iter_chirho() {
+            assert!(result_chirho.contains_chirho(v_chirho));
+        }
     }
 
     #[test]

@@ -503,6 +503,42 @@ proptest! {
         prop_assert_eq!(a_values_chirho, result_values_chirho);
     }
 
+    /// Finite domain join with bottom is identity: x ⊔ ⊥ = x
+    #[test]
+    fn test_finite_domain_bottom_identity_chirho(
+        v1_chirho in 0i64..100,
+        v2_chirho in 0i64..100,
+    ) {
+        use std::collections::BTreeSet;
+        let a_chirho = FiniteDomainChirho::from_set_chirho(
+            vec![v1_chirho, v2_chirho].into_iter().collect::<BTreeSet<_>>()
+        );
+        let bottom_chirho = FiniteDomainChirho::bottom_chirho();
+
+        let result_chirho = a_chirho.join_chirho(&bottom_chirho);
+
+        let a_values_chirho: Vec<i64> = a_chirho.iter_chirho().collect();
+        let result_values_chirho: Vec<i64> = result_chirho.iter_chirho().collect();
+        prop_assert_eq!(a_values_chirho, result_values_chirho);
+    }
+
+    /// Finite domain join with top gives top: x ⊔ ⊤ = ⊤
+    #[test]
+    fn test_finite_domain_top_absorbs_chirho(
+        v1_chirho in 0i64..100,
+        v2_chirho in 0i64..100,
+    ) {
+        use std::collections::BTreeSet;
+        let a_chirho = FiniteDomainChirho::from_set_chirho(
+            vec![v1_chirho, v2_chirho].into_iter().collect::<BTreeSet<_>>()
+        );
+        let top_chirho = FiniteDomainChirho::top_chirho();
+
+        let result_chirho = a_chirho.join_chirho(&top_chirho);
+
+        prop_assert!(result_chirho.is_top_chirho());
+    }
+
     /// Singleton contains its value
     #[test]
     fn test_singleton_contains_value_chirho(v_chirho in -1000i64..1000) {
