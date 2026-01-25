@@ -34,15 +34,15 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::core_chirho::algebra_chirho::{PropagatorErrorChirho, PropagatorResultChirho};
 use crate::cells_chirho::cell_chirho::CellChirho;
+use crate::cells_chirho::scheduler_chirho::SchedulerChirho;
+use crate::core_chirho::algebra_chirho::{PropagatorErrorChirho, PropagatorResultChirho};
 use crate::core_chirho::interval_chirho::NumericInfoChirho;
 use crate::propagators_chirho::propagator_chirho::{
     AbsoluterChirho, ClampChirho, ConstantChirho, ExpChirho, IntervalAdderChirho,
     IntervalDividerChirho, IntervalMultiplierChirho, IntervalSubtractorChirho, LnChirho, MaxChirho,
     MinChirho, NegaterChirho, PowerChirho, SqrterChirho, SquarerChirho,
 };
-use crate::cells_chirho::scheduler_chirho::SchedulerChirho;
 
 /// A high-level interface for building and running constraint systems.
 ///

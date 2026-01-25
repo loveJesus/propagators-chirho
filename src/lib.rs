@@ -230,16 +230,18 @@ pub use core_chirho::interval_chirho;
 pub use core_chirho::simd_chirho;
 
 pub use core_chirho::{
-    BoundedJoinSemilatticeChirho, CommutativeSemigroupChirho, IdempotentSemigroupChirho,
-    IntervalChirho, IntervalVecChirho, JoinSemilatticeChirho, MonoidChirho, NumericInfoChirho,
-    PropagatorErrorChirho, PropagatorResultChirho, SemigroupChirho, batch_add_chirho,
-    batch_intersect_chirho, batch_mul_chirho, batch_sqrt_chirho, batch_square_chirho,
-    batch_sub_chirho,
+    batch_add_chirho, batch_intersect_chirho, batch_mul_chirho, batch_sqrt_chirho,
+    batch_square_chirho, batch_sub_chirho, BoundedJoinSemilatticeChirho,
+    CommutativeSemigroupChirho, IdempotentSemigroupChirho, IntervalChirho, IntervalVecChirho,
+    JoinSemilatticeChirho, MonoidChirho, NumericInfoChirho, PropagatorErrorChirho,
+    PropagatorResultChirho, SemigroupChirho,
 };
 
 // Exports requiring std
 #[cfg(not(feature = "no-std"))]
-pub use cells_chirho::{CellChirho, GenericCellChirho, GenericNetworkChirho, MergeableChirho, SchedulerChirho};
+pub use cells_chirho::{
+    CellChirho, GenericCellChirho, GenericNetworkChirho, MergeableChirho, SchedulerChirho,
+};
 
 #[cfg(not(feature = "no-std"))]
 pub use propagators_chirho::{
@@ -313,13 +315,13 @@ pub use debug_chirho::kani_chirho;
 pub mod prelude_chirho {
     //! Convenient re-exports for common usage.
 
-    pub use crate::core_chirho::{
-        BoundedJoinSemilatticeChirho, IntervalChirho, JoinSemilatticeChirho, MonoidChirho,
-        NumericInfoChirho, PropagatorErrorChirho, PropagatorResultChirho, SemigroupChirho,
-    };
     pub use crate::cells_chirho::{CellChirho, MergeableChirho, SchedulerChirho};
     pub use crate::constraints_chirho::{
         AmbChirho, BacktrackingSearchChirho, ConstraintSystemChirho, SearchResultChirho,
+    };
+    pub use crate::core_chirho::{
+        BoundedJoinSemilatticeChirho, IntervalChirho, JoinSemilatticeChirho, MonoidChirho,
+        NumericInfoChirho, PropagatorErrorChirho, PropagatorResultChirho, SemigroupChirho,
     };
     pub use crate::propagators_chirho::{
         AbsoluterChirho, ConditionalChirho, ConstantChirho, IntervalAdderChirho,

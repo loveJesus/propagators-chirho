@@ -23,9 +23,9 @@ use std::cell::RefCell;
 use std::fmt;
 use std::rc::Rc;
 
+use super::scheduler_chirho::SchedulerChirho;
 use crate::core_chirho::interval_chirho::NumericInfoChirho;
 use crate::propagators_chirho::propagator_chirho::PropagatorChirho;
-use super::scheduler_chirho::SchedulerChirho;
 
 /// Trait for types that can be merged in a propagator network.
 ///

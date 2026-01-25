@@ -19,4 +19,6 @@ pub mod parallel_chirho;
 pub use arena_chirho::{ArenaNetworkChirho, CellIdChirho};
 
 #[cfg(feature = "parallel")]
-pub use parallel_chirho::{NumericParallelNetworkChirho, ParallelCellChirho, ParallelNetworkChirho};
+pub use parallel_chirho::{
+    NumericParallelNetworkChirho, ParallelCellChirho, ParallelNetworkChirho,
+};

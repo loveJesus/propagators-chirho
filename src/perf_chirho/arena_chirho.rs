@@ -247,8 +247,14 @@ impl ArenaNetworkChirho {
     // ========================================================================
 
     impl_add_ternary_chirho!(add_adder_chirho, PropagatorTypeChirho::AdderChirho);
-    impl_add_ternary_chirho!(add_subtractor_chirho, PropagatorTypeChirho::SubtractorChirho);
-    impl_add_ternary_chirho!(add_multiplier_chirho, PropagatorTypeChirho::MultiplierChirho);
+    impl_add_ternary_chirho!(
+        add_subtractor_chirho,
+        PropagatorTypeChirho::SubtractorChirho
+    );
+    impl_add_ternary_chirho!(
+        add_multiplier_chirho,
+        PropagatorTypeChirho::MultiplierChirho
+    );
     impl_add_ternary_chirho!(add_divider_chirho, PropagatorTypeChirho::DividerChirho);
 
     // ========================================================================
@@ -377,7 +383,10 @@ impl ArenaNetworkChirho {
             (a_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
         {
             let result_chirho = forward_chirho(a_iv_chirho, b_iv_chirho);
-            self.add_info_chirho(cells_chirho[2], NumericInfoChirho::IntervalChirho(result_chirho));
+            self.add_info_chirho(
+                cells_chirho[2],
+                NumericInfoChirho::IntervalChirho(result_chirho),
+            );
         }
 
         // Backward: a = inv_op(c, b)
@@ -385,7 +394,10 @@ impl ArenaNetworkChirho {
             (c_chirho.as_interval_chirho(), b_chirho.as_interval_chirho())
         {
             let result_chirho = backward_a_chirho(c_iv_chirho, b_iv_chirho);
-            self.add_info_chirho(cells_chirho[0], NumericInfoChirho::IntervalChirho(result_chirho));
+            self.add_info_chirho(
+                cells_chirho[0],
+                NumericInfoChirho::IntervalChirho(result_chirho),
+            );
         }
 
         // Backward: b = inv_op(c, a)
@@ -393,7 +405,10 @@ impl ArenaNetworkChirho {
             (c_chirho.as_interval_chirho(), a_chirho.as_interval_chirho())
         {
             let result_chirho = backward_b_chirho(c_iv_chirho, a_iv_chirho);
-            self.add_info_chirho(cells_chirho[1], NumericInfoChirho::IntervalChirho(result_chirho));
+            self.add_info_chirho(
+                cells_chirho[1],
+                NumericInfoChirho::IntervalChirho(result_chirho),
+            );
         }
     }
 
@@ -419,7 +434,10 @@ impl ArenaNetworkChirho {
         {
             let result_chirho = forward_chirho(a_iv_chirho, b_iv_chirho);
             if !result_chirho.is_empty_chirho() {
-                self.add_info_chirho(cells_chirho[2], NumericInfoChirho::IntervalChirho(result_chirho));
+                self.add_info_chirho(
+                    cells_chirho[2],
+                    NumericInfoChirho::IntervalChirho(result_chirho),
+                );
             }
         }
 
@@ -429,7 +447,10 @@ impl ArenaNetworkChirho {
         {
             let result_chirho = backward_a_chirho(c_iv_chirho, b_iv_chirho);
             if !result_chirho.is_empty_chirho() {
-                self.add_info_chirho(cells_chirho[0], NumericInfoChirho::IntervalChirho(result_chirho));
+                self.add_info_chirho(
+                    cells_chirho[0],
+                    NumericInfoChirho::IntervalChirho(result_chirho),
+                );
             }
         }
 
@@ -439,7 +460,10 @@ impl ArenaNetworkChirho {
         {
             let result_chirho = backward_b_chirho(c_iv_chirho, a_iv_chirho);
             if !result_chirho.is_empty_chirho() {
-                self.add_info_chirho(cells_chirho[1], NumericInfoChirho::IntervalChirho(result_chirho));
+                self.add_info_chirho(
+                    cells_chirho[1],
+                    NumericInfoChirho::IntervalChirho(result_chirho),
+                );
             }
         }
     }
@@ -460,13 +484,19 @@ impl ArenaNetworkChirho {
         // Forward: b = op(a)
         if let Some(a_iv_chirho) = a_chirho.as_interval_chirho() {
             let result_chirho = forward_chirho(a_iv_chirho);
-            self.add_info_chirho(cells_chirho[1], NumericInfoChirho::IntervalChirho(result_chirho));
+            self.add_info_chirho(
+                cells_chirho[1],
+                NumericInfoChirho::IntervalChirho(result_chirho),
+            );
         }
 
         // Backward: a = inv_op(b)
         if let Some(b_iv_chirho) = b_chirho.as_interval_chirho() {
             let result_chirho = backward_chirho(b_iv_chirho);
-            self.add_info_chirho(cells_chirho[0], NumericInfoChirho::IntervalChirho(result_chirho));
+            self.add_info_chirho(
+                cells_chirho[0],
+                NumericInfoChirho::IntervalChirho(result_chirho),
+            );
         }
     }
 
@@ -487,7 +517,10 @@ impl ArenaNetworkChirho {
         if let Some(a_iv_chirho) = a_chirho.as_interval_chirho() {
             let result_chirho = forward_chirho(a_iv_chirho);
             if !result_chirho.is_empty_chirho() {
-                self.add_info_chirho(cells_chirho[1], NumericInfoChirho::IntervalChirho(result_chirho));
+                self.add_info_chirho(
+                    cells_chirho[1],
+                    NumericInfoChirho::IntervalChirho(result_chirho),
+                );
             }
         }
 
@@ -495,7 +528,10 @@ impl ArenaNetworkChirho {
         if let Some(b_iv_chirho) = b_chirho.as_interval_chirho() {
             let result_chirho = backward_chirho(b_iv_chirho);
             if !result_chirho.is_empty_chirho() {
-                self.add_info_chirho(cells_chirho[0], NumericInfoChirho::IntervalChirho(result_chirho));
+                self.add_info_chirho(
+                    cells_chirho[0],
+                    NumericInfoChirho::IntervalChirho(result_chirho),
+                );
             }
         }
     }
@@ -508,7 +544,10 @@ impl ArenaNetworkChirho {
         // Forward: b = |a|
         if let Some(a_iv_chirho) = a_chirho.as_interval_chirho() {
             let result_chirho = a_iv_chirho.abs_chirho();
-            self.add_info_chirho(cells_chirho[1], NumericInfoChirho::IntervalChirho(result_chirho));
+            self.add_info_chirho(
+                cells_chirho[1],
+                NumericInfoChirho::IntervalChirho(result_chirho),
+            );
         }
 
         // Backward: a could be in [-b, -b_lo] or [b_lo, b] - constrain only
@@ -520,7 +559,10 @@ impl ArenaNetworkChirho {
             let constrained_chirho = IntervalChirho::new_chirho(-bound_chirho, bound_chirho);
             let result_chirho = a_iv_chirho.intersect_chirho(&constrained_chirho);
             if !result_chirho.is_empty_chirho() {
-                self.add_info_chirho(cells_chirho[0], NumericInfoChirho::IntervalChirho(result_chirho));
+                self.add_info_chirho(
+                    cells_chirho[0],
+                    NumericInfoChirho::IntervalChirho(result_chirho),
+                );
             }
         }
     }

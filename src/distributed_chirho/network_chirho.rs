@@ -358,7 +358,8 @@ impl TransportChirho for InMemoryTransportChirho {
     ) -> Result<(), TransportErrorChirho> {
         let peers_guard_chirho = self.peers_chirho.read().unwrap();
         if let Some(peer_transport_chirho) = peers_guard_chirho.get(peer_chirho) {
-            peer_transport_chirho.deliver_chirho(self.node_id_chirho.clone(), message_chirho.clone());
+            peer_transport_chirho
+                .deliver_chirho(self.node_id_chirho.clone(), message_chirho.clone());
             Ok(())
         } else {
             Err(TransportErrorChirho::PeerNotFoundChirho(
@@ -377,18 +378,14 @@ impl TransportChirho for InMemoryTransportChirho {
     ) -> Result<(), TransportErrorChirho> {
         let peers_guard_chirho = self.peers_chirho.read().unwrap();
         for (_, peer_transport_chirho) in peers_guard_chirho.iter() {
-            peer_transport_chirho.deliver_chirho(self.node_id_chirho.clone(), message_chirho.clone());
+            peer_transport_chirho
+                .deliver_chirho(self.node_id_chirho.clone(), message_chirho.clone());
         }
         Ok(())
     }
 
     fn peers_chirho(&self) -> Vec<String> {
-        self.peers_chirho
-            .read()
-            .unwrap()
-            .keys()
-            .cloned()
-            .collect()
+        self.peers_chirho.read().unwrap().keys().cloned().collect()
     }
 
     fn connect_chirho(&mut self, _address_chirho: &str) -> Result<(), TransportErrorChirho> {
@@ -450,13 +447,19 @@ impl<T: TransportChirho> DistributedNetworkChirho<T> {
     }
 
     /// Gets a cell by ID.
-    pub fn get_cell_chirho(&self, cell_id_chirho: &CellIdChirho) -> Option<&Arc<DistributedCellChirho>> {
+    pub fn get_cell_chirho(
+        &self,
+        cell_id_chirho: &CellIdChirho,
+    ) -> Option<&Arc<DistributedCellChirho>> {
         self.cells_chirho.get(cell_id_chirho)
     }
 
     /// Sets a cell to an exact value.
     pub fn set_exact_chirho(&mut self, cell_id_chirho: &CellIdChirho, value_chirho: f64) {
-        self.add_info_chirho(cell_id_chirho, NumericInfoChirho::exact_chirho(value_chirho));
+        self.add_info_chirho(
+            cell_id_chirho,
+            NumericInfoChirho::exact_chirho(value_chirho),
+        );
     }
 
     /// Sets a cell to an interval.
@@ -473,7 +476,11 @@ impl<T: TransportChirho> DistributedNetworkChirho<T> {
     }
 
     /// Adds information to a cell.
-    pub fn add_info_chirho(&mut self, cell_id_chirho: &CellIdChirho, info_chirho: NumericInfoChirho) {
+    pub fn add_info_chirho(
+        &mut self,
+        cell_id_chirho: &CellIdChirho,
+        info_chirho: NumericInfoChirho,
+    ) {
         self.logical_clock_chirho += 1;
 
         if let Some(cell_chirho) = self.cells_chirho.get(cell_id_chirho) {
@@ -522,11 +529,16 @@ impl<T: TransportChirho> DistributedNetworkChirho<T> {
         match message_chirho {
             NetworkMessageChirho::UpdateChirho(update_chirho) => {
                 // Update our clock
-                self.logical_clock_chirho =
-                    self.logical_clock_chirho.max(update_chirho.timestamp_chirho) + 1;
+                self.logical_clock_chirho = self
+                    .logical_clock_chirho
+                    .max(update_chirho.timestamp_chirho)
+                    + 1;
 
                 // Ensure cell exists
-                if !self.cells_chirho.contains_key(&update_chirho.cell_id_chirho) {
+                if !self
+                    .cells_chirho
+                    .contains_key(&update_chirho.cell_id_chirho)
+                {
                     let cell_chirho = Arc::new(DistributedCellChirho::new_chirho(
                         &update_chirho.cell_id_chirho.name_chirho,
                     ));
@@ -536,7 +548,8 @@ impl<T: TransportChirho> DistributedNetworkChirho<T> {
 
                 // Merge the update
                 if let Some(cell_chirho) = self.cells_chirho.get(&update_chirho.cell_id_chirho) {
-                    cell_chirho.merge_chirho(update_chirho.info_chirho, update_chirho.timestamp_chirho);
+                    cell_chirho
+                        .merge_chirho(update_chirho.info_chirho, update_chirho.timestamp_chirho);
                 }
             }
 
@@ -549,7 +562,8 @@ impl<T: TransportChirho> DistributedNetworkChirho<T> {
 
                 for (cell_id_chirho, cell_chirho) in &self.cells_chirho {
                     let our_ts_chirho = cell_chirho.timestamp_chirho();
-                    let their_ts_chirho = known_cells_chirho.get(cell_id_chirho).copied().unwrap_or(0);
+                    let their_ts_chirho =
+                        known_cells_chirho.get(cell_id_chirho).copied().unwrap_or(0);
 
                     if our_ts_chirho > their_ts_chirho {
                         updates_chirho.push(CellUpdateChirho {
@@ -677,11 +691,13 @@ mod tests_chirho {
         assert!(cell_chirho.content_chirho().is_nothing_chirho());
 
         // First merge
-        let changed_chirho = cell_chirho.merge_chirho(NumericInfoChirho::interval_chirho(0.0, 100.0), 1);
+        let changed_chirho =
+            cell_chirho.merge_chirho(NumericInfoChirho::interval_chirho(0.0, 100.0), 1);
         assert!(changed_chirho);
 
         // Narrowing merge
-        let changed_chirho = cell_chirho.merge_chirho(NumericInfoChirho::interval_chirho(20.0, 80.0), 2);
+        let changed_chirho =
+            cell_chirho.merge_chirho(NumericInfoChirho::interval_chirho(20.0, 80.0), 2);
         assert!(changed_chirho);
 
         let content_chirho = cell_chirho.content_chirho();
@@ -711,7 +727,10 @@ mod tests_chirho {
         // B should receive it
         let (from_chirho, msg_chirho) = b_chirho.recv_chirho().unwrap();
         assert_eq!(from_chirho, "node-a");
-        assert!(matches!(msg_chirho, NetworkMessageChirho::HeartbeatChirho { .. }));
+        assert!(matches!(
+            msg_chirho,
+            NetworkMessageChirho::HeartbeatChirho { .. }
+        ));
     }
 
     #[test]

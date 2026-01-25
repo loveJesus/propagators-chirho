@@ -32,9 +32,7 @@
 //!
 //! ```
 //! # #[cfg(feature = "parallel")]
-//! use propagators_chirho::parallel_chirho::{ParallelNetworkChirho, NumericParallelNetworkChirho};
-//! # #[cfg(feature = "parallel")]
-//! use propagators_chirho::NumericInfoChirho;
+//! use propagators_chirho::{ParallelNetworkChirho, NumericParallelNetworkChirho, NumericInfoChirho};
 //!
 //! # #[cfg(feature = "parallel")]
 //! # fn main() {

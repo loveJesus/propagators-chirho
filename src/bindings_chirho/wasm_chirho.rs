@@ -44,8 +44,8 @@
 
 use wasm_bindgen::prelude::*;
 
-use crate::perf_chirho::arena_chirho::{ArenaNetworkChirho, CellIdChirho};
 use crate::core_chirho::interval_chirho::NumericInfoChirho;
+use crate::perf_chirho::arena_chirho::{ArenaNetworkChirho, CellIdChirho};
 
 /// A WebAssembly-compatible propagator network.
 ///

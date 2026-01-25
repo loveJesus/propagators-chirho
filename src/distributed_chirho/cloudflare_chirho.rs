@@ -196,7 +196,9 @@ impl DurableCellStateChirho {
     /// Returns `true` if the state changed.
     pub fn merge_chirho(&mut self, other_chirho: &Self) -> bool {
         let old_content_chirho = self.content_chirho;
-        self.content_chirho = self.content_chirho.merge_chirho(&other_chirho.content_chirho);
+        self.content_chirho = self
+            .content_chirho
+            .merge_chirho(&other_chirho.content_chirho);
         self.timestamp_chirho = self.timestamp_chirho.max(other_chirho.timestamp_chirho);
 
         self.content_chirho != old_content_chirho
@@ -424,7 +426,10 @@ mod tests_chirho {
     #[test]
     fn test_cell_key_chirho() {
         assert_eq!(cell_key_chirho("temperature"), "cell:temperature");
-        assert_eq!(cell_key_chirho("sensor:room1:temp"), "cell:sensor:room1:temp");
+        assert_eq!(
+            cell_key_chirho("sensor:room1:temp"),
+            "cell:sensor:room1:temp"
+        );
     }
 
     #[cfg(feature = "serde")]

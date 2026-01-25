@@ -37,8 +37,8 @@ use std::rc::Rc;
 use std::sync::atomic::{AtomicUsize, Ordering};
 
 use crate::cells_chirho::cell_chirho::CellChirho;
-use crate::core_chirho::interval_chirho::{IntervalChirho, NumericInfoChirho};
 use crate::cells_chirho::scheduler_chirho::SchedulerChirho;
+use crate::core_chirho::interval_chirho::{IntervalChirho, NumericInfoChirho};
 
 /// Counter for generating unique propagator IDs.
 static NEXT_ID_CHIRHO: AtomicUsize = AtomicUsize::new(0);

@@ -12,10 +12,10 @@
 //! - Jobs on the same machine cannot overlap
 //! - Some jobs depend on others (must complete first)
 
-use propagators_chirho::{
-    FiniteDomainChirho, LessThanChirho, NotEqualsChirho, GenericNetworkChirho,
-};
 use propagators_chirho::lattice_chirho::BoundedLatticeChirho;
+use propagators_chirho::{
+    FiniteDomainChirho, GenericNetworkChirho, LessThanChirho, NotEqualsChirho,
+};
 
 fn main_chirho() {
     println!("Job Shop Scheduling with Propagators\n");

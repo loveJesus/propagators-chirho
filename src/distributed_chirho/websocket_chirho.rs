@@ -135,14 +135,12 @@ impl WebSocketClientChirho {
             TransportErrorChirho::ConnectionFailedChirho(format!("Invalid URL: {}", e_chirho))
         })?;
 
-        let (ws_stream_chirho, _) = connect_async(url_chirho)
-            .await
-            .map_err(|e_chirho| {
-                TransportErrorChirho::ConnectionFailedChirho(format!(
-                    "WebSocket connection failed: {}",
-                    e_chirho
-                ))
-            })?;
+        let (ws_stream_chirho, _) = connect_async(url_chirho).await.map_err(|e_chirho| {
+            TransportErrorChirho::ConnectionFailedChirho(format!(
+                "WebSocket connection failed: {}",
+                e_chirho
+            ))
+        })?;
 
         let (sink_chirho, source_chirho) = ws_stream_chirho.split();
         let inbox_chirho = Arc::new(Mutex::new(Vec::new()));
@@ -190,7 +188,10 @@ impl WebSocketClientChirho {
             .send(Message::Text(json_chirho))
             .await
             .map_err(|e_chirho| {
-                TransportErrorChirho::SendFailedChirho(format!("WebSocket send failed: {}", e_chirho))
+                TransportErrorChirho::SendFailedChirho(format!(
+                    "WebSocket send failed: {}",
+                    e_chirho
+                ))
             })
     }
 
@@ -294,9 +295,11 @@ impl WebSocketServerChirho {
         address_chirho: &str,
         node_id_chirho: &str,
     ) -> Result<Self, TransportErrorChirho> {
-        let listener_chirho = TcpListener::bind(address_chirho).await.map_err(|e_chirho| {
-            TransportErrorChirho::ConnectionFailedChirho(format!("Bind failed: {}", e_chirho))
-        })?;
+        let listener_chirho = TcpListener::bind(address_chirho)
+            .await
+            .map_err(|e_chirho| {
+                TransportErrorChirho::ConnectionFailedChirho(format!("Bind failed: {}", e_chirho))
+            })?;
 
         let (tx_chirho, rx_chirho) = mpsc::channel(100);
         let peer_counter_chirho = Arc::new(RwLock::new(0u64));
@@ -329,9 +332,9 @@ impl WebSocketServerChirho {
         message_chirho: &NetworkMessageChirho,
     ) -> Result<(), TransportErrorChirho> {
         let peers_chirho = self.peers_chirho.read().await;
-        let peer_chirho = peers_chirho.get(peer_id_chirho).ok_or_else(|| {
-            TransportErrorChirho::PeerNotFoundChirho(peer_id_chirho.to_string())
-        })?;
+        let peer_chirho = peers_chirho
+            .get(peer_id_chirho)
+            .ok_or_else(|| TransportErrorChirho::PeerNotFoundChirho(peer_id_chirho.to_string()))?;
 
         let json_chirho = serde_json::to_string(message_chirho).map_err(|e_chirho| {
             TransportErrorChirho::SerializationErrorChirho(e_chirho.to_string())
@@ -342,7 +345,10 @@ impl WebSocketServerChirho {
             .send(Message::Text(json_chirho))
             .await
             .map_err(|e_chirho| {
-                TransportErrorChirho::SendFailedChirho(format!("WebSocket send failed: {}", e_chirho))
+                TransportErrorChirho::SendFailedChirho(format!(
+                    "WebSocket send failed: {}",
+                    e_chirho
+                ))
             })
     }
 
@@ -540,10 +546,14 @@ impl AsyncDistributedNetworkChirho {
         address_chirho: &str,
         node_id_chirho: &str,
     ) -> Result<Self, TransportErrorChirho> {
-        let server_chirho = WebSocketServerChirho::bind_chirho(address_chirho, node_id_chirho).await?;
-        let transport_chirho = crate::network_chirho::InMemoryTransportChirho::new_chirho(node_id_chirho);
-        let network_chirho =
-            crate::network_chirho::DistributedNetworkChirho::new_chirho(node_id_chirho, transport_chirho);
+        let server_chirho =
+            WebSocketServerChirho::bind_chirho(address_chirho, node_id_chirho).await?;
+        let transport_chirho =
+            crate::network_chirho::InMemoryTransportChirho::new_chirho(node_id_chirho);
+        let network_chirho = crate::network_chirho::DistributedNetworkChirho::new_chirho(
+            node_id_chirho,
+            transport_chirho,
+        );
 
         Ok(Self {
             node_id_chirho: node_id_chirho.to_string(),
@@ -564,9 +574,12 @@ impl AsyncDistributedNetworkChirho {
     ) -> Result<Self, TransportErrorChirho> {
         let client_chirho =
             WebSocketClientChirho::connect_chirho(server_url_chirho, node_id_chirho).await?;
-        let transport_chirho = crate::network_chirho::InMemoryTransportChirho::new_chirho(node_id_chirho);
-        let network_chirho =
-            crate::network_chirho::DistributedNetworkChirho::new_chirho(node_id_chirho, transport_chirho);
+        let transport_chirho =
+            crate::network_chirho::InMemoryTransportChirho::new_chirho(node_id_chirho);
+        let network_chirho = crate::network_chirho::DistributedNetworkChirho::new_chirho(
+            node_id_chirho,
+            transport_chirho,
+        );
 
         let mut clients_chirho = HashMap::new();
         clients_chirho.insert(server_url_chirho.to_string(), client_chirho);
@@ -588,8 +601,13 @@ impl AsyncDistributedNetworkChirho {
     }
 
     /// Sets a cell to an exact value.
-    pub fn set_exact_chirho(&mut self, cell_id_chirho: &crate::network_chirho::CellIdChirho, value_chirho: f64) {
-        self.network_chirho.set_exact_chirho(cell_id_chirho, value_chirho);
+    pub fn set_exact_chirho(
+        &mut self,
+        cell_id_chirho: &crate::network_chirho::CellIdChirho,
+        value_chirho: f64,
+    ) {
+        self.network_chirho
+            .set_exact_chirho(cell_id_chirho, value_chirho);
     }
 
     /// Gets cell content.
@@ -645,13 +663,14 @@ impl AsyncDistributedNetworkChirho {
         cell_id_chirho: &crate::network_chirho::CellIdChirho,
     ) -> Result<(), TransportErrorChirho> {
         if let Some(content_chirho) = self.network_chirho.get_content_chirho(cell_id_chirho) {
-            let message_chirho =
-                crate::network_chirho::NetworkMessageChirho::UpdateChirho(crate::network_chirho::CellUpdateChirho {
+            let message_chirho = crate::network_chirho::NetworkMessageChirho::UpdateChirho(
+                crate::network_chirho::CellUpdateChirho {
                     cell_id_chirho: cell_id_chirho.clone(),
                     info_chirho: content_chirho,
                     timestamp_chirho: 0, // TODO: proper timestamp
                     origin_chirho: self.node_id_chirho.clone(),
-                });
+                },
+            );
 
             if let Some(server_chirho) = &self.server_chirho {
                 server_chirho.broadcast_chirho(&message_chirho).await?;
@@ -669,20 +688,30 @@ impl AsyncDistributedNetworkChirho {
         match message_chirho {
             NetworkMessageChirho::UpdateChirho(update_chirho) => {
                 // Ensure cell exists
-                if self.network_chirho.get_cell_chirho(&update_chirho.cell_id_chirho).is_none() {
-                    self.network_chirho.make_shared_cell_chirho(&update_chirho.cell_id_chirho.name_chirho);
+                if self
+                    .network_chirho
+                    .get_cell_chirho(&update_chirho.cell_id_chirho)
+                    .is_none()
+                {
+                    self.network_chirho
+                        .make_shared_cell_chirho(&update_chirho.cell_id_chirho.name_chirho);
                 }
 
                 // Apply update
-                self.network_chirho.add_info_chirho(&update_chirho.cell_id_chirho, update_chirho.info_chirho);
+                self.network_chirho
+                    .add_info_chirho(&update_chirho.cell_id_chirho, update_chirho.info_chirho);
             }
-            NetworkMessageChirho::SyncRequestChirho { from_chirho, known_cells_chirho: _ } => {
+            NetworkMessageChirho::SyncRequestChirho {
+                from_chirho,
+                known_cells_chirho: _,
+            } => {
                 // TODO: Implement sync response
                 let _ = from_chirho;
             }
             NetworkMessageChirho::SyncResponseChirho { updates_chirho, .. } => {
                 for update_chirho in updates_chirho {
-                    self.network_chirho.add_info_chirho(&update_chirho.cell_id_chirho, update_chirho.info_chirho);
+                    self.network_chirho
+                        .add_info_chirho(&update_chirho.cell_id_chirho, update_chirho.info_chirho);
                 }
             }
             NetworkMessageChirho::HeartbeatChirho { .. } => {
@@ -744,8 +773,9 @@ mod tests_chirho {
     #[tokio::test]
     async fn test_client_server_connection_chirho() {
         // Start server
-        let server_chirho =
-            WebSocketServerChirho::bind_chirho("127.0.0.1:9876", "server").await.unwrap();
+        let server_chirho = WebSocketServerChirho::bind_chirho("127.0.0.1:9876", "server")
+            .await
+            .unwrap();
 
         // Give server time to start
         tokio::time::sleep(Duration::from_millis(100)).await;
