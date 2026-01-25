@@ -51,7 +51,7 @@
 //! propagators-chirho = { version = "0.1", features = ["network-websocket"] }
 //! ```
 
-use crate::network_chirho::{NetworkMessageChirho, TransportErrorChirho};
+use super::network_chirho::{NetworkMessageChirho, TransportErrorChirho};
 
 use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, StreamExt};

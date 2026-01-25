@@ -2,13 +2,6 @@
 #     that whoever believes in him should not perish but have eternal life.
 #     John 3:16
 
-[workspace]
-members = [
-    ".",
-    "crates_chirho/propcoin-chirho",
-]
-resolver = "2"
-
 [package]
 name = "propagators-chirho"
 version = "0.1.5"

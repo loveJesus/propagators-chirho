@@ -34,7 +34,7 @@
 
 use std::collections::HashSet;
 
-use crate::tms_chirho::PremiseSetChirho;
+use super::tms_chirho::PremiseSetChirho;
 
 /// A worldview representing a set of active premises.
 ///

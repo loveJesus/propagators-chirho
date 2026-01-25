@@ -10,8 +10,7 @@
 //! # Example
 //!
 //! ```
-//! use propagators_chirho::generic_cell_chirho::GenericCellChirho;
-//! use propagators_chirho::finite_domain_chirho::FiniteDomainChirho;
+//! use propagators_chirho::{GenericCellChirho, FiniteDomainChirho};
 //! use propagators_chirho::lattice_chirho::BoundedLatticeChirho;
 //!
 //! // Create a cell for finite domain values
@@ -351,8 +350,8 @@ impl<L: BoundedLatticeChirho + 'static> Default for GenericNetworkChirho<L> {
 #[cfg(test)]
 mod tests_chirho {
     use super::*;
-    use crate::finite_domain_chirho::{FiniteDomainChirho, NotEqualsChirho};
-    use crate::interval_chirho::NumericInfoChirho;
+    use crate::constraints_chirho::finite_domain_chirho::{FiniteDomainChirho, NotEqualsChirho};
+    use crate::core_chirho::interval_chirho::NumericInfoChirho;
     use crate::lattice_chirho::AddPropagatorChirho;
 
     #[test]

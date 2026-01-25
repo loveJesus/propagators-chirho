@@ -48,7 +48,7 @@
 
 use std::collections::VecDeque;
 
-use crate::interval_chirho::{IntervalChirho, NumericInfoChirho};
+use crate::core_chirho::interval_chirho::{IntervalChirho, NumericInfoChirho};
 
 // ============================================================================
 // HELPER MACROS - Eliminate boilerplate for adding propagators
@@ -547,7 +547,7 @@ impl ArenaNetworkChirho {
     pub fn has_contradiction_chirho(&self) -> bool {
         self.cells_chirho
             .iter()
-            .any(super::interval_chirho::NumericInfoChirho::is_contradiction_chirho)
+            .any(crate::core_chirho::interval_chirho::NumericInfoChirho::is_contradiction_chirho)
     }
 
     /// Resets the network, clearing all cell values.

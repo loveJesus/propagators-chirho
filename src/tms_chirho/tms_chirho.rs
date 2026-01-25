@@ -31,7 +31,7 @@ use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::sync::atomic::{AtomicU64, Ordering};
 
-use crate::interval_chirho::NumericInfoChirho;
+use crate::core_chirho::interval_chirho::NumericInfoChirho;
 
 // Unique ID generator for justifications
 static JUSTIFICATION_ID_COUNTER_CHIRHO: AtomicU64 = AtomicU64::new(0);
@@ -507,7 +507,7 @@ impl TmsCellChirho {
     /// Merges all beliefs whose premises are satisfied by the worldview.
     pub fn content_in_worldview_chirho(
         &self,
-        worldview_chirho: &crate::worldview_chirho::WorldviewChirho,
+        worldview_chirho: &super::worldview_chirho::WorldviewChirho,
     ) -> NumericInfoChirho {
         let active_chirho = worldview_chirho.active_premises_chirho();
         let mut result_chirho = NumericInfoChirho::nothing_chirho();
@@ -669,7 +669,7 @@ impl TmsNetworkChirho {
     /// Checks if the given worldview contains a known nogood.
     pub fn worldview_is_contradictory_chirho(
         &self,
-        worldview_chirho: &crate::worldview_chirho::WorldviewChirho,
+        worldview_chirho: &super::worldview_chirho::WorldviewChirho,
     ) -> bool {
         self.nogoods_chirho
             .borrow()
@@ -679,7 +679,7 @@ impl TmsNetworkChirho {
     /// Suggests a premise to retract to resolve contradictions.
     pub fn suggest_retraction_chirho(
         &self,
-        worldview_chirho: &crate::worldview_chirho::WorldviewChirho,
+        worldview_chirho: &super::worldview_chirho::WorldviewChirho,
     ) -> Option<String> {
         self.nogoods_chirho
             .borrow()
@@ -689,7 +689,7 @@ impl TmsNetworkChirho {
     /// Queries all cells under a given worldview.
     pub fn query_all_chirho(
         &self,
-        worldview_chirho: &crate::worldview_chirho::WorldviewChirho,
+        worldview_chirho: &super::worldview_chirho::WorldviewChirho,
     ) -> Vec<NumericInfoChirho> {
         self.cells_chirho
             .iter()
@@ -741,7 +741,7 @@ impl fmt::Debug for TmsNetworkChirho {
 #[cfg(test)]
 mod tests_chirho {
     use super::*;
-    use crate::worldview_chirho::WorldviewChirho;
+    use crate::tms_chirho::worldview_chirho::WorldviewChirho;
 
     #[test]
     fn test_supported_value_chirho() {

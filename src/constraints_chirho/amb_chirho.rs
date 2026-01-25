@@ -31,7 +31,7 @@
 use std::cell::RefCell;
 use std::collections::HashSet;
 
-use crate::interval_chirho::NumericInfoChirho;
+use crate::core_chirho::interval_chirho::NumericInfoChirho;
 
 /// A nondeterministic choice among values.
 ///

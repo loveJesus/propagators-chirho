@@ -10,7 +10,7 @@
 //! # Example
 //!
 //! ```
-//! use propagators_chirho::finite_domain_chirho::FiniteDomainChirho;
+//! use propagators_chirho::FiniteDomainChirho;
 //! use propagators_chirho::lattice_chirho::{LatticeChirho, BoundedLatticeChirho};
 //!
 //! // A Sudoku cell can be 1-9

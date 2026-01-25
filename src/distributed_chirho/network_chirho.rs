@@ -61,7 +61,7 @@ use std::collections::{HashMap, HashSet};
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 
-use crate::interval_chirho::NumericInfoChirho;
+use crate::core_chirho::interval_chirho::NumericInfoChirho;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};

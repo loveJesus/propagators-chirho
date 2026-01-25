@@ -35,8 +35,8 @@
 
 #![cfg(kani)]
 
-use crate::interval_chirho::IntervalChirho;
-use crate::NumericInfoChirho;
+use crate::core_chirho::interval_chirho::IntervalChirho;
+use crate::core_chirho::interval_chirho::NumericInfoChirho;
 
 // ============================================================================
 // INTERVAL ARITHMETIC PROOFS

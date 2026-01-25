@@ -12,10 +12,9 @@
 //! - Jobs on the same machine cannot overlap
 //! - Some jobs depend on others (must complete first)
 
-use propagators_chirho::finite_domain_chirho::{
-    FiniteDomainChirho, LessThanChirho, NotEqualsChirho,
+use propagators_chirho::{
+    FiniteDomainChirho, LessThanChirho, NotEqualsChirho, GenericNetworkChirho,
 };
-use propagators_chirho::generic_cell_chirho::GenericNetworkChirho;
 use propagators_chirho::lattice_chirho::BoundedLatticeChirho;
 
 fn main_chirho() {

@@ -298,7 +298,7 @@ pub trait BoundedJoinSemilatticeChirho: JoinSemilatticeChirho {
 // IMPLEMENTATIONS FOR NUMERICINFOCHIRHO
 // ============================================================================
 
-use crate::interval_chirho::NumericInfoChirho;
+use super::interval_chirho::NumericInfoChirho;
 
 impl SemigroupChirho for NumericInfoChirho {
     fn combine_chirho(&self, other_chirho: &Self) -> Self {

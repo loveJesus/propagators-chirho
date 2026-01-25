@@ -57,7 +57,7 @@ use std::collections::{HashSet, VecDeque};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{Arc, Mutex, RwLock};
 
-use crate::interval_chirho::NumericInfoChirho;
+use crate::core_chirho::interval_chirho::NumericInfoChirho;
 use crate::lattice_chirho::{BoundedLatticeChirho, PropagatorFnChirho};
 
 static PARALLEL_CELL_ID_COUNTER_CHIRHO: AtomicUsize = AtomicUsize::new(0);
@@ -499,7 +499,7 @@ impl NumericParallelNetworkChirho {
 #[cfg(test)]
 mod tests_chirho {
     use super::*;
-    use crate::interval_chirho::NumericInfoChirho;
+    use crate::core_chirho::interval_chirho::NumericInfoChirho;
 
     #[test]
     fn test_parallel_cell_chirho() {

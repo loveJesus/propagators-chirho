@@ -27,7 +27,7 @@ use std::cell::RefCell;
 use std::collections::{HashSet, VecDeque};
 use std::rc::Rc;
 
-use crate::propagator_chirho::PropagatorChirho;
+use crate::propagators_chirho::propagator_chirho::PropagatorChirho;
 
 /// Statistics about scheduler execution.
 #[derive(Debug, Clone, Default)]

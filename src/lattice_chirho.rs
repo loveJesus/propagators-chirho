@@ -228,7 +228,7 @@ impl<L: BoundedLatticeChirho> BoundedLatticeChirho for SupportedValueChirho<L> {
 // IMPLEMENTATIONS FOR NUMERICINFOSCHIRHO
 // ============================================================================
 
-use crate::interval_chirho::NumericInfoChirho;
+use crate::core_chirho::interval_chirho::NumericInfoChirho;
 
 impl LatticeChirho for NumericInfoChirho {
     fn join_chirho(&self, other_chirho: &Self) -> Self {

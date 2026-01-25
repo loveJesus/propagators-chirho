@@ -154,7 +154,7 @@
 //! propagators-chirho = { version = "0.1", features = ["cloudflare", "wasm", "serde"] }
 //! ```
 
-use crate::interval_chirho::NumericInfoChirho;
+use crate::core_chirho::interval_chirho::NumericInfoChirho;
 
 #[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
