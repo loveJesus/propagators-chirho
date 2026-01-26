@@ -18,7 +18,7 @@
 //!
 //! ```
 //! # #[cfg(feature = "arena")]
-//! use propagators_chirho::arena_chirho::ArenaNetworkChirho;
+//! use propagators_chirho::ArenaNetworkChirho;
 //!
 //! # #[cfg(feature = "arena")]
 //! # fn main() {
