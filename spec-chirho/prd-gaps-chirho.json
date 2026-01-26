@@ -1,0 +1,442 @@
+// For God so loved the world that he gave his only begotten Son,
+//     that whoever believes in him should not perish but have eternal life.
+//     John 3:16
+{
+  "prd_chirho": {
+    "title_chirho": "Propagators-Chirho Feature Gap Analysis PRD",
+    "version_chirho": "1.0.0",
+    "created_chirho": "2026-01-26",
+    "repository_chirho": "https://github.com/loveJesus/propagators-chirho",
+    "status_chirho": "draft"
+  },
+
+  "executive_summary_chirho": {
+    "current_state_chirho": "~70% production-ready propagator network library",
+    "strengths_chirho": [
+      "Clean layered architecture (core → cells → propagators → constraints → TMS)",
+      "True bidirectional constraint propagation",
+      "15+ numeric propagators with full bidirectionality",
+      "Truth Maintenance System with worldviews and nogoods",
+      "Parallel propagation (rayon), SIMD, arena allocation",
+      "Distributed network with WebSocket transport",
+      "Formal verification (Kani proofs)",
+      "no_std support for core interval arithmetic"
+    ],
+    "assessment_chirho": "Excellent for research/prototyping, needs enhancements for production CSP solving"
+  },
+
+  "gaps_chirho": {
+    "critical_chirho": [
+      {
+        "id_chirho": "GAP-001",
+        "title_chirho": "No Incremental Computation",
+        "description_chirho": "When constraints change, the entire network must be recomputed from scratch. No differential dataflow or incremental maintenance support.",
+        "impact_chirho": "Poor performance for dynamic constraint problems, interactive applications",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["incremental", "differential", "delta"],
+          "found_chirho": false,
+          "files_checked_chirho": ["all src/**/*.rs"]
+        },
+        "requirements_chirho": [
+          "Add IncrementalSchedulerChirho that tracks cell deltas",
+          "Implement change propagation from modified cells only",
+          "Support constraint addition without full recomputation",
+          "Support constraint removal with minimal recomputation"
+        ],
+        "priority_chirho": "P0",
+        "effort_estimate_chirho": "large"
+      },
+      {
+        "id_chirho": "GAP-002",
+        "title_chirho": "No Constraint Introspection/Explanation",
+        "description_chirho": "Cannot query what constraints exist, why a cell has its current value, or trace the derivation of results.",
+        "impact_chirho": "Cannot debug constraint conflicts, poor developer experience",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["explain", "introspect", "get_all_constraints", "get_constraints"],
+          "found_chirho": false,
+          "files_checked_chirho": ["all src/**/*.rs"]
+        },
+        "requirements_chirho": [
+          "Add system.get_all_constraints_chirho() -> Vec<ConstraintInfoChirho>",
+          "Add system.explain_value_chirho(&cell) -> ExplanationChirho",
+          "Add system.get_propagation_graph_chirho() -> PropagationGraphChirho",
+          "Track constraint-to-cell mappings bidirectionally",
+          "Store derivation history per cell update"
+        ],
+        "priority_chirho": "P0",
+        "effort_estimate_chirho": "medium"
+      },
+      {
+        "id_chirho": "GAP-003",
+        "title_chirho": "No Constraint Priorities/Preferences",
+        "description_chirho": "All propagators are treated equally. Cannot express 'prefer this constraint over that one' for conflict resolution.",
+        "impact_chirho": "Cannot implement search heuristics effectively, no soft constraint support",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["priority", "weight", "prefer"],
+          "found_chirho": false,
+          "files_checked_chirho": ["all src/**/*.rs"]
+        },
+        "requirements_chirho": [
+          "Add priority_chirho field to PropagatorChirho trait",
+          "Modify SchedulerChirho to run higher-priority propagators first",
+          "Add soft constraint support with violation costs",
+          "Add constraint weight API for optimization problems"
+        ],
+        "priority_chirho": "P1",
+        "effort_estimate_chirho": "medium"
+      },
+      {
+        "id_chirho": "GAP-004",
+        "title_chirho": "WebSocket Implementation Incomplete",
+        "description_chirho": "WebSocket transport has 3 TODOs for timestamp handling, sync response, and subscriptions.",
+        "impact_chirho": "Distributed propagation not production-ready",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["TODO", "FIXME"],
+          "found_chirho": true,
+          "location_chirho": "src/distributed_chirho/websocket_chirho.rs",
+          "lines_chirho": [670, 708, 721],
+          "details_chirho": [
+            "Line 670: timestamp_chirho: 0, // TODO: proper timestamp",
+            "Line 708: // TODO: Implement sync response",
+            "Line 721: // TODO: Implement subscriptions"
+          ]
+        },
+        "requirements_chirho": [
+          "Implement proper timestamp generation using system time",
+          "Implement NetworkMessageChirho::SyncResponse handling",
+          "Implement cell subscription mechanism",
+          "Add reconnection logic with exponential backoff",
+          "Add message queue for offline operation"
+        ],
+        "priority_chirho": "P0",
+        "effort_estimate_chirho": "small"
+      },
+      {
+        "id_chirho": "GAP-005",
+        "title_chirho": "No Error Recovery/Rollback",
+        "description_chirho": "Contradictions just set cell to ⊤ (top). No mechanism to undo, rollback, or checkpoint state.",
+        "impact_chirho": "Must restart from scratch on contradiction, poor user experience",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["rollback", "undo", "revert", "checkpoint"],
+          "found_chirho": false,
+          "files_checked_chirho": ["all src/**/*.rs"]
+        },
+        "requirements_chirho": [
+          "Add CheckpointChirho type for saving network state",
+          "Add system.checkpoint_chirho() -> CheckpointChirho",
+          "Add system.rollback_to_chirho(checkpoint) method",
+          "Add undo stack for cell updates",
+          "Integrate with TMS for belief retraction"
+        ],
+        "priority_chirho": "P1",
+        "effort_estimate_chirho": "medium"
+      }
+    ],
+
+    "major_chirho": [
+      {
+        "id_chirho": "GAP-006",
+        "title_chirho": "Limited Global Constraints",
+        "description_chirho": "Only AllDifferentChirho implemented. Missing standard CSP global constraints.",
+        "impact_chirho": "Many CSP problems cannot be efficiently modeled",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["cumulative", "circuit", "table_constraint", "element_constraint"],
+          "found_chirho": false,
+          "existing_constraints_chirho": ["AllDifferentChirho", "LessThanChirho", "EqualsChirho", "NotEqualsChirho"]
+        },
+        "requirements_chirho": [
+          "Add CumulativeChirho for resource scheduling",
+          "Add CircuitChirho for Hamiltonian path/TSP",
+          "Add TableChirho for extensional constraints",
+          "Add ElementChirho for array indexing",
+          "Add CardinalityChirho (global cardinality constraint)",
+          "Add RegularChirho for DFA-based constraints",
+          "Add BinPackingChirho for packing problems"
+        ],
+        "priority_chirho": "P1",
+        "effort_estimate_chirho": "large"
+      },
+      {
+        "id_chirho": "GAP-007",
+        "title_chirho": "No Search Heuristics",
+        "description_chirho": "BacktrackingSearchChirho is basic chronological backtracking only. No variable/value ordering heuristics.",
+        "impact_chirho": "Poor performance on hard CSP instances",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["heuristic", "first.fail", "dom.wdeg", "variable.ordering", "value.ordering"],
+          "found_chirho": false,
+          "note_chirho": "Only 'heuristic' found in comment about nogood retraction, not actual search heuristics"
+        },
+        "requirements_chirho": [
+          "Add VariableOrderingChirho trait with implementations",
+          "Implement FirstFailChirho (smallest domain first)",
+          "Implement DomWdegChirho (domain over weighted degree)",
+          "Implement ImpactBasedChirho search",
+          "Add ValueOrderingChirho trait with implementations",
+          "Add search restarts with nogood recording",
+          "Add randomization support for tie-breaking"
+        ],
+        "priority_chirho": "P1",
+        "effort_estimate_chirho": "large"
+      },
+      {
+        "id_chirho": "GAP-008",
+        "title_chirho": "No Persistent Storage Integration",
+        "description_chirho": "Cloudflare DO integration exists but is specialized. No general database bindings for long-running computations.",
+        "impact_chirho": "Cannot pause/resume large computations, no crash recovery",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["database", "persist", "snapshot", "save_state", "load_state"],
+          "found_chirho": true,
+          "location_chirho": "src/distributed_chirho/cloudflare_chirho.rs",
+          "note_chirho": "Only Cloudflare-specific persistence, no general adapter"
+        },
+        "requirements_chirho": [
+          "Add StorageAdapterChirho trait",
+          "Implement SQLite adapter",
+          "Implement PostgreSQL adapter",
+          "Implement Redis adapter for distributed cache",
+          "Add network serialization/deserialization",
+          "Add schema versioning for backwards compatibility"
+        ],
+        "priority_chirho": "P2",
+        "effort_estimate_chirho": "large"
+      },
+      {
+        "id_chirho": "GAP-009",
+        "title_chirho": "No Visualization/Debugging Tools",
+        "description_chirho": "Tracing exists but is basic. No graphical constraint network viewer or propagation trace playback.",
+        "impact_chirho": "Hard to debug complex constraint networks",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["visualization", "graph_view", "render", "display_network"],
+          "found_chirho": false,
+          "files_checked_chirho": ["all src/**/*.rs"]
+        },
+        "requirements_chirho": [
+          "Add DOT/Graphviz export for constraint graph",
+          "Add JSON export for web-based visualization",
+          "Add propagation trace recording",
+          "Add trace playback/step-through functionality",
+          "Add cell value history viewer",
+          "Consider integration with existing visualization libraries"
+        ],
+        "priority_chirho": "P2",
+        "effort_estimate_chirho": "medium"
+      },
+      {
+        "id_chirho": "GAP-010",
+        "title_chirho": "No Constraint Removal/Deactivation",
+        "description_chirho": "Once a constraint is added, it cannot be removed or temporarily deactivated.",
+        "impact_chirho": "Cannot build modular constraint models, no what-if analysis",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["remove_constraint", "deactivate", "disable_constraint"],
+          "found_chirho": false,
+          "files_checked_chirho": ["all src/**/*.rs"]
+        },
+        "requirements_chirho": [
+          "Add system.remove_constraint_chirho(id) method",
+          "Add system.deactivate_constraint_chirho(id) method",
+          "Add system.activate_constraint_chirho(id) method",
+          "Track constraint IDs for management",
+          "Handle cell dependency updates on removal"
+        ],
+        "priority_chirho": "P1",
+        "effort_estimate_chirho": "medium"
+      }
+    ],
+
+    "minor_chirho": [
+      {
+        "id_chirho": "GAP-011",
+        "title_chirho": "No Search Restarts/Randomization",
+        "description_chirho": "Search cannot restart with learned nogoods or use randomization to escape local minima.",
+        "impact_chirho": "May get stuck on some problem instances",
+        "verification_chirho": {
+          "searched_patterns_chirho": ["restart", "randomiz", "shuffle"],
+          "found_chirho": false,
+          "files_checked_chirho": ["all src/**/*.rs"]
+        },
+        "requirements_chirho": [
+          "Add restart policy configuration",
+          "Implement Luby restart sequence",
+          "Implement geometric restart sequence",
+          "Add randomization for tie-breaking",
+          "Preserve learned nogoods across restarts"
+        ],
+        "priority_chirho": "P2",
+        "effort_estimate_chirho": "small"
+      },
+      {
+        "id_chirho": "GAP-012",
+        "title_chirho": "ConstraintSystemChirho Not Generic Over Lattice Types",
+        "description_chirho": "ConstraintSystemChirho is hardcoded to NumericInfoChirho. GenericNetworkChirho exists but is less ergonomic.",
+        "impact_chirho": "Awkward API for non-numeric constraint problems",
+        "verification_chirho": {
+          "note_chirho": "GenericNetworkChirho<T> exists in cells_chirho/generic_cell_chirho.rs but ConstraintSystemChirho uses NumericInfoChirho directly"
+        },
+        "requirements_chirho": [
+          "Make ConstraintSystemChirho generic: ConstraintSystemChirho<T: BoundedLatticeChirho>",
+          "Add type aliases for common cases",
+          "Unify APIs between ConstraintSystemChirho and GenericNetworkChirho"
+        ],
+        "priority_chirho": "P3",
+        "effort_estimate_chirho": "medium"
+      },
+      {
+        "id_chirho": "GAP-013",
+        "title_chirho": "TMS Not Deeply Integrated",
+        "description_chirho": "TMS uses separate TmsCellChirho vs CellChirho. Not integrated into main ConstraintSystemChirho API.",
+        "impact_chirho": "Users must choose between TMS and regular cells upfront",
+        "verification_chirho": {
+          "note_chirho": "TmsCellChirho and TmsNetworkChirho are separate from CellChirho and ConstraintSystemChirho"
+        },
+        "requirements_chirho": [
+          "Consider unified cell type with optional TMS features",
+          "Add TMS support to ConstraintSystemChirho",
+          "Add worldview support to constraint builder API"
+        ],
+        "priority_chirho": "P3",
+        "effort_estimate_chirho": "large"
+      },
+      {
+        "id_chirho": "GAP-014",
+        "title_chirho": "Limited Serialization",
+        "description_chirho": "Serde support exists for cells but not propagators. No schema versioning.",
+        "impact_chirho": "Cannot fully serialize/deserialize constraint networks",
+        "verification_chirho": {
+          "note_chirho": "IntervalChirho, NumericInfoChirho have serde derives, but propagators do not"
+        },
+        "requirements_chirho": [
+          "Add serde support for propagator definitions",
+          "Add network-level serialization",
+          "Add schema version field for migrations",
+          "Add backwards compatibility layer"
+        ],
+        "priority_chirho": "P3",
+        "effort_estimate_chirho": "medium"
+      },
+      {
+        "id_chirho": "GAP-015",
+        "title_chirho": "No Fluent/Builder API Chaining",
+        "description_chirho": "Cannot chain constraint additions fluently (e.g., system.cell('a').set(5).constrain_with('b')).",
+        "impact_chirho": "More verbose API usage",
+        "verification_chirho": {
+          "note_chirho": "ConstraintSystemChirho methods return () not &mut Self"
+        },
+        "requirements_chirho": [
+          "Return &mut Self from builder methods",
+          "Add CellBuilderChirho for cell-centric fluent API",
+          "Add method chaining examples to documentation"
+        ],
+        "priority_chirho": "P3",
+        "effort_estimate_chirho": "small"
+      }
+    ]
+  },
+
+  "existing_features_chirho": {
+    "core_infrastructure_chirho": [
+      "Cell-based partial information storage (CellChirho)",
+      "Scheduler with fixpoint execution (SchedulerChirho)",
+      "Interval arithmetic with proper NaN/infinity handling (IntervalChirho)",
+      "Generic lattice abstractions (BoundedLatticeChirho, MergeableChirho)",
+      "SIMD batch operations (simd_chirho module)"
+    ],
+    "propagators_chirho": [
+      "IntervalAdderChirho (a + b = c, bidirectional)",
+      "IntervalSubtractorChirho (a - b = c, bidirectional)",
+      "IntervalMultiplierChirho (a * b = c, bidirectional)",
+      "IntervalDividerChirho (a / b = c, bidirectional)",
+      "SquarerChirho (a² = b, bidirectional)",
+      "SqrterChirho (√a = b, bidirectional)",
+      "AbsoluterChirho (|a| = b)",
+      "MaxChirho (max(a,b) = c)",
+      "MinChirho (min(a,b) = c)",
+      "ConstantChirho (cell = value)",
+      "NegaterChirho (-a = b)",
+      "ExpChirho (e^a = b)",
+      "LnChirho (ln(a) = b)",
+      "PowerChirho (a^n = b)",
+      "ClampChirho (clamp(a, lo, hi) = b)",
+      "ConditionalChirho (if cond then a else b)"
+    ],
+    "constraints_chirho": [
+      "AllDifferentChirho for finite domains",
+      "LessThanChirho (a < b)",
+      "EqualsChirho (a = b)",
+      "NotEqualsChirho (a ≠ b)",
+      "Linear combinations (add_linear_chirho)",
+      "Pythagorean constraint (a² + b² = c²)"
+    ],
+    "truth_maintenance_chirho": [
+      "TmsCellChirho with multiple beliefs",
+      "JustificationChirho for derivation tracking",
+      "NogoodStoreChirho for contradiction tracking",
+      "WorldviewChirho for hypothetical reasoning",
+      "SupportedChirho values with premise sets",
+      "Dependency-directed backtracking (DependencyDirectedSearchChirho)"
+    ],
+    "search_chirho": [
+      "AmbChirho for nondeterministic choice",
+      "BacktrackingSearchChirho (basic chronological)",
+      "DependencyDirectedSearchChirho (uses nogoods)"
+    ],
+    "performance_chirho": [
+      "Arena allocation mode (arena feature)",
+      "Parallel propagation via rayon (parallel feature)",
+      "SIMD batch operations for intervals"
+    ],
+    "distribution_chirho": [
+      "DistributedNetworkChirho with CRDT merging",
+      "InMemoryTransportChirho for testing",
+      "WebSocketClientChirho and WebSocketServerChirho (incomplete)",
+      "Cloudflare Durable Objects integration"
+    ],
+    "bindings_chirho": [
+      "Python bindings via PyO3 (python feature)",
+      "WebAssembly bindings (wasm feature)"
+    ],
+    "quality_chirho": [
+      "Comprehensive unit tests",
+      "Property-based testing with proptest",
+      "Formal verification with Kani proofs",
+      "Documentation with academic citations"
+    ]
+  },
+
+  "recommended_roadmap_chirho": {
+    "phase_1_chirho": {
+      "name_chirho": "Production Stability",
+      "duration_chirho": "2-4 weeks",
+      "items_chirho": [
+        "GAP-004: Complete WebSocket implementation (remove TODOs)",
+        "GAP-002: Add constraint introspection API",
+        "GAP-015: Add fluent builder API"
+      ]
+    },
+    "phase_2_chirho": {
+      "name_chirho": "Core Enhancements",
+      "duration_chirho": "4-8 weeks",
+      "items_chirho": [
+        "GAP-001: Incremental computation",
+        "GAP-005: Error recovery/rollback",
+        "GAP-010: Constraint removal/deactivation"
+      ]
+    },
+    "phase_3_chirho": {
+      "name_chirho": "CSP Capabilities",
+      "duration_chirho": "6-10 weeks",
+      "items_chirho": [
+        "GAP-006: Global constraints (cumulative, circuit, table)",
+        "GAP-007: Search heuristics (first-fail, dom/wdeg)"
+      ]
+    },
+    "phase_4_chirho": {
+      "name_chirho": "Production Polish",
+      "duration_chirho": "4-6 weeks",
+      "items_chirho": [
+        "GAP-003: Constraint priorities",
+        "GAP-008: Persistent storage adapters",
+        "GAP-009: Visualization tools"
+      ]
+    }
+  }
+}
