@@ -10,6 +10,9 @@
 //! - TMS-aware cells and networks
 //! - Worldview for hypothetical reasoning
 
+// Allow module_inception: tms_chirho module in tms_chirho/ directory is intentional
+// for consistent naming with file structure
+#[allow(clippy::module_inception)]
 pub mod tms_chirho;
 pub mod worldview_chirho;
 
