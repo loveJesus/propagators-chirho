@@ -7,8 +7,9 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use propagators_chirho::{
     simd_chirho::{batch_add_chirho, batch_intersect_chirho, batch_mul_chirho, IntervalVecChirho},
-    CellChirho, ConstraintSystemChirho, IntervalAdderChirho, IntervalChirho, NumericInfoChirho,
-    SchedulerChirho,
+    AmbChirho, BacktrackingSearchChirho, CellChirho, ConstraintSystemChirho, DomWdegChirho,
+    FirstFailChirho, ImpactBasedChirho, IntervalAdderChirho, IntervalChirho, NumericInfoChirho,
+    SchedulerChirho, SearchResultChirho, VariableOrderingChirho,
 };
 
 fn benchmark_interval_operations_chirho(c_chirho: &mut Criterion) {
@@ -219,6 +220,128 @@ fn benchmark_arena_chirho(c_chirho: &mut Criterion) {
     });
 }
 
+fn benchmark_variable_ordering_heuristics_chirho(c_chirho: &mut Criterion) {
+    // Benchmark First-Fail variable selection with different sizes
+    c_chirho.bench_function("first_fail_select_50_vars", |bench_chirho| {
+        let heuristic_chirho = FirstFailChirho::new_chirho();
+        let domain_sizes_chirho: Vec<usize> = (1..=50).collect();
+        let assigned_chirho: Vec<bool> = vec![false; 50];
+
+        bench_chirho.iter(|| {
+            black_box(heuristic_chirho.select_variable_chirho(&domain_sizes_chirho, &assigned_chirho))
+        })
+    });
+
+    c_chirho.bench_function("first_fail_select_200_vars", |bench_chirho| {
+        let heuristic_chirho = FirstFailChirho::new_chirho();
+        let domain_sizes_chirho: Vec<usize> = (1..=200).collect();
+        let assigned_chirho: Vec<bool> = vec![false; 200];
+
+        bench_chirho.iter(|| {
+            black_box(heuristic_chirho.select_variable_chirho(&domain_sizes_chirho, &assigned_chirho))
+        })
+    });
+
+    // Benchmark Dom/Wdeg heuristic
+    c_chirho.bench_function("dom_wdeg_select_50_vars", |bench_chirho| {
+        // Create constraint topology: each var in 2 constraints
+        let constraint_vars_chirho: Vec<Vec<usize>> = (0..25)
+            .map(|i_chirho| vec![i_chirho * 2, i_chirho * 2 + 1])
+            .collect();
+        let heuristic_chirho = DomWdegChirho::new_chirho(50, constraint_vars_chirho);
+        let domain_sizes_chirho: Vec<usize> = (1..=50).collect();
+        let assigned_chirho: Vec<bool> = vec![false; 50];
+
+        bench_chirho.iter(|| {
+            black_box(heuristic_chirho.select_variable_chirho(&domain_sizes_chirho, &assigned_chirho))
+        })
+    });
+
+    // Benchmark Impact-Based heuristic
+    c_chirho.bench_function("impact_based_select_50_vars", |bench_chirho| {
+        let heuristic_chirho = ImpactBasedChirho::new_chirho(50);
+        // Pre-record some impacts
+        for i_chirho in 0..50 {
+            heuristic_chirho.record_impact_chirho(i_chirho, (i_chirho as f64) / 100.0);
+        }
+        let domain_sizes_chirho: Vec<usize> = (1..=50).collect();
+        let assigned_chirho: Vec<bool> = vec![false; 50];
+
+        bench_chirho.iter(|| {
+            black_box(heuristic_chirho.select_variable_chirho(&domain_sizes_chirho, &assigned_chirho))
+        })
+    });
+}
+
+fn benchmark_search_heuristics_chirho(c_chirho: &mut Criterion) {
+    // Benchmark First-Fail variable selection
+    c_chirho.bench_function("first_fail_select_100_vars", |bench_chirho| {
+        let heuristic_chirho = FirstFailChirho::new_chirho();
+        let domain_sizes_chirho: Vec<usize> = (1..=100).collect();
+        let assigned_chirho: Vec<bool> = vec![false; 100];
+
+        bench_chirho.iter(|| {
+            black_box(heuristic_chirho.select_variable_chirho(&domain_sizes_chirho, &assigned_chirho))
+        })
+    });
+
+    // Benchmark backtracking search on a small N-Queens-like problem
+    c_chirho.bench_function("backtracking_search_small", |bench_chirho| {
+        bench_chirho.iter(|| {
+            // 4 variables with domain 1..4
+            let ambs_chirho: Vec<AmbChirho> = (0..4).map(|_| AmbChirho::range_chirho(1, 4)).collect();
+
+            let search_chirho = BacktrackingSearchChirho::with_limit_chirho(10000);
+            let result_chirho = search_chirho.search_simple_chirho(&ambs_chirho, |values_chirho| {
+                // Simple all-different constraint
+                for i_chirho in 0..values_chirho.len() {
+                    for j_chirho in (i_chirho + 1)..values_chirho.len() {
+                        if let (Some(iv_chirho), Some(jv_chirho)) = (
+                            values_chirho[i_chirho].as_interval_chirho(),
+                            values_chirho[j_chirho].as_interval_chirho(),
+                        ) {
+                            if (iv_chirho.lo_chirho - jv_chirho.lo_chirho).abs() < 0.001 {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                true
+            });
+
+            black_box(result_chirho)
+        })
+    });
+
+    // Benchmark larger search
+    c_chirho.bench_function("backtracking_search_8vars", |bench_chirho| {
+        bench_chirho.iter(|| {
+            // 8 variables with domain 1..8
+            let ambs_chirho: Vec<AmbChirho> = (0..8).map(|_| AmbChirho::range_chirho(1, 8)).collect();
+
+            let search_chirho = BacktrackingSearchChirho::with_limit_chirho(100000);
+            let result_chirho = search_chirho.search_simple_chirho(&ambs_chirho, |values_chirho| {
+                // All-different constraint
+                for i_chirho in 0..values_chirho.len() {
+                    for j_chirho in (i_chirho + 1)..values_chirho.len() {
+                        if let (Some(iv_chirho), Some(jv_chirho)) = (
+                            values_chirho[i_chirho].as_interval_chirho(),
+                            values_chirho[j_chirho].as_interval_chirho(),
+                        ) {
+                            if (iv_chirho.lo_chirho - jv_chirho.lo_chirho).abs() < 0.001 {
+                                return false;
+                            }
+                        }
+                    }
+                }
+                true
+            });
+
+            black_box(matches!(result_chirho, SearchResultChirho::SolutionChirho(_)))
+        })
+    });
+}
+
 #[cfg(feature = "parallel")]
 fn benchmark_parallel_chirho(c_chirho: &mut Criterion) {
     use propagators_chirho::parallel_chirho::NumericParallelNetworkChirho;
@@ -326,6 +449,8 @@ criterion_group!(
     benchmark_simd_operations_chirho,
     benchmark_propagation_chirho,
     benchmark_constraint_system_chirho,
+    benchmark_variable_ordering_heuristics_chirho,
+    benchmark_search_heuristics_chirho,
     benchmark_arena_chirho,
     benchmark_parallel_chirho,
 );
@@ -338,6 +463,8 @@ criterion_group!(
     benchmark_simd_operations_chirho,
     benchmark_propagation_chirho,
     benchmark_constraint_system_chirho,
+    benchmark_variable_ordering_heuristics_chirho,
+    benchmark_search_heuristics_chirho,
     benchmark_arena_chirho,
 );
 
@@ -349,6 +476,8 @@ criterion_group!(
     benchmark_simd_operations_chirho,
     benchmark_propagation_chirho,
     benchmark_constraint_system_chirho,
+    benchmark_variable_ordering_heuristics_chirho,
+    benchmark_search_heuristics_chirho,
     benchmark_parallel_chirho,
 );
 
@@ -360,6 +489,8 @@ criterion_group!(
     benchmark_simd_operations_chirho,
     benchmark_propagation_chirho,
     benchmark_constraint_system_chirho,
+    benchmark_variable_ordering_heuristics_chirho,
+    benchmark_search_heuristics_chirho,
 );
 
 criterion_main!(benches_chirho);

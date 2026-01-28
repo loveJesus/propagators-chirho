@@ -6,10 +6,14 @@
 //!
 //! This module contains:
 //! - Tracing instrumentation for debugging propagation
+//! - Visualization tools for network inspection
 //! - Kani formal verification proofs
 
 #[cfg(not(feature = "no-std"))]
 pub mod tracing_chirho;
+
+#[cfg(not(feature = "no-std"))]
+pub mod visualization_chirho;
 
 #[cfg(feature = "kani")]
 pub mod kani_chirho;

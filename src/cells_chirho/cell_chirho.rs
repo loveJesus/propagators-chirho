@@ -255,6 +255,37 @@ impl<T: MergeableChirho> CellChirho<T> {
         self.neighbors_chirho.borrow_mut().push(propagator_chirho);
     }
 
+    /// Removes a propagator from the neighbor list by its ID.
+    ///
+    /// Returns `true` if a propagator was removed, `false` if not found.
+    ///
+    /// # Arguments
+    ///
+    /// * `propagator_id_chirho` - The ID of the propagator to remove
+    pub fn remove_neighbor_chirho(&self, propagator_id_chirho: usize) -> bool {
+        let mut neighbors_chirho = self.neighbors_chirho.borrow_mut();
+        let original_len_chirho = neighbors_chirho.len();
+        neighbors_chirho.retain(|p_chirho| p_chirho.id_chirho() != propagator_id_chirho);
+        neighbors_chirho.len() < original_len_chirho
+    }
+
+    /// Removes all propagators with IDs in the given set.
+    ///
+    /// Returns the number of propagators removed.
+    ///
+    /// # Arguments
+    ///
+    /// * `propagator_ids_chirho` - Set of propagator IDs to remove
+    pub fn remove_neighbors_chirho(
+        &self,
+        propagator_ids_chirho: &std::collections::HashSet<usize>,
+    ) -> usize {
+        let mut neighbors_chirho = self.neighbors_chirho.borrow_mut();
+        let original_len_chirho = neighbors_chirho.len();
+        neighbors_chirho.retain(|p_chirho| !propagator_ids_chirho.contains(&p_chirho.id_chirho()));
+        original_len_chirho - neighbors_chirho.len()
+    }
+
     /// Returns `true` if the cell contains no information.
     #[inline]
     pub fn is_nothing_chirho(&self) -> bool {

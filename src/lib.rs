@@ -240,7 +240,9 @@ pub use core_chirho::{
 // Exports requiring std
 #[cfg(not(feature = "no-std"))]
 pub use cells_chirho::{
-    CellChirho, GenericCellChirho, GenericNetworkChirho, MergeableChirho, SchedulerChirho,
+    CellChirho, CellDeltaChirho, ConstraintWeightsChirho, GenericCellChirho, GenericNetworkChirho,
+    IncrementalSchedulerChirho, IncrementalStatsChirho, MergeableChirho, PrioritySchedulerChirho,
+    PrioritySchedulerStatsChirho, SchedulerChirho, SchedulerStatsChirho, WeightedConstraintChirho,
 };
 
 #[cfg(not(feature = "no-std"))]
@@ -248,14 +250,18 @@ pub use propagators_chirho::{
     AbsoluterChirho, ClampChirho, ConditionalChirho, ConstantChirho, ExpChirho,
     IntervalAdderChirho, IntervalDividerChirho, IntervalMultiplierChirho, IntervalSubtractorChirho,
     LnChirho, MaxChirho, MinChirho, NegaterChirho, PowerChirho, PropagatorChirho, SqrterChirho,
-    SquarerChirho,
+    SquarerChirho, DEFAULT_PRIORITY_CHIRHO, HIGH_PRIORITY_CHIRHO, LOW_PRIORITY_CHIRHO,
 };
 
 #[cfg(not(feature = "no-std"))]
 pub use constraints_chirho::{
-    AllDifferentChirho, AmbChirho, BacktrackingSearchChirho, ConstraintSystemChirho,
-    DependencyDirectedSearchChirho, EqualsChirho, FiniteDomainChirho, LessThanChirho,
-    NotEqualsChirho, SearchResultChirho,
+    AllDifferentChirho, AmbChirho, BacktrackingSearchChirho, CardinalityChirho, CellBuilderChirho,
+    CellExplanationChirho, CheckpointChirho, CircuitChirho, ConstraintIdChirho, ConstraintInfoChirho,
+    ConstraintSystemChirho, ConstraintTypeChirho, CumulativeChirho, DependencyDirectedSearchChirho,
+    DomWdegChirho, ElementChirho, EqualsChirho, FiniteDomainChirho, FirstFailChirho,
+    ImpactBasedChirho, LessThanChirho, MaxValueChirho, MiddleOutChirho, MinValueChirho,
+    NotEqualsChirho, PropagationGraphChirho, RestartSearchChirho, SearchResultChirho,
+    SearchStatsChirho, TableChirho, ValueOrderingChirho, VariableOrderingChirho,
 };
 
 #[cfg(not(feature = "no-std"))]
@@ -292,6 +298,13 @@ pub use distributed_chirho::network_chirho::{
 #[cfg(all(feature = "tracing", not(feature = "no-std")))]
 #[cfg_attr(docsrs, doc(cfg(all(feature = "tracing", not(feature = "no-std")))))]
 pub use debug_chirho::tracing_chirho;
+
+// Storage exports (always available when not no-std)
+#[cfg(not(feature = "no-std"))]
+pub use perf_chirho::storage_chirho::{
+    FileStorageChirho, InMemoryStorageChirho, NetworkStateChirho, StorageAdapterChirho,
+    StorageErrorChirho, StorageResultChirho, CURRENT_SCHEMA_VERSION_CHIRHO,
+};
 
 // Note: kani_chirho module is only compiled when running under the kani verifier
 // (it has #![cfg(kani)] at the module level), so we only re-export when kani is active

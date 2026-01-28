@@ -15,9 +15,16 @@ pub mod system_chirho;
 
 // Re-exports for convenience
 pub use amb_chirho::{
-    AmbChirho, BacktrackingSearchChirho, DependencyDirectedSearchChirho, SearchResultChirho,
+    AmbChirho, BacktrackingSearchChirho, DependencyDirectedSearchChirho, DomWdegChirho,
+    FirstFailChirho, ImpactBasedChirho, MaxValueChirho, MiddleOutChirho, MinValueChirho,
+    RestartSearchChirho, SearchResultChirho, SearchStatsChirho, ValueOrderingChirho,
+    VariableOrderingChirho,
 };
 pub use finite_domain_chirho::{
-    AllDifferentChirho, EqualsChirho, FiniteDomainChirho, LessThanChirho, NotEqualsChirho,
+    AllDifferentChirho, CardinalityChirho, CircuitChirho, CumulativeChirho, ElementChirho,
+    EqualsChirho, FiniteDomainChirho, LessThanChirho, NotEqualsChirho, TableChirho,
 };
-pub use system_chirho::ConstraintSystemChirho;
+pub use system_chirho::{
+    CellBuilderChirho, CellExplanationChirho, CheckpointChirho, ConstraintIdChirho,
+    ConstraintInfoChirho, ConstraintSystemChirho, ConstraintTypeChirho, PropagationGraphChirho,
+};

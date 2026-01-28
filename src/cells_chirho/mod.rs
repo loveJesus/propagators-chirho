@@ -16,4 +16,8 @@ pub mod scheduler_chirho;
 // Re-exports for convenience
 pub use cell_chirho::{CellChirho, MergeableChirho};
 pub use generic_cell_chirho::{GenericCellChirho, GenericNetworkChirho};
-pub use scheduler_chirho::SchedulerChirho;
+pub use scheduler_chirho::{
+    CellDeltaChirho, ConstraintWeightsChirho, IncrementalSchedulerChirho, IncrementalStatsChirho,
+    PrioritySchedulerChirho, PrioritySchedulerStatsChirho, SchedulerChirho, SchedulerStatsChirho,
+    WeightedConstraintChirho,
+};

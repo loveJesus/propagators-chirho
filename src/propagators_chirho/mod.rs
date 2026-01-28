@@ -16,5 +16,5 @@ pub use propagator_chirho::{
     AbsoluterChirho, ClampChirho, ConditionalChirho, ConstantChirho, ExpChirho,
     IntervalAdderChirho, IntervalDividerChirho, IntervalMultiplierChirho, IntervalSubtractorChirho,
     LnChirho, MaxChirho, MinChirho, NegaterChirho, PowerChirho, PropagatorChirho, SqrterChirho,
-    SquarerChirho,
+    SquarerChirho, DEFAULT_PRIORITY_CHIRHO, HIGH_PRIORITY_CHIRHO, LOW_PRIORITY_CHIRHO,
 };

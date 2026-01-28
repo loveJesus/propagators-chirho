@@ -73,12 +73,58 @@ fn next_id_chirho() -> usize {
 ///     }
 /// }
 /// ```
+/// Default priority for propagators (normal priority).
+pub const DEFAULT_PRIORITY_CHIRHO: i32 = 0;
+
+/// High priority for critical propagators (run first).
+pub const HIGH_PRIORITY_CHIRHO: i32 = 100;
+
+/// Low priority for deferred propagators (run last).
+pub const LOW_PRIORITY_CHIRHO: i32 = -100;
+
+/// Trait for propagators in a constraint network.
+///
+/// Propagators watch input cells and update output cells when they can
+/// contribute new information. They are the active computational elements
+/// in a propagator network.
+///
+/// # Implementation
+///
+/// Each propagator must provide:
+/// - A unique ID for deduplication in the scheduler
+/// - A name for debugging purposes
+/// - A `run_chirho` method that reads inputs and updates outputs
+///
+/// Optionally, propagators can specify a priority via [`priority_chirho`](Self::priority_chirho)
+/// for use with [`PrioritySchedulerChirho`](crate::PrioritySchedulerChirho).
 pub trait PropagatorChirho {
     /// Returns the unique ID of this propagator.
     fn id_chirho(&self) -> usize;
 
     /// Returns the name of this propagator for debugging.
     fn name_chirho(&self) -> &str;
+
+    /// Returns the priority of this propagator.
+    ///
+    /// Higher priority propagators are run before lower priority ones.
+    /// Default is 0 (normal priority).
+    ///
+    /// # Priority Levels
+    ///
+    /// - `HIGH_PRIORITY_CHIRHO` (100): Critical constraints, run first
+    /// - `DEFAULT_PRIORITY_CHIRHO` (0): Normal propagators
+    /// - `LOW_PRIORITY_CHIRHO` (-100): Deferred/soft constraints, run last
+    ///
+    /// # Example
+    ///
+    /// ```ignore
+    /// fn priority_chirho(&self) -> i32 {
+    ///     HIGH_PRIORITY_CHIRHO  // Run before normal propagators
+    /// }
+    /// ```
+    fn priority_chirho(&self) -> i32 {
+        DEFAULT_PRIORITY_CHIRHO
+    }
 
     /// Runs the propagator, potentially updating output cells.
     fn run_chirho(&self, scheduler_chirho: &SchedulerChirho);

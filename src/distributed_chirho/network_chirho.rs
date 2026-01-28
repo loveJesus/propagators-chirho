@@ -660,6 +660,15 @@ impl<T: TransportChirho> DistributedNetworkChirho<T> {
         self.cells_chirho.len()
     }
 
+    /// Iterates over all cells in the network.
+    ///
+    /// Returns an iterator of (CellIdChirho, &DistributedCellChirho) pairs.
+    pub fn iter_cells_chirho(
+        &self,
+    ) -> impl Iterator<Item = (&CellIdChirho, &Arc<DistributedCellChirho>)> {
+        self.cells_chirho.iter()
+    }
+
     /// Returns the list of connected peers.
     pub fn peers_chirho(&self) -> Vec<String> {
         self.transport_chirho.peers_chirho()
