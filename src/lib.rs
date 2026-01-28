@@ -156,7 +156,7 @@
 // an alloc crate. Full propagator networks require alloc; only interval
 // arithmetic can work with just core.
 #![cfg_attr(feature = "no-std", no_std)]
-#![doc(html_root_url = "https://docs.rs/propagators-chirho/0.1.0")]
+#![doc(html_root_url = "https://docs.rs/propagators-chirho/0.2.0")]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![warn(missing_docs)]
 #![warn(rustdoc::missing_crate_level_docs)]

@@ -4,7 +4,7 @@
 
 [package]
 name = "propagators-chirho"
-version = "0.1.5"
+version = "0.2.0"
 edition = "2021"
 rust-version = "1.70"
 authors = ["loveJesus <loveJesus@loveJesus.software>"]
@@ -49,6 +49,10 @@ path = "examples/electrical_chirho.rs"
 [[example]]
 name = "scheduling_chirho"
 path = "examples/scheduling_chirho.rs"
+
+[[example]]
+name = "search_heuristics_chirho"
+path = "examples/search_heuristics_chirho.rs"
 
 [dependencies]
 # Optional: Arena allocation for high-performance mode
