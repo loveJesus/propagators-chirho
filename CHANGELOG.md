@@ -11,14 +11,80 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-01-27
+
+### Added
+
+- **Unified Composable Network Architecture**
+  - `UnifiedNetworkChirho<T, TmsMode, AllocMode, ExecMode>` - Phantom type configuration
+  - `StandardModeChirho` / `TmsModeChirho` - Optional TMS support at compile time
+  - `HeapAllocChirho` / `ArenaAllocChirho` - Allocation strategy placeholders
+  - `SequentialChirho` / `ParallelChirho` - Execution mode placeholders
+  - `NetworkBuilderChirho` - Fluent construction of networks
+  - `UnifiedCellChirho<T, TmsMode>` - Cells with optional TMS data
+  - Type aliases: `NumericNetworkChirho`, `TmsNumericNetworkChirho`
+  - 16 unit tests for unified network operations
+  - Zero-cost abstraction via phantom types
+
 ### Changed
 
-- **Reorganized into Workspace**: PropCoin cryptocurrency moved to separate crate
-  - Created `crates_chirho/propcoin-chirho/` as standalone crate
-  - Root `Cargo.toml` now defines workspace with propagators-chirho + propcoin-chirho
-  - Removed `crypto` feature from propagators-chirho (use `propcoin-chirho` crate instead)
-  - PropCoin imports propagators-chirho as dependency with `network` and `serde` features
-  - Cleaner separation of concerns: core library vs cryptocurrency application
+- **PropCoin moved to sibling project**: Now at `12-propcoin-chirho/`
+- **PRD 100% complete**: All 15 gaps addressed (GAP-012 and GAP-013 via unified network)
+
+## [0.2.0] - 2026-01-27
+
+### Added
+
+- **Global Constraints**
+  - `ElementChirho` - Array indexing constraint (result = array[index])
+  - `TableChirho` - Extensional constraint with allowed tuples
+  - `CircuitChirho` - Hamiltonian circuit for TSP problems
+  - `CumulativeChirho` - Resource scheduling with time-table filtering
+  - `CardinalityChirho` - Bounds on value occurrence counts
+
+- **Search Heuristics**
+  - `FirstFailChirho` - Smallest domain first (most constrained variable)
+  - `DomWdegChirho` - Domain over weighted degree with failure recording
+  - `ImpactBasedChirho` - Impact measurement with running averages
+  - `MinValueChirho`, `MaxValueChirho`, `MiddleOutChirho` - Value ordering strategies
+  - `RestartSearchChirho` - Luby sequence restarts with nogood learning
+
+- **Storage & Persistence**
+  - `StorageAdapterChirho` trait - Generic storage interface
+  - `InMemoryStorageChirho` - In-memory persistence for testing
+  - `FileStorageChirho` - JSON file-based persistence
+  - `NetworkStateChirho` - Serializable network snapshots
+  - `CURRENT_SCHEMA_VERSION_CHIRHO` - Schema versioning for migrations
+
+- **Visualization & Debugging**
+  - `PropagationTraceChirho` - Record propagation events with timestamps
+  - `CellHistoryChirho` - Track value changes per cell
+  - `NetworkSnapshotChirho` - Complete state capture
+  - `to_json_chirho()` and `to_dot_chirho()` export methods
+
+- **Incremental Computation**
+  - `IncrementalSchedulerChirho` - Generation-based change tracking
+  - `CellDeltaChirho` - Individual cell change records
+  - `changes_since_generation_chirho()` - Historical change queries
+
+- **Constraint Introspection**
+  - `ConstraintIdChirho`, `ConstraintTypeChirho`, `ConstraintInfoChirho`
+  - `explain_value_chirho()` - Derivation explanation
+  - `get_propagation_graph_chirho()` - DOT format visualization
+
+- **Fluent Builder API**
+  - `CellBuilderChirho` - Cell-centric constraint building
+  - 14 fluent operations: plus, minus, times, squared, sqrt, etc.
+  - Method chaining with `with_*` methods
+
+- **Constraint Management**
+  - Checkpoint/rollback support
+  - Constraint removal and deactivation
+  - Constraint priorities and soft constraints
+
+- **Examples**
+  - `search_heuristics_chirho` - N-Queens with variable ordering
+  - `scheduling_chirho` - Resource scheduling with cumulative
 
 ## [0.1.5] - 2025-01-24
 
