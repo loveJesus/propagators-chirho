@@ -121,6 +121,53 @@ system_chirho.run_chirho();
 - `AllDifferentChirho` — Global constraint for Sudoku-like problems
 - `LessThanChirho`, `EqualsChirho`, `NotEqualsChirho` — Relational constraints
 
+### Global Constraints (v0.2+)
+
+- `ElementChirho` — Array indexing constraint (result = array[index])
+- `TableChirho` — Extensional constraint with explicit allowed tuples
+- `CircuitChirho` — Hamiltonian circuit for TSP problems
+- `CumulativeChirho` — Resource scheduling with time-table filtering
+- `CardinalityChirho` — Bounds on value occurrence counts
+
+### Search Heuristics (v0.2+)
+
+- `FirstFailChirho` — Smallest domain first (most constrained variable)
+- `DomWdegChirho` — Domain over weighted degree with failure recording
+- `ImpactBasedChirho` — Impact measurement with running averages
+- `MinValueChirho`, `MaxValueChirho`, `MiddleOutChirho` — Value ordering strategies
+- `RestartSearchChirho` — Luby sequence restarts with nogood learning
+
+### Unified Network Architecture (v0.3+)
+
+- `UnifiedNetworkChirho<T, TmsMode, AllocMode, ExecMode>` — Composable network with phantom type configuration
+- `StandardModeChirho` / `TmsModeChirho` — Optional TMS support
+- `NetworkBuilderChirho` — Fluent construction of networks
+- Type aliases: `NumericNetworkChirho`, `TmsNumericNetworkChirho`
+
+```rust
+use propagators_chirho::{UnifiedNetworkChirho, TmsModeChirho, NumericInfoChirho};
+
+// Standard network (no TMS overhead)
+let mut net_chirho = UnifiedNetworkChirho::<NumericInfoChirho>::new_chirho();
+
+// TMS-enabled network (tracks beliefs and premises)
+let mut tms_net_chirho = UnifiedNetworkChirho::<NumericInfoChirho, TmsModeChirho>::with_tms_chirho();
+```
+
+### Storage & Persistence (v0.2+)
+
+- `StorageAdapterChirho` trait — Generic storage interface
+- `InMemoryStorageChirho` — In-memory persistence for testing
+- `FileStorageChirho` — JSON file-based persistence
+- `NetworkStateChirho` — Serializable network snapshots with schema versioning
+
+### Visualization & Debugging (v0.2+)
+
+- `PropagationTraceChirho` — Record propagation events with timestamps
+- `CellHistoryChirho` — Track value changes per cell
+- `NetworkSnapshotChirho` — Complete state capture with JSON/DOT export
+- `PropagationGraphChirho` — Visualize constraint networks (DOT format)
+
 ### Generic Cells
 
 - `GenericCellChirho<L>` — Cells that work with any lattice type
@@ -143,7 +190,7 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-propagators-chirho = "0.1"
+propagators-chirho = "0.3"
 ```
 
 ## Cargo Features
@@ -164,7 +211,7 @@ For embedded or bare-metal environments:
 
 ```toml
 [dependencies]
-propagators-chirho = { version = "0.1", default-features = false, features = ["no-std"] }
+propagators-chirho = { version = "0.3", default-features = false, features = ["no-std"] }
 ```
 
 Available modules in no_std mode:
@@ -266,13 +313,35 @@ let value_a_chirho = cell_chirho.content_in_worldview_chirho(&wv_a_chirho);
 // value_a = 25.0
 ```
 
+### Unified Network (v0.3+)
+
+```rust
+use propagators_chirho::{UnifiedNetworkChirho, NumericNetworkChirho};
+
+// The unified network provides a clean API for constraint networks
+let mut network_chirho: NumericNetworkChirho = UnifiedNetworkChirho::new_chirho();
+
+// Create cells and constraints
+let a_chirho = network_chirho.make_exact_chirho("a", 3.0);
+let b_chirho = network_chirho.make_exact_chirho("b", 4.0);
+let c_chirho = network_chirho.make_cell_chirho("c");
+
+// a + b = c (bidirectional!)
+network_chirho.add_adder_chirho(a_chirho, b_chirho, c_chirho.clone());
+network_chirho.run_chirho();
+
+// c is now [7, 7]
+```
+
 ## Running Examples
 
 ```bash
-cargo run --example temperature_chirho   # Bidirectional temperature conversion
-cargo run --example pythagorean_chirho   # Pythagorean theorem
-cargo run --example electrical_chirho    # Electrical circuit analysis
-cargo run --example sudoku_chirho        # Sudoku solver
+cargo run --example temperature_chirho        # Bidirectional temperature conversion
+cargo run --example pythagorean_chirho        # Pythagorean theorem
+cargo run --example electrical_chirho         # Electrical circuit analysis
+cargo run --example sudoku_chirho             # Sudoku solver with backtracking
+cargo run --example search_heuristics_chirho  # N-Queens with variable ordering heuristics
+cargo run --example scheduling_chirho         # Resource scheduling with cumulative
 ```
 
 ## Performance
@@ -283,7 +352,7 @@ Enable high-performance arena mode for ~2x faster network operations:
 
 ```toml
 [dependencies]
-propagators-chirho = { version = "0.1", features = ["arena"] }
+propagators-chirho = { version = "0.3", features = ["arena"] }
 ```
 
 ```rust

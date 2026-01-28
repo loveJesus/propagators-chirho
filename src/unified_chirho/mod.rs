@@ -613,4 +613,120 @@ mod tests_chirho {
         let _n2: UnifiedNetworkChirho<NumericInfoChirho, StandardModeChirho, HeapAllocChirho, SequentialChirho> =
             UnifiedNetworkChirho::new_chirho();
     }
+
+    #[test]
+    fn test_subtractor_constraint_chirho() {
+        let mut network_chirho: NumericNetworkChirho = UnifiedNetworkChirho::new_chirho();
+
+        let a_chirho = network_chirho.make_exact_chirho("a", 10.0);
+        let b_chirho = network_chirho.make_exact_chirho("b", 3.0);
+        let c_chirho = network_chirho.make_cell_chirho("c");
+
+        network_chirho.add_subtractor_chirho(a_chirho.clone(), b_chirho.clone(), c_chirho.clone());
+        network_chirho.run_chirho();
+
+        let result_chirho = c_chirho.content_chirho();
+        if let Some(interval_chirho) = result_chirho.as_interval_chirho() {
+            assert!((interval_chirho.lo_chirho - 7.0).abs() < 0.001);
+        } else {
+            panic!("Expected interval result");
+        }
+    }
+
+    #[test]
+    fn test_divider_constraint_chirho() {
+        let mut network_chirho: NumericNetworkChirho = UnifiedNetworkChirho::new_chirho();
+
+        let a_chirho = network_chirho.make_exact_chirho("a", 20.0);
+        let b_chirho = network_chirho.make_exact_chirho("b", 4.0);
+        let c_chirho = network_chirho.make_cell_chirho("c");
+
+        network_chirho.add_divider_chirho(a_chirho.clone(), b_chirho.clone(), c_chirho.clone());
+        network_chirho.run_chirho();
+
+        let result_chirho = c_chirho.content_chirho();
+        if let Some(interval_chirho) = result_chirho.as_interval_chirho() {
+            assert!((interval_chirho.lo_chirho - 5.0).abs() < 0.001);
+        } else {
+            panic!("Expected interval result");
+        }
+    }
+
+    #[test]
+    fn test_squarer_constraint_chirho() {
+        let mut network_chirho: NumericNetworkChirho = UnifiedNetworkChirho::new_chirho();
+
+        let a_chirho = network_chirho.make_exact_chirho("a", 5.0);
+        let b_chirho = network_chirho.make_cell_chirho("b");
+
+        network_chirho.add_squarer_chirho(a_chirho.clone(), b_chirho.clone());
+        network_chirho.run_chirho();
+
+        let result_chirho = b_chirho.content_chirho();
+        if let Some(interval_chirho) = result_chirho.as_interval_chirho() {
+            assert!((interval_chirho.lo_chirho - 25.0).abs() < 0.001);
+        } else {
+            panic!("Expected interval result");
+        }
+    }
+
+    #[test]
+    fn test_sqrter_constraint_chirho() {
+        let mut network_chirho: NumericNetworkChirho = UnifiedNetworkChirho::new_chirho();
+
+        let a_chirho = network_chirho.make_exact_chirho("a", 16.0);
+        let b_chirho = network_chirho.make_cell_chirho("b");
+
+        network_chirho.add_sqrter_chirho(a_chirho.clone(), b_chirho.clone());
+        network_chirho.run_chirho();
+
+        let result_chirho = b_chirho.content_chirho();
+        if let Some(interval_chirho) = result_chirho.as_interval_chirho() {
+            assert!((interval_chirho.lo_chirho - 4.0).abs() < 0.001);
+        } else {
+            panic!("Expected interval result");
+        }
+    }
+
+    #[test]
+    fn test_make_interval_chirho() {
+        let mut network_chirho: NumericNetworkChirho = UnifiedNetworkChirho::new_chirho();
+
+        let cell_chirho = network_chirho.make_interval_chirho("temp", 20.0, 25.0);
+
+        let content_chirho = cell_chirho.content_chirho();
+        if let Some(interval_chirho) = content_chirho.as_interval_chirho() {
+            assert!((interval_chirho.lo_chirho - 20.0).abs() < 0.001);
+            assert!((interval_chirho.hi_chirho - 25.0).abs() < 0.001);
+        } else {
+            panic!("Expected interval result");
+        }
+    }
+
+    #[test]
+    fn test_pythagorean_unified_chirho() {
+        // a² + b² = c² where a=3, b=4 => c=5
+        let mut network_chirho: NumericNetworkChirho = UnifiedNetworkChirho::new_chirho();
+
+        let a_chirho = network_chirho.make_exact_chirho("a", 3.0);
+        let b_chirho = network_chirho.make_exact_chirho("b", 4.0);
+        let a_sq_chirho = network_chirho.make_cell_chirho("a_sq");
+        let b_sq_chirho = network_chirho.make_cell_chirho("b_sq");
+        let c_sq_chirho = network_chirho.make_cell_chirho("c_sq");
+        let c_chirho = network_chirho.make_cell_chirho("c");
+
+        network_chirho.add_squarer_chirho(a_chirho.clone(), a_sq_chirho.clone());
+        network_chirho.add_squarer_chirho(b_chirho.clone(), b_sq_chirho.clone());
+        network_chirho.add_adder_chirho(a_sq_chirho.clone(), b_sq_chirho.clone(), c_sq_chirho.clone());
+        network_chirho.add_sqrter_chirho(c_sq_chirho.clone(), c_chirho.clone());
+
+        network_chirho.run_chirho();
+
+        let result_chirho = c_chirho.content_chirho();
+        if let Some(interval_chirho) = result_chirho.as_interval_chirho() {
+            assert!((interval_chirho.lo_chirho - 5.0).abs() < 0.001);
+        } else {
+            panic!("Expected interval result");
+        }
+    }
 }
