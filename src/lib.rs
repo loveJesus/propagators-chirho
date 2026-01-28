@@ -220,6 +220,9 @@ pub mod bindings_chirho;
 #[cfg(not(feature = "no-std"))]
 pub mod debug_chirho;
 
+#[cfg(not(feature = "no-std"))]
+pub mod unified_chirho;
+
 // =============================================================================
 // Re-exports for backward compatibility
 // =============================================================================
@@ -306,6 +309,14 @@ pub use perf_chirho::storage_chirho::{
     StorageErrorChirho, StorageResultChirho, CURRENT_SCHEMA_VERSION_CHIRHO,
 };
 
+// Unified network exports (composable network architecture)
+#[cfg(not(feature = "no-std"))]
+pub use unified_chirho::{
+    HeapAllocChirho, NetworkBuilderChirho, NumericNetworkChirho, SequentialChirho,
+    StandardModeChirho, TmsModeChirho, TmsNumericNetworkChirho, UnifiedCellChirho,
+    UnifiedNetworkChirho,
+};
+
 // Note: kani_chirho module is only compiled when running under the kani verifier
 // (it has #![cfg(kani)] at the module level), so we only re-export when kani is active
 #[cfg(kani)]
@@ -343,6 +354,9 @@ pub mod prelude_chirho {
     };
     pub use crate::tms_chirho::{
         BeliefChirho, PremiseSetChirho, SupportedChirho, TmsCellChirho, WorldviewChirho,
+    };
+    pub use crate::unified_chirho::{
+        NetworkBuilderChirho, NumericNetworkChirho, TmsNumericNetworkChirho, UnifiedNetworkChirho,
     };
 }
 
